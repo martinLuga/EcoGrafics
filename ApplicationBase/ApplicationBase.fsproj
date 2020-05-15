@@ -66,24 +66,59 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="DisplayableObject.fs" />
-    <Compile Include="GraficSystem.fs" />
     <Compile Include="MoveableObject.fs" />
-    <Compile Include="ShaderConfiguration.fs" />
     <Compile Include="SimulationObject.fs" />
-    <Compile Include="WindowControl.fs" />
+    <Compile Include="ShaderConfiguration.fs" />
+    <Compile Include="GraficSystem.fs" />
     <Compile Include="WindowLayout.fs" />
+    <Compile Include="WindowControl.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="SharpDX">
+      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Desktop">
+      <HintPath>..\packages\SharpDX.Desktop.4.2.0\lib\net45\SharpDX.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>..\packages\SharpDX.Mathematics.4.2.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX\DirectX.fsproj">
+      <Name>DirectX</Name>
+      <Project>{51ce72de-f8a6-4319-bc3f-dd2b884c9d4c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Geometry\Geometry.fsproj">
+      <Name>Geometry</Name>
+      <Project>{8568ae4d-3fec-4928-9d60-5ad7db1e7da7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\GPUModel\GPUModel.fsproj">
+      <Name>GPUModel</Name>
+      <Project>{7bd7fdff-268b-4ad9-a4fc-1ea99b4425ba}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Shader\Shader.fsproj">
+      <Name>Shader</Name>
+      <Project>{0a3337a7-1e00-40dc-b732-cd25e7ca682c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

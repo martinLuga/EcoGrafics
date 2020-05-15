@@ -49,23 +49,83 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
+    <Compile Include="Objects.fs" />
     <Compile Include="WindowLayout.fs" />
     <Compile Include="Configuration.fs" />
-    <Compile Include="Objects.fs" />
     <Compile Include="Control.fs" />
     <Compile Include="Program.fs" />
+    <None Include="data\Caffeine.pdb" />
+    <None Include="data\Water.pdb" />
+    <Content Include="models\Car.txt" />
+    <Content Include="models\Skull.txt" />
+    <Content Include="resource\log4net.config" />
+    <None Include="shaders\BlinnPhongPS.hlsl" />
+    <None Include="shaders\Common.hlsl" />
+    <None Include="shaders\CommonTess.hlsl" />
+    <None Include="shaders\DepthPS.hlsl" />
+    <None Include="shaders\DiffusePS.hlsl" />
+    <None Include="shaders\PhongPS.hlsl" />
+    <None Include="shaders\SimplePS.hlsl" />
+    <None Include="shaders\TessellateBezier.hlsl" />
+    <None Include="shaders\TessellateParametric.hlsl" />
+    <None Include="shaders\TessellateQuad.hlsl" />
+    <None Include="shaders\TessellateTri.hlsl" />
+    <None Include="shaders\VS.hlsl" />
+    <None Include="textures\color_texture_4s.jpg" />
+    <None Include="textures\ebonykate.jpg" />
+    <None Include="textures\Predator1.jpg" />
+    <None Include="textures\texture_140.jpg" />
+    <Content Include="textures\tree0.bmp" />
+    <Content Include="textures\tree1.bmp" />
+    <Content Include="textures\tree2.bmp" />
+    <None Include="textures\water_drop.jpg" />
+    <None Include="textures\water_texture.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="SharpDX">
+      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj">
+      <Name>ApplicationBase</Name>
+      <Project>{dfb3a484-ce4b-4362-89d2-4601d3e3fd74}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX\DirectX.fsproj">
+      <Name>DirectX</Name>
+      <Project>{51ce72de-f8a6-4319-bc3f-dd2b884c9d4c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Geometry\Geometry.fsproj">
+      <Name>Geometry</Name>
+      <Project>{8568ae4d-3fec-4928-9d60-5ad7db1e7da7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\GPUModel\GPUModel.fsproj">
+      <Name>GPUModel</Name>
+      <Project>{7bd7fdff-268b-4ad9-a4fc-1ea99b4425ba}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Shader\Shader.fsproj">
+      <Name>Shader</Name>
+      <Project>{0a3337a7-1e00-40dc-b732-cd25e7ca682c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
