@@ -87,11 +87,18 @@
     <Reference Include="SharpDX.Desktop">
       <HintPath>..\packages\SharpDX.Desktop.4.2.0\lib\net45\SharpDX.Desktop.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.Direct3D12">
+      <HintPath>..\packages\SharpDX.Direct3D12.4.2.0\lib\net45\SharpDX.Direct3D12.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>..\packages\SharpDX.DXGI.4.2.0\lib\net45\SharpDX.DXGI.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX.Mathematics">
       <HintPath>..\packages\SharpDX.Mathematics.4.2.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
@@ -99,6 +106,11 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EcoBase\Base\Base.fsproj">
+      <Name>Base</Name>
+      <Project>{067099b7-5b0e-4fae-a40f-fc784e59be9c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\DirectX\DirectX.fsproj">
       <Name>DirectX</Name>
       <Project>{51ce72de-f8a6-4319-bc3f-dd2b884c9d4c}</Project>

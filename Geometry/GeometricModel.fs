@@ -16,6 +16,7 @@ open Base.GlobalDefs
 open Base.Framework
 
 open DirectX.MeshObjects
+open DirectX.MathHelper
 
 open VertexSphere
 open VertexCube

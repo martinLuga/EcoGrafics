@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="MathHelper.fs" />
     <Compile Include="VertexDefs.fs" />
     <Compile Include="GraficUtils.fs" />
     <Compile Include="D3DUtilities.fs" />
@@ -104,11 +105,19 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EcoBase\Base\Base.fsproj">
+      <Name>Base</Name>
+      <Project>{067099b7-5b0e-4fae-a40f-fc784e59be9c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

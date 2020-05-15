@@ -44,7 +44,35 @@
   <PropertyGroup Condition=" '$(FSharpTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets') ">
     <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
   <Import Project="$(FSharpTargetsPath)" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Dieses Projekt verweist auf mindestens ein NuGet-Paket, das auf diesem Computer fehlt. Verwenden Sie die Wiederherstellung von NuGet-Paketen, um die fehlenden Dateien herunterzuladen. Weitere Informationen finden Sie unter "http://go.microsoft.com/fwlink/?LinkID=322105". Die fehlende Datei ist "{0}".</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props'))" />
+  </Target>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
@@ -54,6 +82,46 @@
     <Compile Include="GraficTests.fs" />
     <Compile Include="ShaderTests.fs" />
     <Compile Include="WindowLayout.fs" />
+    <Content Include="resource\log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="textures\bricks.dds" />
+    <None Include="textures\bricks_nmap.dds" />
+    <None Include="textures\bricks2.dds" />
+    <None Include="textures\bricks2_nmap.dds" />
+    <None Include="textures\bricks3.dds" />
+    <None Include="textures\checkboard.dds" />
+    <None Include="textures\default_nmap.dds" />
+    <None Include="textures\desertcube1024.dds" />
+    <None Include="textures\grass.dds" />
+    <None Include="textures\grasscube1024.dds" />
+    <None Include="textures\head_diff.dds" />
+    <None Include="textures\head_norm.dds" />
+    <None Include="textures\ice.dds" />
+    <None Include="textures\jacket_diff.dds" />
+    <None Include="textures\jacket_norm.dds" />
+    <None Include="textures\pants_diff.dds" />
+    <None Include="textures\pants_norm.dds" />
+    <None Include="textures\snowcube1024.dds" />
+    <None Include="textures\stone.dds" />
+    <None Include="textures\sunsetcube1024.dds" />
+    <None Include="textures\tile.dds" />
+    <None Include="textures\tile_nmap.dds" />
+    <Content Include="textures\tree0.bmp" />
+    <None Include="textures\tree01S.dds" />
+    <Content Include="textures\tree1.bmp" />
+    <None Include="textures\tree02S.dds" />
+    <Content Include="textures\tree2.bmp" />
+    <None Include="textures\tree35S.dds" />
+    <None Include="textures\treearray.dds" />
+    <None Include="textures\treeArray2.dds" />
+    <None Include="textures\upBody_diff.dds" />
+    <None Include="textures\upbody_norm.dds" />
+    <None Include="textures\water1.dds" />
+    <None Include="textures\white1x1.dds" />
+    <None Include="textures\WireFence.dds" />
+    <None Include="textures\WoodCrate01.dds" />
+    <None Include="textures\WoodCrate02.dds" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -80,12 +148,17 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <ProjectReference Include="..\..\EcoBase\Base\Base.fsproj">
+      <Name>Base</Name>
+      <Project>{067099b7-5b0e-4fae-a40f-fc784e59be9c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj">
       <Name>ApplicationBase</Name>
       <Project>{dfb3a484-ce4b-4362-89d2-4601d3e3fd74}</Project>
@@ -117,13 +190,6 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Dieses Projekt verweist auf mindestens ein NuGet-Paket, das auf diesem Computer fehlt. Verwenden Sie die Wiederherstellung von NuGet-Paketen, um die fehlenden Dateien herunterzuladen. Weitere Informationen finden Sie unter "http://go.microsoft.com/fwlink/?LinkID=322105". Die fehlende Datei ist "{0}".</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

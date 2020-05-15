@@ -31,7 +31,7 @@ module GraficTests =
 
         [<SetUp>]
         member this.Init() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("DirectX12")
             this.logger.Info(" ")
 
@@ -58,7 +58,7 @@ module GraficTests =
 
         [<SetUp>]
         member this.setUp() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("GraficTests")
 
         [<Test>]
@@ -68,6 +68,6 @@ module GraficTests =
 
         [<Test>]
         member this.TestTextureSupport() =  
-            let filename = fileNameInProject "Tests" "Textures" "grass.dds"
+            let filename = fileNameInMap "EcoGrafics" "UnitTests" "Textures" "grass.dds"
             let texRes = CreateTextureFromDDS_2(device, filename) 
             this.logger.Info("Textur gelesen")

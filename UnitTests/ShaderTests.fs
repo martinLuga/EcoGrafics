@@ -34,7 +34,7 @@ module ShaderTests =
 
         [<OneTimeSetUp>]
         member this.setUp() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("NestedDictTests")
             let factory = new Factory4()
             let adapter = factory.Adapters.[0]
@@ -99,7 +99,7 @@ module ShaderTests =
 
         [<OneTimeSetUp>]
         member this.setUpAll() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("PsoStoreTests")
             this.device <- new Device(null, FeatureLevel.Level_11_0)  
             this.pStore <- new PipelineStore(this.device)
@@ -181,7 +181,7 @@ module ShaderTests =
 
         [<OneTimeSetUp>]
         member this.setUpAll() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("PsoProviderTests")
             this.logger.Info("Setup PsoProviderTests\n")
             this.device     <- new Device(null, FeatureLevel.Level_11_0) 

@@ -10,7 +10,7 @@ open log4net
 
 open SharpDX
 
-open Base.MathHelper
+open MathHelper
 
 open GraficUtils
 

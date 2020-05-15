@@ -20,7 +20,19 @@ open Base.Framework
 // ----------------------------------------------------------------------------------------------------
 // SHADER  lesen und compilieren
 // ----------------------------------------------------------------------------------------------------  
-module ShaderCompile =    
+module ShaderCompile = 
+    
+    //
+    // File im Projekt richtig adressieren
+    // 
+    let fileNameInProject project path name = 
+        let sep = "\\" 
+        let upDir = ".." 
+        let thisDirectory = __SOURCE_DIRECTORY__
+        let filePath = thisDirectory + sep + upDir
+        let mapPath = Directory.CreateDirectory(filePath)
+        let filePath = project + sep + path + sep + name
+        Path.Combine(mapPath.FullName, filePath)
 
     let logger = LogManager.GetLogger("ShaderCompile")
     let mutable PRECOMPILED = true
@@ -46,7 +58,9 @@ module ShaderCompile =
         if not PRECOMPILED then
             raise (ShaderError("Not using precompiled shaders " ))
         let (app, dir, file, entry, profile) = fileInfo 
+
         let fileName = fileNameInProject app dir file + "_" + entry + ".cso"
+
         let mutable str:FileStream = null 
         let mutable result:D3DCompiler.ShaderBytecode = null
         try   
