@@ -21,6 +21,8 @@ open ApplicationBase.WindowControl
 
 open DirectX.Camera
 
+open Shader.ShaderSupport
+
 open Molecules.Atome
 open Molecules.MoleculeDraw
 open Molecules
@@ -30,7 +32,7 @@ open BondBuilder
 
 type Texture = Geometry.GeometricModel.Texture
 
-type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomBond | AtomBuilder | Korpus | Icosahedron | GroundPlane | ManyObjects
+type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomBond | AtomBuilder | Korpus | Icosahedron | GroundPlane | ManyObjects | TwoD
 
 // ----------------------------------------------------------------------------
 // Status
@@ -158,6 +160,16 @@ module Common =
                 specular=Color4.White,
                 specularPower=20.0f,
                 emissive=Color.Black.ToColor4()
+            ) 
+
+    let MAT_WHITE = 
+            Material( 
+                name="MAT_WHITE",
+                ambient=Color4(0.2f),
+                diffuse=Color4.White,
+                specular=Color4.White,
+                specularPower=20.0f,
+                emissive=Color4.White
             ) 
 
 module Cube =
@@ -853,6 +865,32 @@ module ManyObjects =
         seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
 
 // ---------------------------------------------------------------------------- 
+// 2D - Objekte
+// Formen, Schrift
+// ---------------------------------------------------------------------------- 
+module TwoD =    
+    open Geometry.GeometricModel2D
+    open Common
+    let getObjects() = 
+        initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
+        let square = 
+            Immoveable(
+                name="square",
+                geometry= Square(
+                    name="Square", 
+                    seitenlaenge=5.0f,
+                    color=Color.White
+                ),
+                surface=Surface(
+                    Common.MAT_BLUE
+                ),
+                color=Color.White,
+                position=Vector3(2.0f, 0.0f, 0.0f)
+            )  
+        [square:>Displayable]
+
+
+// ---------------------------------------------------------------------------- 
 // Displayables by shape
 // ---------------------------------------------------------------------------- 
 module ExampleObjects =
@@ -872,3 +910,4 @@ module ExampleObjects =
         | Shape.GroundPlane -> GroundPlane.getObjects()    // Plane
         | Shape.Icosahedron -> Icosahedron.getObjects()    // Icosahedron
         | Shape.ManyObjects -> ManyObjects.getObjects()    // Test mit vielen Objekten
+        | Shape.TwoD -> TwoD.getObjects()                  // 2D Objekte

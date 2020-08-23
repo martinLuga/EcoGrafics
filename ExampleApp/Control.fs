@@ -67,6 +67,7 @@ module Control =
         let groundPlaneMenuItem = new ToolStripMenuItem("&Plane")
         let icosahedronMenuItem = new ToolStripMenuItem("&Icosahedron")
         let manyObjectsMenuItem = new ToolStripMenuItem("&Many Objects")
+        let twoDMenuItem = new ToolStripMenuItem("&2D")
 
         geometryMenuItem.DropDownItems.Add(cubeMenuItem)|>ignore
         geometryMenuItem.DropDownItems.Add(sphereMenuItem)|>ignore
@@ -81,6 +82,7 @@ module Control =
         geometryMenuItem.DropDownItems.Add(groundPlaneMenuItem)|>ignore
         geometryMenuItem.DropDownItems.Add(icosahedronMenuItem)|>ignore
         geometryMenuItem.DropDownItems.Add(manyObjectsMenuItem)|>ignore
+        geometryMenuItem.DropDownItems.Add(twoDMenuItem)|>ignore
 
         sphereMenuItem.Click.Add(fun _ -> changeShape(Shape.Sphere))
         cubeMenuItem.Click.Add(fun _ -> changeShape(Shape.Cube))
@@ -95,6 +97,7 @@ module Control =
         groundPlaneMenuItem.Click.Add(fun _ -> changeShape(Shape.GroundPlane))
         icosahedronMenuItem.Click.Add(fun _ -> changeShape(Shape.Icosahedron))
         manyObjectsMenuItem.Click.Add(fun _ -> changeShape(Shape.ManyObjects))
+        twoDMenuItem.Click.Add(fun _ -> changeShape(Shape.TwoD))
         geometryMenuItem
 
     let settingMenue =
@@ -118,10 +121,11 @@ module Control =
     // ----------------------------------------------------------------------------------------------------    
     // Inits GUI, GraficSystem
     // ---------------------------------------------------------------------------------------------------- 
-    let Init() =     
-        initShape(Shape.AtomBuilder)   
+    let Init() =   
+        initTesselationFactor (4.0f)
+        initShape(Shape.TwoD)   
         setPixelShader(ShaderClass.LambertPSType) 
-        SetRasterizerState(RasterType.Solid)
+        SetRasterizerState(RasterType.Wired)
         SetBlendState(BlendType.Opaque)
         mainWindow.MainMenuStrip <- mainMenue
         mainWindow.Controls.Add(mainWindow.MainMenuStrip)    

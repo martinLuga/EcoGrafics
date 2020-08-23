@@ -85,6 +85,9 @@ module WindowControl =
     // ----------------------------------------------------------------------------------------------------
     // Tesselation
     // ----------------------------------------------------------------------------------------------------
+    let initTesselationFactor (newTessellationFactor) =
+        tessellationFactor <- newTessellationFactor 
+
     let increaseTesselationFactor() =
         tessellationFactor <- tessellationFactor + DEFAULT_TESSELATION_AMOUNT
         let msg = "Tesselation Factor: " + tessellationFactor.ToString()
