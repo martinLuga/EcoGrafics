@@ -20,7 +20,7 @@ open ApplicationBase.WindowControl
 // ----------------------------------------------------------------------------------------------------
 module Program =
 
-    configureLoggingInMap "GraficEcoSystem" "ExampleApp" "resource" "log4net.config"
+    configureLoggingInMap "EcoGrafics" "ExampleApp" "resource" "log4net.config"
 
     let logger = LogManager.GetLogger("ExampleApp")
 

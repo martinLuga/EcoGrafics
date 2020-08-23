@@ -703,6 +703,7 @@ module GeometricModel =
 
     // ----------------------------------------------------------------------------------------------------
     // Corpus
+    // TODO: center ist zu berechnen als Schwerpunkt des Polygons
     // ----------------------------------------------------------------------------------------------------
     type Corpus(name: string, center: Vector3, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
         inherit Geometric(name, Vector3.Zero, colorTop, PrimitiveTopology.PatchListWith3ControlPoints, DEFAULT_TESSELATION, DEFAULT_RASTER)
@@ -724,13 +725,14 @@ module GeometricModel =
             () // HACK
 
         // Umschließender Quader
+        // TODO: objectPosition berücksichtigen
         override this.Boundaries(objectPosition) = 
-            this.Minimum <- computeMinPosition(this.Contour)
-            this.Maximum <- computeMaxPosition(this.upperContour())
+            this.Minimum <- computeMinPosition(this.Contour) + objectPosition
+            this.Maximum <- computeMaxPosition(this.upperContour()) + objectPosition
             (this.Minimum, this.Maximum)
 
         member this.upperContour() =
-            this.Contour |> Array.map (fun point -> Vector3(point.X, point.Y + height, point.Z))
+            this.Contour |> Array.map (fun point -> Vector3(point.X, point.Y + this.Height, point.Z))
 
         override this.getVertexData(isTransparent) =
             corpusContext this.Center this.Contour this.Height this.ColorBottom this.ColorTop this.ColorSide this.Topology isTransparent
