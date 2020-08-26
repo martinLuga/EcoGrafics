@@ -67,7 +67,6 @@
     <Content Include="packages.config" />
     <Compile Include="DisplayableObject.fs" />
     <Compile Include="MoveableObject.fs" />
-    <Compile Include="SimulationObject.fs" />
     <Compile Include="ShaderConfiguration.fs" />
     <Compile Include="GraficSystem.fs" />
     <Compile Include="WindowLayout.fs" />

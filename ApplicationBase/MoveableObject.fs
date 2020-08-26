@@ -190,6 +190,8 @@ module MoveableObject =
         member this.Motion(time: int64) =  
 
             this.Lifetime <- time
+            
+            logInfo("Move " + this.Name + " at " + time.ToString())
 
             if moveRandom && lifetime%Moveable.RandomInterval = 0L then
                this.updateDirectionRandom()

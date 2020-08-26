@@ -184,6 +184,40 @@ module DisplayableObject =
         member this.getVertexData() =
             this.Geometry.getVertexData(this.isTransparent())
 
+        //
+        // Hilite eines Displayables durch eine transparente Box 
+        //
+        member this.createHilite () = 
+            let color = Color.Yellow
+            let adjust = 1.0f             
+            let adjustVector = Vector3(adjust, adjust, adjust)
+            let (minimum, maximum) = this.Boundaries
+            let laenge = abs(maximum.X - minimum.X)  + adjust
+            let hoehe  = abs(maximum.Y - minimum.Y)  + adjust 
+            let breite = abs(maximum.Z - minimum.Z)  + adjust 
+            let position = minimum - adjustVector
+            let dispName = "HI:" + ":" + this.Name
+            let adobeGeometry = new Quader(dispName, laenge, hoehe, breite, Color.Green) 
+            let adobe = 
+                Displayable(
+                    name=dispName,
+                    geometry=adobeGeometry,                              
+                    surface=Surface(
+                        Material(
+                            name="HILITE-" + dispName,
+                            ambient=Color4(0.2f),
+                            diffuse=Color4.White,
+                            specular=Color4.White,
+                            specularPower=20.0f,
+                            emissive=color.ToColor4()                       // Farbe aus emissive -> Material Buffer
+                        ),
+                        Visibility.Transparent                              // Blendstate Transparent
+                    ),
+                    color=Color.White,                                      // Farbe aus Displayable, unused
+                    start=position
+                )  
+            adobe
+
     // Macht die Klasse Sinn?
     // Vielleicht später. 
     // Rauch, Nebel etc

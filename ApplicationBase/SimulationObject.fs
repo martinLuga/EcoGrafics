@@ -11,12 +11,16 @@ open log4net
 open DisplayableObject
 open MoveableObject
 open Base.GlobalDefs
+open Base.Logging
 
 module SimulationObject =
 
     type TaskStatus = | IDLE = 1 | SCHEDULED = 2 | STAGED = 3 | ACTIVE = 4 | COMPLETED_SUCCESS = 5 | COMPLETED_FAILED = 6 | STOPPED = 7
 
-    let logger = LogManager.GetLogger("Simulations")
+    let logger = LogManager.GetLogger("simulations")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger)
+    let logWarn  = Warn(logger)
 
     // ----------------------------------------------------------------------------------------------------
     // Task: Eine Aufgabe mit einem zu erreichenden Ziel
@@ -52,9 +56,12 @@ module SimulationObject =
         member this.Terminate() = 
             terminateAction()
 
-
+    // ----------------------------------------------------------------------------------------------------
+    // Simulateable: Eine Aufgabe mit einem zu erreichenden Ziel
+    //       enthält mehrere Actions  
+    // ---------------------------------------------------------------------------------------------------- 
     type Simulateable(name, geometry, surface, color, position, direction, speed, moveRandom, energy, capacity) = 
-        inherit  Moveable(name, geometry, surface, color, position, direction, speed, moveRandom ) 
+        inherit Moveable(name, geometry, surface, color, position, direction, speed, moveRandom ) 
 
         static let mutable LOOKAROUNDINTERVAL: int64 = 150L       // Zeit zwischen 2 Lookarounds 
 
@@ -94,11 +101,11 @@ module SimulationObject =
 
         member this.addEnergy(newEnergy:float32) = 
             this.Energy <- this.Energy + newEnergy       
-            logger.Warn(this.Name + " Energy bekommen. Jetzt " +  this.Energy.ToString())
+            logWarn(this.Name + " Energy bekommen. Jetzt " +  this.Energy.ToString())
  
         member this.removeEnergy(energyAmount:float32) = 
             this.Energy <- this.Energy - energyAmount 
-            logger.Warn(this.Name + " " + energyAmount.ToString() + " Energy abgegeben. Jetzt " + this.Energy.ToString())
+            logWarn(this.Name + " " + energyAmount.ToString() + " Energy abgegeben. Jetzt " + this.Energy.ToString())
             if this.Energy <= 0.0f then
                 this.stop()
                 logger.Error(this.Name + " Alle Energy abgegeben. Tot " )
@@ -125,15 +132,15 @@ module SimulationObject =
 
         abstract scheduleTask: Task -> unit
         default this.scheduleTask(task:Task) =         
-            logger.Info("Schedule Task " + task.Description + " for " + this.Name)
+            logInfo("Schedule Task " + task.Description + " for " + this.Name)
 
         abstract stageTask: (unit) -> unit
         default this.stageTask() =          
-            logger.Info("Stage Task must be implemented by subclass"  )
+            logInfo("Stage Task must be implemented by subclass"  )
 
         abstract startTask: (unit) -> unit
         default this.startTask() =  
-            logger.Info("Start Task " + this.Task.Description + " at time: " + this.Lifetime. ToString()) 
+            logInfo("Start Task " + this.Task.Description + " at time: " + this.Lifetime. ToString()) 
             this.Task.Start() 
             this.TaskStatus <- TaskStatus.ACTIVE   
 
@@ -162,29 +169,26 @@ module SimulationObject =
         // ----------------------------------------------------------------------------------------------------
         member this.heartbeat(time: int64) = 
         
-            base.Motion(time)        // Movement
+            base.Motion(time)               // Movement
 
-            if this.Lifetime%Simulateable.LookAroundInterval = 0L then
-                this.lookAround()
+            //if not this.Collides then
+            //    match this.TaskStatus with
 
-            if not this.Collides then
-                match this.TaskStatus with
-
-                | TaskStatus.IDLE ->
-                    this.stageTask()        // Sind Tasks vorhanden, Stage: this.ActiveTask setzen      
+            //    | TaskStatus.IDLE ->
+            //        this.stageTask()        // Sind Tasks vorhanden, Stage: this.ActiveTask setzen      
                 
-                | TaskStatus.STAGED ->      // Start Action ausführen, danach Status = Active
-                    this.startTask()            
+            //    | TaskStatus.STAGED ->      // Start Action ausführen, danach Status = Active
+            //        this.startTask()            
         
-                | TaskStatus.ACTIVE ->      // ExecuteAction wird solange ausgeführt, solange Status = Active
-                    this.executeTask()
+            //    | TaskStatus.ACTIVE ->      // ExecuteAction wird solange ausgeführt, solange Status = Active
+            //        this.executeTask()
 
-                | TaskStatus.COMPLETED_SUCCESS 
-                | TaskStatus.COMPLETED_FAILED ->
-                    this.terminateTask()    // TerminateAction wird ausgeführt
-                    this.purgeTask()
+            //    | TaskStatus.COMPLETED_SUCCESS 
+            //    | TaskStatus.COMPLETED_FAILED ->
+            //        this.terminateTask()    // TerminateAction wird ausgeführt
+            //        this.purgeTask()
 
-                | _ -> logger.Info("Task???" + this.TaskStatus.ToString())
+            //    | _ -> logInfo("Task???" + this.TaskStatus.ToString())
 
         // ----------------------------------------------------------------------------------------------------
         // SIMULATIONOBJCT: doActionWith
