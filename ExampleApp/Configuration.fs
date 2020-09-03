@@ -27,7 +27,7 @@ module Configuration =
         // Window
         MySystem.CreateInstance(graficWindow, [pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ]) 
         
-        MySystem.Instance.LoadTextureFiles("GraficEcoSystem", "ExampleApp", "textures")     
+        MySystem.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")     
 
         // Camera and light
         initLight (new Vector3( -15.0f,  -15.0f,  10.0f), Color.White)     // Nach links hinten nach unten

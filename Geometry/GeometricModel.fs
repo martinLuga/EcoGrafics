@@ -34,6 +34,8 @@ module GeometricModel =
 
     let logger = LogManager.GetLogger("GeometricModel")
 
+    exception GeometryException of string
+
     let approximatelyEqual (a : float32, b: float32) =
         abs(b - a) < 0.5f
 
@@ -131,6 +133,10 @@ module GeometricModel =
             box.Minimum <- fst (this.Boundaries(objectPosition))
             box.Maximum <- snd (this.Boundaries(objectPosition))
             box
+
+        member this.CenterAtPosition(objectPosition) = 
+            this.Center + objectPosition
+
 
     // ----------------------------------------------------------------------------------------------------
     // Kugel
@@ -234,7 +240,7 @@ module GeometricModel =
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
                 PlanePosition.BOTTOM  
             else    
-                PlanePosition.NONE          // Error
+                raise (GeometryException("Plane-Position nicht ermittelt"))          // Error
 
         // QUADER : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
@@ -253,7 +259,7 @@ module GeometricModel =
                 Vector3.UnitY * -1.0f
             | PlanePosition.TOP    -> 
                 Vector3.UnitY
-            | _ -> Vector3.Zero             // Error
+            | _ -> raise (GeometryException("Plane-Position für Normale nicht ermittelt"))           
 
     // ----------------------------------------------------------------------------------------------------
     // Quader
@@ -325,7 +331,7 @@ module GeometricModel =
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
                 PlanePosition.BOTTOM  
             else    
-                PlanePosition.NONE          // Error
+                raise (GeometryException("Plane-Position für Normale nicht ermittelt"))// Error
 
         // Quader : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
@@ -344,7 +350,7 @@ module GeometricModel =
                 Vector3.UnitY * -1.0f
             | PlanePosition.TOP    -> 
                 Vector3.UnitY
-            | _ -> Vector3.Zero             // Error
+            | _ -> raise (GeometryException("Plane-Position für Normale nicht ermittelt")) 
 
     // ----------------------------------------------------------------------------------------------------
     // Cylinder
@@ -448,7 +454,7 @@ module GeometricModel =
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
                 PlanePosition.BOTTOM  
             else    
-                PlanePosition.NONE          // Error
+                raise (GeometryException("Plane-Position für Normale nicht ermittelt"))
 
         // PYRAMIDE : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
@@ -467,7 +473,7 @@ module GeometricModel =
                 Vector3.UnitY * -1.0f
             | PlanePosition.TOP    -> 
                 Vector3.UnitY
-            | _ -> Vector3.Zero             // Error
+            | _ -> raise (GeometryException("Plane-Position für Normale nicht ermittelt"))
 
     // ----------------------------------------------------------------------------------------------------
     // Material
@@ -753,7 +759,7 @@ module GeometricModel =
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
                 PlanePosition.BOTTOM  
             else    
-                PlanePosition.NONE          // Error
+                raise (GeometryException("Plane-Position  nicht ermittelt"))
 
         // Quader : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
@@ -772,7 +778,7 @@ module GeometricModel =
                 Vector3.UnitY * -1.0f
             | PlanePosition.TOP    -> 
                 Vector3.UnitY
-            | _ -> Vector3.Zero             // Error
+            | _ -> raise (GeometryException("Plane-Position für Normale nicht ermittelt"))
 
     // ----------------------------------------------------------------------------------------------------
     // DreiD

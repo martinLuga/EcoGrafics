@@ -56,3 +56,26 @@ module GeometricModel2D =
 
         override this.getVertexData(isTransparent) =
             squareVertices this.Ursprung this.SeitenLaenge this.Color 
+
+    // ----------------------------------------------------------------------------------------------------
+    // Linie
+    // ----------------------------------------------------------------------------------------------------
+    type Line(name:string, von:Vector3, bis:Vector3, color:Color) =
+        inherit Geometric(name, Vector3.Zero, color, PrimitiveTopology.LineStrip, DEFAULT_TESSELATION, DEFAULT_RASTER)
+        let mutable von = von
+        let mutable bis = bis 
+        
+        member this.ColorFront=color 
+
+        override this.Boundaries(objectPosition) = 
+            this.Minimum <- objectPosition + von   
+            this.Maximum <- objectPosition + bis
+            (this.Minimum, this.Maximum)
+
+        override this.Center = bis - von
+
+        override this.resize newSize  = 
+            ()
+
+        override this.getVertexData(isTransparent) =
+            lineVertices von bis this.Color 

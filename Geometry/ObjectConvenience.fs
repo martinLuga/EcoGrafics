@@ -77,7 +77,7 @@ module ObjectConvenience =
         if texturName = "" then            
             new Surface(
                 Material(
-                    name="MAT-" + name,
+                    name="MAT-" + name + color.ToString(),
                     ambient=Color4(0.2f),
                     diffuse=Color4.White,
                     specular=Color4.White,
@@ -95,7 +95,7 @@ module ObjectConvenience =
                     texturName
                 ),
                 Material(
-                    name="MAT-" + name,
+                    name="MAT-" + name + color.ToString(),
                     ambient=Color4(0.2f),
                     diffuse=Color4.White,
                     specular=Color4.White,

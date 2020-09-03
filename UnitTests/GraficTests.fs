@@ -3,14 +3,13 @@
 open log4net
 
 open Base.Logging 
-open Base.Framework 
+open Base.FileSupport
 
 open NUnit.Framework
 
 open SharpDX.DXGI 
 open SharpDX.Direct3D
 open SharpDX.Direct3D12
-open SharpDX.Mathematics.Interop
 
 open DirectX.TextureSupport
 

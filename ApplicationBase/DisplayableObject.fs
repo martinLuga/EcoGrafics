@@ -40,7 +40,8 @@ module DisplayableObject =
 
         abstract member World: Matrix with get 
         default this.World        
-            with get() = world
+            with get() = 
+                Matrix.Translation(position)
 
         abstract member Center: Vector3 with get 
         default this.Center 
@@ -54,7 +55,6 @@ module DisplayableObject =
             with get() = position
             and set (aValue) = 
                 position <- aValue
-                world <- Matrix.Translation(position)
 
         member this.Geometry 
             with get() = geometry
@@ -76,28 +76,25 @@ module DisplayableObject =
             with get() = surface
             and set (aValue) = surface <- aValue
 
- 
-        abstract member isDisjunct: Displayable -> Boolean
-        default this.isDisjunct (someDisplayable:Displayable) =   
-            not (this.hits(someDisplayable))
-
         member this.isTransparent() =
             this.Surface.Visibility = Visibility.Transparent  
-
-        // is far if disjoint
-        member this.isFar(someDisplayable:Displayable) =
-            this.isDisjunct someDisplayable 
 
         // hits if not disjoint
         abstract member hits: Displayable -> Boolean
         default this.hits(other:Displayable) =
             false
 
+        // complete collide in one procecss 
+        abstract member CheckNear: Displayable -> unit
+        default this.CheckNear(other:Displayable) =
+            ()
+
         // hitpoint berechnen
         // Kann zu einem Zeitpunkt nur von einer Seite (links, rechts oder oben, unten .. ) kommen
         // theoretisch auch auf die Kante, aber eher unwahrscheinlich
         // Allgemeinste Implementierung basierend auf dem Mittelpunkt un der BoundingBox 
-        member this.hitPoint(someDisplayable:Displayable) =
+        abstract member hitPoint: Displayable -> Vector3
+        default this.hitPoint(someDisplayable:Displayable) =
             let mutable thisPoint = this.Center 
             let mutable otherbb = someDisplayable.Geometry.BoundingBox(someDisplayable.Position)
             Collision.ClosestPointBoxPoint(&otherbb, &thisPoint)
@@ -106,19 +103,21 @@ module DisplayableObject =
         abstract member isPermeable: unit -> bool
         abstract member isSimulation: unit -> bool
         abstract member isAlive: unit -> bool
+        abstract member isMoving: unit -> bool
         default this.isMoveable() = false
         default this.isPermeable() = false
         default this.isSimulation() = false
-        default this.isAlive() = true
+        default this.isAlive() = false
+        default this.isMoving() = false
 
-        abstract member move : Vector3 -> float32 -> unit  
-        default this.move (newDirection:Vector3) (newSpeed:float32) = ()
+        abstract member MoveDirection : Vector3 -> float32 -> unit  
+        default this.MoveDirection (newDirection:Vector3) (newSpeed:float32) = ()
 
         abstract member stop : unit -> unit  
         default this.stop() = ()
 
-        abstract member informNearTo: Displayable -> unit 
-        default this.informNearTo (another:Displayable) = ()
+        abstract member IsColliding: Displayable -> unit 
+        default this.IsColliding (another:Displayable) = ()
 
         abstract member informFarTo: Displayable -> unit 
         default this.informFarTo (another:Displayable) = ()
@@ -192,9 +191,9 @@ module DisplayableObject =
             let adjust = 1.0f             
             let adjustVector = Vector3(adjust, adjust, adjust)
             let (minimum, maximum) = this.Boundaries
-            let laenge = abs(maximum.X - minimum.X)  + adjust
-            let hoehe  = abs(maximum.Y - minimum.Y)  + adjust 
-            let breite = abs(maximum.Z - minimum.Z)  + adjust 
+            let laenge = abs(maximum.X - minimum.X)  + 2.0f * adjust
+            let hoehe  = abs(maximum.Y - minimum.Y)  + 2.0f * adjust 
+            let breite = abs(maximum.Z - minimum.Z)  + 2.0f * adjust 
             let position = minimum - adjustVector
             let dispName = "HI:" + ":" + this.Name
             let adobeGeometry = new Quader(dispName, laenge, hoehe, breite, Color.Green) 
@@ -203,6 +202,12 @@ module DisplayableObject =
                     name=dispName,
                     geometry=adobeGeometry,                              
                     surface=Surface(
+                        Texture (
+                            "water_texture",
+                            "AntBehaviourApp",
+                            "textures",
+                            "water_texture.jpg"
+                        ),
                         Material(
                             name="HILITE-" + dispName,
                             ambient=Color4(0.2f),
@@ -223,7 +228,5 @@ module DisplayableObject =
     // Rauch, Nebel etc
     type Permeable (name: string, geometry:Geometric, surface:Surface,  color:Color, position: Vector3) =
         inherit Displayable(name, geometry, surface, color, position)
-
-        override this.isDisjunct (someDisplayable:Displayable) = true
 
         override this.isPermeable() = true

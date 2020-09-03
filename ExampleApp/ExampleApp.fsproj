@@ -79,8 +79,12 @@
     <Compile Include="Program.fs" />
     <None Include="data\Caffeine.pdb" />
     <None Include="data\Water.pdb" />
-    <Content Include="models\Car.txt" />
-    <Content Include="models\Skull.txt" />
+    <Content Include="models\Car.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="models\Skull.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="resource\log4net.config" />
     <None Include="shaders\BlinnPhongPS.hlsl" />
     <None Include="shaders\Common.hlsl" />
@@ -94,15 +98,33 @@
     <None Include="shaders\TessellateQuad.hlsl" />
     <None Include="shaders\TessellateTri.hlsl" />
     <None Include="shaders\VS.hlsl" />
-    <None Include="textures\color_texture_4s.jpg" />
-    <None Include="textures\ebonykate.jpg" />
-    <None Include="textures\Predator1.jpg" />
-    <None Include="textures\texture_140.jpg" />
-    <Content Include="textures\tree0.bmp" />
-    <Content Include="textures\tree1.bmp" />
-    <Content Include="textures\tree2.bmp" />
-    <None Include="textures\water_drop.jpg" />
-    <None Include="textures\water_texture.jpg" />
+    <None Include="textures\color_texture_4s.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="textures\ebonykate.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="textures\Predator1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="textures\texture_140.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="textures\tree0.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="textures\tree1.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="textures\tree2.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="textures\water_drop.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="textures\water_texture.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

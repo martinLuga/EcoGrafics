@@ -23,6 +23,7 @@ open SharpDX.Windows
 open SharpDX.Mathematics.Interop
 
 open Base.Framework
+open Base.FileSupport
 open Base.Logging
 
 open Geometry.GeometricModel

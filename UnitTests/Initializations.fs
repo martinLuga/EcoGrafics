@@ -61,7 +61,7 @@ module Initializations =
                 ),
                 position=Vector3(-4.0f, -4.0f, 0.0f),
                 direction=Vector3.UnitY,
-                speed=0.0f,
+                velocity=0.0f,
                 color=Color.Transparent,
                 moveRandom=false
             )    
@@ -86,7 +86,7 @@ module Initializations =
                 ),
                 position=Vector3(4.0f, -4.0f, 0.0f),
                 direction=Vector3.UnitY,
-                speed=0.0f,
+                velocity=0.0f,
                 color=Color.Transparent,
                 moveRandom=false
              )   
@@ -111,7 +111,7 @@ module Initializations =
                 ),
                 position=Vector3(4.0f, 0.0f, 0.0f),
                 direction=Vector3.UnitY,
-                speed=0.0f,
+                velocity=0.0f,
                 color=Color.Transparent,
                 moveRandom=false
                 )    

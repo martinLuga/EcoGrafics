@@ -45,3 +45,16 @@ module Vertex2D =
         let vert = seq{v1;  v2; v3; v4; v1} |> Seq.toArray
         let ind = seq{0;1;2;3;0} |> Seq.toArray
         new MeshData(vert, ind,  PrimitiveTopology.LineStrip)
+
+    // ----------------------------------------------------------------------------------------------------
+    // Linie
+    // In der XY-Ebene 
+    // ----------------------------------------------------------------------------------------------------
+    let lineVertices (ursprung:Vector3) (target:Vector3) (color:Color) = 
+
+        let v1 = createVertex ursprung Vector3.UnitZ color  (new Vector2(0.0f, 0.0f)) true 
+        let v2 = createVertex target Vector3.UnitZ color  (new Vector2(0.0f, 0.0f)) true
+
+        let vert = seq{v1;v2} |> Seq.toArray
+        let ind = seq{0;1} |> Seq.toArray
+        new MeshData(vert, ind,  PrimitiveTopology.LineStrip)

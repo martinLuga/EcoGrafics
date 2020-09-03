@@ -21,8 +21,15 @@ module VertexSphere  =
         raster <- (int newRaster)
         delta  <- IIpi / float32 raster
 
+    // ----------------------------------------------------------------------------------------------------
+    // Vertices 
+    // Berechnung erfolgt nur für den Radius, d.h. Center = Nullpunkt
+    // In der Anwendung orientiert sich ein Objekt immer an der linken unteren Ecke als Ursprung
+    // Deshalb wird immer noch der Vektor Center=(r, r, r) aufaddiert
+    // ----------------------------------------------------------------------------------------------------
     let sphereVertices (color:Color) (radius:float32) isTransparent =
 
+        let center = Vector3(radius, radius, radius)
         let verticalSegments = raster
         let horizontalSegments = raster * 2
         let vertices = Array.create ((verticalSegments + 1) * (horizontalSegments + 1)) (new Vertex())
@@ -48,7 +55,7 @@ module VertexSphere  =
                 dz <- dz * dxz
 
                 let normal = new Vector3(dx, dy, dz)
-                let position = normal * radius
+                let position = normal * radius + center
 
                 // To generate a UV texture coordinate:
                 let textureCoordinate = new Vector2(u, v)

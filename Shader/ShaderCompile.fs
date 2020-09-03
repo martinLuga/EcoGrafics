@@ -15,7 +15,7 @@ open SharpDX.Direct3D12
 open System
 open System.IO
 
-open Base.Framework
+open Base.FileSupport
 
 // ----------------------------------------------------------------------------------------------------
 // SHADER  lesen und compilieren
