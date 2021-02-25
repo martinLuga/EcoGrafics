@@ -22,6 +22,7 @@ module DisplayableObject =
     // Subklassen: 
     //  Moveable, Immoveable 
     // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>] 
     type Displayable(name: string, geometry:Geometric, surface: Surface, color:Color, start:Vector3) = 
         let mutable geometry = geometry
         let mutable surface = surface
