@@ -23,6 +23,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "MoleculeBuild", "..\EcoChem
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Molecule", "..\EcoChemical\Molecule\Molecule.fsproj", "{B1A62963-ED66-4A74-92A8-0E5ADA159E0A}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UnitTests", "UnitTests\UnitTests.fsproj", "{892E69E5-C33A-4B9E-93A7-837316EFF987}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,14 @@ Global
 		{B1A62963-ED66-4A74-92A8-0E5ADA159E0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1A62963-ED66-4A74-92A8-0E5ADA159E0A}.Release|x64.ActiveCfg = Release|x64
 		{B1A62963-ED66-4A74-92A8-0E5ADA159E0A}.Release|x64.Build.0 = Release|x64
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Debug|x64.Build.0 = Debug|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Release|Any CPU.Build.0 = Release|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Release|x64.ActiveCfg = Release|Any CPU
+		{892E69E5-C33A-4B9E-93A7-837316EFF987}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
