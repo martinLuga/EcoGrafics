@@ -123,7 +123,7 @@ module Control =
     // ---------------------------------------------------------------------------------------------------- 
     let Init() =   
         initTesselationFactor (4.0f)
-        initShape(Shape.Sphere)   
+        initShape(Shape.AtomBond)   
         setPixelShader(ShaderClass.LambertPSType) 
         SetRasterizerState(RasterType.Wired)
         SetBlendState(BlendType.Opaque)

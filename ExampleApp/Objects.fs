@@ -1,10 +1,10 @@
 ﻿namespace ExampleApp
-//
-//  Objects.fs
-//
-//  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
-//
+///
+///  Objects.fs
+///
+///  Created by Martin Luga on 08.02.18.
+///  Copyright © 2018 Martin Luga. All rights reserved.
+///
 
 open System.IO
 
@@ -31,23 +31,24 @@ type Texture = Geometry.GeometricModel.Texture
 
 type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomBond | AtomBuilder | Korpus | Icosahedron | GroundPlane | ManyObjects | TwoD
 
-// ----------------------------------------------------------------------------
-// Status
-//      Geometrie               OK  
-//      Größe                   OK
-//      Farben aus Geometrie    OK
-//      Position                OK 
-//      Generelle Farbe = Albedo 
-//      Textur                  OK
-//      Überdeckung             nicht OK
-// ---------------------------------------------------------------------------- 
-// Offen:
-//      1. zZ muss Objektname und Geometryname übereinstimmen.
-//      Trennung nicht überall sauber. ObjectBuffer vs. VertexBuffer
-//
-//      2. Bestimmte Konstellationen in Material führen im SimpleShader zur Nichtanzeige
-//
-// ---------------------------------------------------------------------------- 
+/// <summary> 
+/// Status
+///
+///      Geometrie               OK  
+///      Größe                   OK
+///      Farben aus Geometrie    OK
+///      Position                OK 
+///      Generelle Farbe = Albedo 
+///      Textur                  OK
+///      Überdeckung             nicht OK
+///  
+/// Offen
+///
+///      1. zZ muss Objektname und Geometryname übereinstimmen.
+///         Trennung nicht überall sauber. ObjectBuffer vs. VertexBuffer
+///      2. Bestimmte Konstellationen in Material führen im SimpleShader zur Nichtanzeige
+///
+/// </summary>   
 module Common =
     open Geometry.GeometricModel2D
 
@@ -59,36 +60,36 @@ module Common =
         Würfel(
             "SMALLCUBE", 
             0.5f,
-            Color.Red,          // Front
-            Color.Green,        // Right
-            Color.Blue,         // Back  
-            Color.Cyan,         // Left
-            Color.Yellow,       // Top        
-            Color.Orange        // Bottom            
+            Color.Red,          /// Front
+            Color.Green,        /// Right
+            Color.Blue,         /// Back  
+            Color.Cyan,         /// Left
+            Color.Yellow,       /// Top        
+            Color.Orange        /// Bottom            
         )
 
     let BIG_CUBE = 
         Würfel(
             "BIGCUBE", 
             3.0f,
-            Color.Red,          // Front
-            Color.Green,        // Right
-            Color.Blue,         // Back  
-            Color.Cyan,         // Left
-            Color.Yellow,       // Top        
-            Color.Orange        // Bottom            
+            Color.Red,          /// Front
+            Color.Green,        /// Right
+            Color.Blue,         /// Back  
+            Color.Cyan,         /// Left
+            Color.Yellow,       /// Top        
+            Color.Orange        /// Bottom            
         ) 
 
     let SMALL_CUBE = 
         Würfel(
             "SMALLCUBE", 
             2.0f,
-            Color.Red,          // Front
-            Color.Green,        // Right
-            Color.Blue,         // Back  
-            Color.Cyan,         // Left
-            Color.Yellow,       // Top        
-            Color.Orange        // Bottom            
+            Color.Red,          /// Front
+            Color.Green,        /// Right
+            Color.Blue,         /// Back  
+            Color.Cyan,         /// Left
+            Color.Yellow,       /// Top        
+            Color.Orange        /// Bottom            
         )
     
     let MAT_RED = 
@@ -268,11 +269,11 @@ module Cube =
             ) 
         [cube3:>Displayable; cube22:>Displayable; cube2:>Displayable; cube1:>Displayable]|> List.append AXES
 
-// ----------------------------------------------------------------------------
-// Kugel
-// Achtung: Im Material wird auch hasTexture gespeichert
-// Bei gleichem Material wird diese Eigenschaft übernommen
-// ---------------------------------------------------------------------------- 
+/// <summary> 
+/// Kugel
+///     Achtung: Im Material wird auch hasTexture gespeichert
+///     Bei gleichem Material wird diese Eigenschaft übernommen
+/// </summary>   
 module Sphere = 
     open Common 
     let getObjects() =
@@ -335,9 +336,9 @@ module Sphere =
 
         [sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable] |> List.append AXES
 
-// ----------------------------------------------------------------------------
-// Pyramide
-// ---------------------------------------------------------------------------- 
+/// <summary> 
+/// Pyramide
+/// </summary>   
 module Pyramid =
     open Common
     let getObjects() = 
@@ -428,11 +429,11 @@ module Pyramid =
         ) 
         [pyramid1:>Displayable; pyramid2:>Displayable; pyramid3:>Displayable]|> List.append AXES
 
-// ----------------------------------------------------------------------------
-// Quader
-// Achtung. 2 verschiedene Materials dürfen nicht den gleichen Namen haben
-//          wegen Texture
-// ---------------------------------------------------------------------------- 
+/// <summary> 
+/// Quader
+/// Achtung. 2 verschiedene Materials dürfen nicht den gleichen Namen haben
+///          wegen Texture
+/// </summary>   
 module Adobe =
     open Common
     let getObjects() =
@@ -522,12 +523,9 @@ module Adobe =
 
         [adobe1:>Displayable; adobe2:>Displayable;adobe3:>Displayable]|> List.append AXES
 
-// ----------------------------------------------------------------------------
-// Zwei Cylinder
-// Diverse Probleme bei der Anzeige
-//  1. Geometry steht auf dem Kopf
-//  2. Textur
-// ---------------------------------------------------------------------------- 
+/// <summary> 
+/// Drei Cylinder
+/// </summary>   
 module Cylinder =
     open Common
     let getObjects() =
@@ -561,10 +559,9 @@ module Cylinder =
             )    
         [cylinder1:>Displayable; cylinder2:>Displayable;  cylinder3:>Displayable]|> List.append AXES
 
-// ----------------------------------------------------------------------------
-// Skull
-// Objekte bestehend aus einer Punktmenge
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Objekte definiert durch eine Menge von vertexes. Hier ein Schädel
+/// </summary>  
 module SkullContour =
     open Common
     let getObjects() =
@@ -608,6 +605,9 @@ module SkullContour =
 
         [skull1:>Displayable; skull2:>Displayable]|> List.append AXES
 
+/// <summary>  
+/// Objekte definiert durch eine Menge von Vertexes. Hier ein Auto
+/// </summary> 
 module CarContour =
     open Common
     let getObjects() =
@@ -632,91 +632,86 @@ module CarContour =
  
         [car1:>Displayable]|> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Zwei Atome mit einem Bond
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// 4 Atome mit einem Bond
+/// </summary>   
 module AtomWithBond =
     open Common
     let getObjects() =
         GeometricModel.setCylinderRaster (Raster.Grob) 
-        initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
+        initCamera(Vector3( 0.0f, 5.0f, -10.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
 
-        let position1 = Vector3(-2.0f,  0.0f,  0.0f)
-        let position2 = Vector3( 0.0f,  1.5f,  0.0f)
-        let position3 = Vector3( 3.0f,  0.0f,  3.0f)
-        let position4 = Vector3( 0.0f, -3.0f,  0.0f)
-        let position5 = Vector3( 3.0f,  0.0f,  3.0f)
-        let position6 = Vector3( 3.0f,  0.0f,  3.0f)
-
-        let atom1 = 
+        let wasserstoff = 
             new Atom(
-                position=position1,
+                position=Vector3(-2.0f,  0.0f,  0.0f),
                 label="O",
                 serial=1 
                 )        
 
-        let atom2 = 
+        let kohlenstoff = 
             new Atom(
-                position=position2,
+                position=Vector3( 0.0f,  0.0f,  3.0f),
                 label="C",
                 serial=2
                 )        
 
-        let atom3 = 
+        let magnesium = 
             new Atom(
-                position=position3,
+                position=Vector3( 3.0f,  0.0f,  3.0f),
                 label="MG",
                 serial=3
                 )    
                 
-        let atom4 = 
+        let natrium = 
             new Atom(
-                position=position4,
+                position=Vector3( 0.0f, -3.0f,  0.0f),
                 label="NA",
                 serial=4
                 )  
 
         let bond12 =
             new Bond(
-                atom1,
-                atom2,
+                wasserstoff,
+                kohlenstoff,
                 BondType.Singlebond
                 )
 
         let bond21 =
             new Bond(
-                atom1,
-                atom2,
+                wasserstoff,
+                kohlenstoff,
                 BondType.Singlebond
                 )
 
         let bond13 =
             new Bond(
-                atom1,
-                atom3,
+                wasserstoff,
+                magnesium,
                 BondType.Singlebond
                 )
 
         let bond34 =
             new Bond(
-                atom3,
-                atom4,
+                magnesium,
+                natrium,
                 BondType.Singlebond
                 )
                 
         let bond43 =
             new Bond(
-                atom3,
-                atom4,
+                magnesium,
+                natrium,
                 BondType.Singlebond
                 )
-        let atoms =  [atom1; atom2; atom3; atom4] 
+        let atoms =  [wasserstoff; kohlenstoff] 
+        // let atoms =  [wasserstoff; kohlenstoff; magnesium; natrium] 
         let atomList = atoms |> Seq.ofList
         let atome = atomList |> ResizeArray
 
         let bondBuilder = new BondBuilder(atome)
 
-        let bonds =  [bond12; bond21; bond13; bond34; bond43]
+        let bonds =  [bond12]
+        //let bonds =  [bond12; bond21; bond13; bond34; bond43]
 
         let shrinkBonds = bondBuilder.Shrink(bonds)
         let bonds2 = shrinkBonds.ToArray() |> List.ofArray
@@ -730,11 +725,11 @@ module AtomWithBond =
         //let displayables = [atom1:>Displayable; atom2:>Displayable; atom3:>Displayable; atom4:>Displayable; bond12:>Displayable; bond21:>Displayable; bond13:>Displayable; bond34:>Displayable; bond43:>Displayable]
         displayables|> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// AtomBuilder Test
-// Test der Darstellung  eines transparenten Kastens um ein Residuum
-// Simple PixelShader weil die Farbe im Vertex beeinflusst werden soll
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// AtomBuilder Test
+/// Test der Darstellung  eines transparenten Kastens um ein Residuum
+/// Simple PixelShader weil die Farbe im Vertex beeinflusst werden soll
+/// </summary>   
 module AtomBuilder =
     open Common
     let getObjects() =
@@ -765,16 +760,16 @@ module AtomBuilder =
         let displayables = residuum.getDisplayables() |> List.append([hilite]) |> List.rev
         displayables|> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Korpus test
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Korpus test
+/// </summary>   
 module Korpus =
     open Common
     let getObjects() =
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
 
 
-        // Im Uhrteigersinn unten
+        /// Im Uhrteigersinn unten
         let CONTOUR =
             [|Vector3( 0.0f, 0.0f, -5.0f);
               Vector3( 1.0f, 0.0f, -5.0f);
@@ -829,9 +824,9 @@ module Korpus =
             )  
         [plate1:>Displayable; plate2:>Displayable]|> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Tesselated objects test
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Tesselated objects test
+/// </summary>   
 module GroundPlane =
     open Common
     let getObjects() =
@@ -860,9 +855,9 @@ module GroundPlane =
             ) 
         [ground:>Displayable] |> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Tesselated objects test
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Tesselation Test. Zwei Ikosaeder, einer transparent, der andere opak.
+/// </summary>   
 module Icosahedron =
     open Common
     let getObjects() =
@@ -898,9 +893,9 @@ module Icosahedron =
             ) 
         [icosahedron1:>Displayable; icosahedron2:>Displayable]|> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Many objects test
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Many objects test
+/// </summary>   
 module ManyObjects =
 
     let START_POS = Vector3(-15.0f, 0.0f, 0.0f)
@@ -921,10 +916,9 @@ module ManyObjects =
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
 
-// ---------------------------------------------------------------------------- 
-// 2D - Objekte
-// Formen, Schrift
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// 2D - Objekte, z.B. Formen, Schrift (in Entwicklung)
+/// </summary>   
 module TwoD =    
     open Geometry.GeometricModel2D
     open Common
@@ -946,24 +940,25 @@ module TwoD =
             )  
         [square:>Displayable; xAxis:>Displayable; yAxis:>Displayable] |> List.append AXES
 
-// ---------------------------------------------------------------------------- 
-// Displayables by shape
-// ---------------------------------------------------------------------------- 
+/// <summary>  
+/// Auswahl der Beispiele
+/// <param name="ishape">Anzuzeigende Form</param>
+/// </summary>   
 module ExampleObjects =
 
     let getDisplayables (ishape:Shape) = 
         match ishape with
-        | Shape.Cube -> Cube.getObjects()                  // Cube Objekte
-        | Shape.Sphere  -> Sphere.getObjects()             // Sphere Objekte
-        | Shape.Adobe -> Adobe.getObjects()                // Adobe Objekte
-        | Shape.Pyramid -> Pyramid.getObjects()            // Pyramide Objekte
-        | Shape.Cylinder -> Cylinder.getObjects()          // Cylinder Objekte
-        | Shape.Skull -> SkullContour.getObjects()         // Datei Objekte
-        | Shape.Car -> CarContour.getObjects()             // Datei Objekte
-        | Shape.AtomBond -> AtomWithBond.getObjects()      // Atom  Objekte
-        | Shape.AtomBuilder -> AtomBuilder.getObjects()    // Atom  Objekte
-        | Shape.Korpus -> Korpus.getObjects()              // Korpus Objekte
-        | Shape.GroundPlane -> GroundPlane.getObjects()    // Plane
-        | Shape.Icosahedron -> Icosahedron.getObjects()    // Icosahedron
-        | Shape.ManyObjects -> ManyObjects.getObjects()    // Test mit vielen Objekten
-        | Shape.TwoD -> TwoD.getObjects()                  // 2D Objekte
+        | Shape.Cube -> Cube.getObjects()                  /// Cube Objekte
+        | Shape.Sphere  -> Sphere.getObjects()             /// Sphere Objekte
+        | Shape.Adobe -> Adobe.getObjects()                /// Adobe Objekte
+        | Shape.Pyramid -> Pyramid.getObjects()            /// Pyramide Objekte
+        | Shape.Cylinder -> Cylinder.getObjects()          /// Cylinder Objekte
+        | Shape.Skull -> SkullContour.getObjects()         /// Datei Objekte
+        | Shape.Car -> CarContour.getObjects()             /// Datei Objekte
+        | Shape.AtomBond -> AtomWithBond.getObjects()      /// Atom  Objekte
+        | Shape.AtomBuilder -> AtomBuilder.getObjects()    /// Atom  Objekte
+        | Shape.Korpus -> Korpus.getObjects()              /// Korpus Objekte
+        | Shape.GroundPlane -> GroundPlane.getObjects()    /// Plane
+        | Shape.Icosahedron -> Icosahedron.getObjects()    /// Icosahedron
+        | Shape.ManyObjects -> ManyObjects.getObjects()    /// Test mit vielen Objekten
+        | Shape.TwoD -> TwoD.getObjects()                  /// 2D Objekte
