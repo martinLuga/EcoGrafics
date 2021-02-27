@@ -21,14 +21,11 @@ open ApplicationBase.WindowControl
 
 open DirectX.Camera
 
-open Shader.ShaderSupport
-
 open Molecules.Atome
-open Molecules.MoleculeDraw
-open Molecules
-open Molekül
+open MoleculeDrawing.MoleculeDraw
+open MoleculeBuild
 
-open BondBuilder
+open MoleculeBuild.BondBuilder
 
 type Texture = Geometry.GeometricModel.Texture
 
@@ -905,7 +902,6 @@ module Icosahedron =
 // Many objects test
 // ---------------------------------------------------------------------------- 
 module ManyObjects =
-    open Common
 
     let START_POS = Vector3(-15.0f, 0.0f, 0.0f)
 

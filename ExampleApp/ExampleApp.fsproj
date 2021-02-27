@@ -156,14 +156,24 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DNAandProteins\Molecule\Molecule.fsproj">
-      <Name>Molecule</Name>
-      <Project>{b1a62963-ed66-4a74-92a8-0e5ada159e0a}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\EcoBase\Base\Base.fsproj">
       <Name>Base</Name>
       <Project>{067099b7-5b0e-4fae-a40f-fc784e59be9c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EcoChemical\MoleculeBuild\MoleculeBuild.fsproj">
+      <Name>MoleculeBuild</Name>
+      <Project>{392b03a9-1bb7-439b-9047-1b2286e06774}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EcoChemical\MoleculeDrawing\MoleculeDrawing.fsproj">
+      <Name>MoleculeDrawing</Name>
+      <Project>{25b7188c-cc49-45d4-8251-ae3aae040a35}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EcoChemical\Molecule\Molecule.fsproj">
+      <Name>Molecule</Name>
+      <Project>{b1a62963-ed66-4a74-92a8-0e5ada159e0a}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj">

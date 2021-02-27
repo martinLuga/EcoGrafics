@@ -18,7 +18,7 @@ open DirectX.Assets
 
 open GPUModel.MyGraphicWindow
 
-open Molecules.MoleculeDraw
+open MoleculeDrawing.MoleculeDraw
 
 open Shader.ShaderSupport
 
