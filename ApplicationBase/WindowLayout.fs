@@ -89,6 +89,7 @@ module WindowLayout =
     // ----------------------------------------------------------------------------------------------------
     let Setup(windowText) =
         graficWindow.Boundery <- boundsMiddle()
+        graficWindow.SetBackColor Color.Black
         setControlBounds(outputWindow, boundsRight())   
         setControlBounds(mainWindow, boundsMain())
         setControlBounds(messageWindow, boundsBottom()) 

@@ -38,8 +38,6 @@ open MyGPUInfrastructure
 // ----------------------------------------------------------------------------------------------------
 module MyGPU = 
 
-    let mutable clearColor:RawColor4 = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f) 
-
     let TEXTUREWIDTH = 256; 
     let TEXTUREHEIGHT = 256 
     let TEXTUREPIXELSIZE = 4    // The number of bytes used to represent a pixel in the texture.
@@ -68,7 +66,8 @@ module MyGPU =
         let mutable viewport = new RawViewportF()
         let mutable scissorRectangels:RawRectangle[] = Array.create 1 (new RawRectangle())
         let mutable clientWidth  = 1100 
-        let mutable clientHeight = 850 
+        let mutable clientHeight = 850       
+        let mutable clearColor:RawColor4 = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f) 
 
         // Shader 
         let mutable CurrentPipelineConfigurationName="Basic"
@@ -128,6 +127,10 @@ module MyGPU =
         // Member
         member this.AspectRatio =
             (float) clientWidth / (float) clientHeight
+
+        member this.ClearColor
+            with get() = clearColor
+            and set(value) = clearColor <- value 
 
         member this.Device
             with get() = device
@@ -199,7 +202,8 @@ module MyGPU =
 
             clientWidth     <- form.ClientSize.Width  
             clientHeight    <- form.ClientSize.Height 
-            clearColor      <- ToRawColor4(Color.Black) 
+
+            clearColor      <- ToRawColor4FromDrawingColor(form.BackColor)
             
             let vp          =  new ViewportF(0.0f,  0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f) 
             viewport        <- ToRawViewport(vp)
@@ -301,87 +305,96 @@ module MyGPU =
         // 
         // Update  
         // 
-        member this.StartUpdate() =
-            currentFrameResourceIndex <- (currentFrameResourceIndex + 1) % NUMFRAMERESOURCES // Cycle through the circular frame resource array.
-            coordinator.WaitForGPU(this.CurrFrameResource.FenceValue, this.CurrentFenceEvent)
+        member this.StartUpdate() =            
+            if frameResources.Count > 0 then
+                currentFrameResourceIndex <- (currentFrameResourceIndex + 1) % NUMFRAMERESOURCES // Cycle through the circular frame resource array.
+                coordinator.WaitForGPU(this.CurrFrameResource.FenceValue, this.CurrentFenceEvent)
 
-        member this.UpdateObject(i, bytes) =
-            this.CurrFrameResource.ObjectCB.CopyData(i, bytes)
+        member this.UpdateObject(i, bytes) =            
+            if frameResources.Count > 0 then
+                this.CurrFrameResource.ObjectCB.CopyData(i, bytes)
             
-        member this.UpdateMaterial(i, bytes) =
-            this.CurrFrameResource.MaterialCB.CopyData(i, bytes)
+        member this.UpdateMaterial(i, bytes) =            
+            if frameResources.Count > 0 then
+                this.CurrFrameResource.MaterialCB.CopyData(i, bytes)
             
-        member this.UpdateFrame(bytes) =
-            this.CurrFrameResource.FrameCB.CopyData(0, bytes)
+        member this.UpdateFrame(bytes) =            
+            if frameResources.Count > 0 then
+                this.CurrFrameResource.FrameCB.CopyData(0, bytes)
 
         // 
         // Draw
         // 
         member this.StartDraw() = 
+            if frameResources.Count > 0 then
             
-            this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetPipelineState()
-            this.CurrFrameResource.Recorder.StartRecording()
+                this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetPipelineState()
+                this.CurrFrameResource.Recorder.StartRecording()
 
-            let commandList = this.CurrFrameResource.Recorder.CommandList
+                let commandList = this.CurrFrameResource.Recorder.CommandList
 
-            commandList.SetGraphicsRootSignature(pipelineProvider.RootSignature)
-            commandList.SetViewport(viewport) 
-            commandList.SetScissorRectangles(scissorRectangels)
-            commandList.ResourceBarrierTransition(this.CurrentBackBuffer, ResourceStates.Present, ResourceStates.RenderTarget) // back buffer used as render target 
+                commandList.SetGraphicsRootSignature(pipelineProvider.RootSignature)
+                commandList.SetViewport(viewport) 
+                commandList.SetScissorRectangles(scissorRectangels)
+                commandList.ResourceBarrierTransition(this.CurrentBackBuffer, ResourceStates.Present, ResourceStates.RenderTarget) // back buffer used as render target 
             
-            commandList.ClearRenderTargetView(this.CurrentBackBufferView, clearColor) 
-            commandList.ClearDepthStencilView(this.DepthStencilView, ClearFlags.FlagsDepth ||| ClearFlags.FlagsStencil, 1.0f, 0uy)
+                commandList.ClearRenderTargetView(this.CurrentBackBufferView, clearColor) 
+                commandList.ClearDepthStencilView(this.DepthStencilView, ClearFlags.FlagsDepth ||| ClearFlags.FlagsStencil, 1.0f, 0uy)
  
-            commandList.SetRenderTargets(Nullable this.CurrentBackBufferView, Nullable this.DepthStencilView)
-            commandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps)
+                commandList.SetRenderTargets(Nullable this.CurrentBackBufferView, Nullable this.DepthStencilView)
+                commandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps)
 
-            // Frame Daten
-            rootFrameParmIdx <- 2
-            commandList.SetGraphicsRootConstantBufferView(rootFrameParmIdx, this.CurrFrameResource.FrameCB.ElementAdress(0)) 
+                // Frame Daten
+                rootFrameParmIdx <- 2
+                commandList.SetGraphicsRootConstantBufferView(rootFrameParmIdx, this.CurrFrameResource.FrameCB.ElementAdress(0)) 
 
         //
         // Achtung: vor DrawPerObject werden Rootsignature und Pipelinestate entsprechen displayable gesetzt
         //
         member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, textureName:string) =
-
-            this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetPipelineState()         
-            let commandList = this.CurrFrameResource.Recorder.CommandList 
-
-            // Objekt Geometrie
-            commandList.SetVertexBuffer(0, geometryWrapper.getVertexBuffer(geometryName))
-            commandList.SetIndexBuffer(Nullable (geometryWrapper.getIndexBuffer(geometryName)))
-            commandList.PrimitiveTopology <- topology
-
-            // Objekt Daten 
-            rootObjectParmIdx <- 1
-            commandList.SetGraphicsRootConstantBufferView(rootObjectParmIdx, this.CurrFrameResource.ObjectCB.ElementAdress(objectIdx))
-
-            // Material per object
-            rootMaterialParmIdx <- 3
-            commandList.SetGraphicsRootConstantBufferView(rootMaterialParmIdx, this.CurrFrameResource.MaterialCB.ElementAdress(materialIdx)) 
-
-            // Texture per Objekt
-            if textureName <> "" then  
-                let textureIdx = textures.Item(textureName)
-                commandList.SetGraphicsRootDescriptorTable(0, textureHeapWrapper.GetGpuHandle(textureIdx)) 
             
-            commandList.DrawIndexedInstanced(geometryWrapper.getIndexCount(geometryName), 1, 0, 0, 0) 
+            if frameResources.Count > 0 then
+
+                this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetPipelineState()         
+                let commandList = this.CurrFrameResource.Recorder.CommandList 
+
+                // Objekt Geometrie
+                commandList.SetVertexBuffer(0, geometryWrapper.getVertexBuffer(geometryName))
+                commandList.SetIndexBuffer(Nullable (geometryWrapper.getIndexBuffer(geometryName)))
+                commandList.PrimitiveTopology <- topology
+
+                // Objekt Daten 
+                rootObjectParmIdx <- 1
+                commandList.SetGraphicsRootConstantBufferView(rootObjectParmIdx, this.CurrFrameResource.ObjectCB.ElementAdress(objectIdx))
+
+                // Material per object
+                rootMaterialParmIdx <- 3
+                commandList.SetGraphicsRootConstantBufferView(rootMaterialParmIdx, this.CurrFrameResource.MaterialCB.ElementAdress(materialIdx)) 
+
+                // Texture per Objekt
+                if textureName <> "" then  
+                    let textureIdx = textures.Item(textureName)
+                    commandList.SetGraphicsRootDescriptorTable(0, textureHeapWrapper.GetGpuHandle(textureIdx)) 
+            
+                commandList.DrawIndexedInstanced(geometryWrapper.getIndexCount(geometryName), 1, 0, 0, 0) 
 
         member this.EndDraw() =
-            let recorder = this.CurrFrameResource.Recorder
-            let commandList = recorder.CommandList
-
-            commandList.ResourceBarrierTransition(this.CurrentBackBuffer, ResourceStates.RenderTarget, ResourceStates.Present) // back buffer used to present            
             
-            recorder.StopRecording()
-            recorder.Play()
-            
-            swapChain.Present(0, PresentFlags.None) |> ignore 
+            if frameResources.Count > 0 then
+                let recorder = this.CurrFrameResource.Recorder
+                let commandList = recorder.CommandList
 
-            coordinator.AdvanceCPU()
-            this.CurrFrameResource.FenceValue <- coordinator.CpuFenceValue
-            coordinator.AdvanceGPU()
-            //Debug.Print("MYGPU INFO: End Draw\n")
+                commandList.ResourceBarrierTransition(this.CurrentBackBuffer, ResourceStates.RenderTarget, ResourceStates.Present) // back buffer used to present            
+            
+                recorder.StopRecording()
+                recorder.Play()
+            
+                swapChain.Present(0, PresentFlags.None) |> ignore 
+
+                coordinator.AdvanceCPU()
+                this.CurrFrameResource.FenceValue <- coordinator.CpuFenceValue
+                coordinator.AdvanceGPU()
+                //Debug.Print("MYGPU INFO: End Draw\n")
 
         // ----------------------------------------------------------------------------------------------------
         // Size

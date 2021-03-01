@@ -39,6 +39,9 @@ module DisplayableObject =
         abstract member Copy:unit -> Displayable  
         default this.Copy () = this
 
+        abstract member DeepCopy:unit -> Displayable
+        default this.DeepCopy () =  this.MemberwiseClone():?> Displayable 
+
         abstract member World: Matrix with get 
         default this.World        
             with get() = 

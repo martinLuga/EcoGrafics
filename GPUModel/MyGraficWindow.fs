@@ -8,7 +8,10 @@
 
 open System
 open System.Windows.Forms
-open System.Drawing
+
+open SharpDX
+
+open DirectX.GraficUtils
 
 open MyGPU
   
@@ -36,6 +39,10 @@ module MyGraphicWindow =
 
         member this.Renderer 
             with get () = MyGPU.Instance
+
+        member this.SetBackColor (aColor) =  
+            this.BackColor <- aColor
+            this.Renderer.ClearColor <- ToRawColor4FromDrawingColor(aColor)
 
         override this.OnPaint(e:PaintEventArgs ) = 
            //  this.Renderer.Render() 

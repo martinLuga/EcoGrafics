@@ -6,6 +6,8 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
+open System.Drawing
+
 open SharpDX
 open SharpDX.Direct3D12
 open SharpDX.DXGI
@@ -43,6 +45,13 @@ module GraficUtils =
         let GREEN = c4.Green
         let BLUE = c4.Blue
         let ALPHA = c4.Alpha
+        new RawColor4(RED, GREEN, BLUE, ALPHA)
+
+    let ToRawColor4FromDrawingColor(color:System.Drawing.Color) = 
+        let RED  = (float32)color.R
+        let GREEN = (float32)color.G
+        let BLUE = (float32)color.B
+        let ALPHA = (float32)color.A
         new RawColor4(RED, GREEN, BLUE, ALPHA)
 
     let ToRawViewport(viewport:ViewportF) = 
