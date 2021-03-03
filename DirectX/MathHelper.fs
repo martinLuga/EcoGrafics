@@ -51,7 +51,7 @@ module MathHelper =
         /// Builds a matrix that can be used to reflect vectors about a plane.
         /// </summary>
         /// <param name="plane">The plane for which the reflection occurs. This parameter is assumed to be normalized.</param>
-        /// <param name="result">When the method completes, contains the reflection matrix.</param>
+        /// <result>When the method completes, contains the reflection matrix.</result>
         static member _Reflection(plane:Plane) = 
             let mutable result = new Matrix() 
             let num1 = plane.Normal.X
@@ -92,7 +92,7 @@ module MathHelper =
         /// <param name="light">The light direction. If the W component is 0, the light is directional light if the
         /// W component is 1, the light is a point light.</param>
         /// <param name="plane">The plane onto which to project the geometry as a shadow. This parameter is assumed to be normalized.</param>
-        /// <param name="result">When the method completes, contains the shadow matrix.</param>
+        /// <result>When the method completes, contains the shadow matrix.</result>
         static member Shadow(light:Vector4, plane:Plane) =
             let mutable result = new Matrix()  
             let num1 =  plane.Normal.X * light.X + plane.Normal.Y * light.Y + plane.Normal.Z * light.Z +  plane.D *  light.W 

@@ -942,7 +942,6 @@ module TwoD =
 
 /// <summary>  
 /// Auswahl der Beispiele
-/// <param name="ishape">Anzuzeigende Form</param>
 /// </summary>   
 module ExampleObjects =
 

@@ -201,6 +201,11 @@
       <Project>{0a3337a7-1e00-40dc-b732-cd25e7ca682c}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Simulation\Simulation.fsproj">
+      <Name>Simulation</Name>
+      <Project>{2ab12b6c-af4a-4e1d-87de-1c3c114882a7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

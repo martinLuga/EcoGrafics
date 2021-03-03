@@ -150,7 +150,7 @@ module MoveableObject =
         //              : default: Reflektieren
         // ----------------------------------------------------------------------------------------------------
         override this.CheckNear(other:Displayable) =
-            logWarn(this.Name + " CheckNear waiting: " + other.Name)
+            logDebug(this.Name + " CheckNear waiting: " + other.Name)
             lock this.Mutex (fun () ->
                 collisionState <- this.Geometry.intersects this.Position other.Geometry other.Position
                 let distance = Vector3.Distance(this.Position, collisionState.closest)
@@ -160,26 +160,26 @@ module MoveableObject =
                 else   
                     this.informFarTo(other)
             )  
-            logWarn(this.Name + " CheckNear done: " + other.Name)   
+            logDebug(this.Name + " CheckNear done: " + other.Name)   
 
         override this.hits(other:Displayable) =
             let state = this.Geometry.intersects this.Position other.Geometry other.Position
             if state.collides then                
-                logInfo(this.Name + " <<<HITS>>> " + other.Name + " at " + formatVector(collisionState.closest))
+                logDebug(this.Name + " <<<HITS>>> " + other.Name + " at " + formatVector(collisionState.closest))
             state.collides
 
         override this.IsColliding (other:Displayable) =
             if this.InCollision = false then
-                logInfo(this.ToString() + " --- Collision Start " + other.Name + " at " + formatVector(collisionState.closest))
+                logDebug(this.ToString() + " --- Collision Start " + other.Name + " at " + formatVector(collisionState.closest))
                 this.InCollision <- true
                 this.CollidesWith <- other    
                 this.doActionWith(other)
             else
                 if this.CollidesWith = other then 
-                    logInfo(this.ToString() + " --- Still Colliding with " + other.Name)
+                    logDebug(this.ToString() + " --- Still Colliding with " + other.Name)
                     ()
                 else 
-                    logWarn(this.Name + " --- Collision with other " + other.Name + " !!!")
+                    logDebug(this.Name + " --- Collision with other " + other.Name + " !!!")
                     
             logInfo(this.ToString() + " --- Collision with " + other.Name + " ended")
             this.ResetCollision() // HACK
@@ -280,7 +280,7 @@ module MoveableObject =
         // ----------------------------------------------------------------------------------------------------
         member this.Move(time: int64) = 
             
-            logInfo(this.Name + " - Move Waiting ... ")
+            logDebug(this.Name + " - Move Waiting ... ")
             lock this.Mutex (fun () ->
 
                 this.Lifetime <- time

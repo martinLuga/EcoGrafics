@@ -22,10 +22,10 @@ module WindowLayout =
     let mutable mainTitle  = "NO TITLE SET"
     let mutable mainWindow = new Form()
 
-    let mutable menueHeight  = 25
+    let mutable menueHeight  =   25
     let mutable leftWidth    =  200
-    let mutable appHeight    =  850
-    let mutable middleWidth  = 1100
+    let mutable appHeight    = 1000
+    let mutable middleWidth  = 1500
     let mutable rightWidth   =  200
     let mutable bottomHeight =   30
 
