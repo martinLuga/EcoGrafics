@@ -8,7 +8,6 @@
 
 open System.Collections.Generic
 open System.Threading
-open System.Threading.Tasks
 
 open log4net
 open SharpDX
@@ -20,6 +19,7 @@ open ApplicationBase.MoveableObject
 
 open Geometry.GeometricModel
 open Geometry.ObjectConvenience
+open Geometry.GeometryUtils
 
 open WeltObjects
 
@@ -51,23 +51,34 @@ module WeltModul =
         let mutable zMIN= -20.0f
         let mutable zMAX=  20.0f
 
+        static member Instance
+            with get() = 
+                if instance = null then
+                    instance <- new Welt()
+                instance
+            and set(value) = instance <- value
+
         member this.Initialize(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int) = 
+            let (MIN, MAX) = toBoundary(ursprung, laenge, malX, malY, malZ)
             weltUrsprung <- ursprung
             umgebungsLaenge <- laenge 
             einheitenX <- malX
             einheitenY <- malY
             einheitenZ <- malZ
-            xMIN <- ursprung.X
-            xMAX <- ursprung.X + (float32) malX * umgebungsLaenge
-            yMIN <- ursprung.Y
-            yMAX <- ursprung.Y + (float32) malY * umgebungsLaenge
-            zMIN <- ursprung.Z
-            zMAX <- ursprung.Z + (float32) malZ * umgebungsLaenge
+            xMIN <- MIN.X
+            xMAX <- MAX.X
+            yMIN <- MIN.Y
+            yMAX <- MAX.Y
+            zMIN <- MIN.Z
+            zMAX <- MAX.Z
             this.createUmgebungen() 
 
-        member this.InitFromPoints(xmin, xmax, ymin, ymax, zmin, zmax) = 
+        member this.InitFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) = 
             weltUrsprung <- Vector3(xmin, ymin, zmin)
-            umgebungsLaenge <- (xmax-xmin)/4.0f
+            umgebungsLaenge <- laenge 
+            einheitenX <- (int)((xmax-xmin)/umgebungsLaenge) 
+            einheitenY <- (int)((ymax-ymin)/umgebungsLaenge) 
+            einheitenZ <- (int)((zmax-zmin)/umgebungsLaenge) 
             xMIN <- xmin
             xMAX <- xmax
             yMIN <- ymin
@@ -75,13 +86,6 @@ module WeltModul =
             zMIN <- zmin
             zMAX <- zmax
             this.createUmgebungen() 
-
-        static member Instance
-            with get() = 
-                if instance = null then
-                    instance <- new Welt()
-                instance
-            and set(value) = instance <- value
 
         member this.createUmgebungen() =
             umgebungen <- new Dictionary<Vector3, Umgebung>()

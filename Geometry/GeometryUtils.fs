@@ -220,3 +220,16 @@ module GeometryUtils =
         else if angle <= -pihalbe then
             -pihalbe + 0.01f
         else angle
+
+    let toBoundary(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int) =
+        let xMAX = ursprung.X + (float32) malX * laenge
+        let yMAX = ursprung.Y + (float32) malY * laenge
+        let zMAX = ursprung.Z + (float32) malZ * laenge
+
+        let minimum = ursprung  
+        let maximum = Vector3(xMAX, yMAX, zMAX) 
+        (minimum, maximum)
+
+    let toPoints(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int) =
+        let (minimum, maximum) = toBoundary(ursprung, laenge, malX, malY, malZ)
+        minimum.X, maximum.X, minimum.Y, maximum.Y, minimum.Z, maximum.Z
