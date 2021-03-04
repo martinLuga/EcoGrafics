@@ -107,10 +107,6 @@ module SimulationSystem =
                 newLightPos,
                 Color.White)  
 
-        member this.ToggleUmgebung() =
-            Welt.Instance.ToggleUmgebungen()
-            this.InstallObjects() 
-
         member this.changeColorTemperature temperature =
             writeToOutputWindow("Temperatur is" + temperature.ToString())
             if temperature >  0.0f then
@@ -148,6 +144,14 @@ module SimulationSystem =
             logInfo("UmgebungWorkflow terminated")
         }
 
+        member this.hideUmgebungen() =
+            Welt.Instance.HideUmgebungen()
+            this.InstallObjects() 
+        
+        member this.toggleUmgebungen() =
+            Welt.Instance.ToggleUmgebungen()
+            this.InstallObjects()
+
         /// <summary>
         /// Workflow
         /// </summary>
@@ -163,8 +167,17 @@ module SimulationSystem =
  
              Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelAll.Token)|> ignore
              logInfo("All workflows started ")
+             this.IsRunnung <- true
 
         member this.stopWorkflows() = 
             cancelAll.Cancel()
             logInfo("All workflows stopped ")
+            this.IsRunnung <- false
+
+        member this.toggleWorkflows() =             
+            if this.IsRunnung then 
+                this.stopWorkflows()
+            else
+                
+                this.startWorkflows()
 

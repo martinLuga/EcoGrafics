@@ -93,6 +93,7 @@ module GraficSystem =
         let mutable lastVisibility=Visibility.Opaque        
         let mutable currentPixelShaderDesc:ShaderDescription=null
         let mutable lastPixelShaderDesc:ShaderDescription=null
+        let mutable isRunnung:bool = false 
 
         new() = new MySystem(MyWindow.Instance)
 
@@ -116,6 +117,10 @@ module GraficSystem =
 
         static member DropInstance() =
             MySystem.Instance <- null
+
+        member this.IsRunnung
+            with get() = isRunnung
+            and set(value) = isRunnung <- value
             
         member this.FrameLight
             with get() = frameLight
