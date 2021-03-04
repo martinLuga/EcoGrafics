@@ -85,10 +85,17 @@ module SimulationSystem =
             initLight (
                 DEFAULT_LIGHT_POS,
                 Color.White) 
-                
+
         member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
             Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
             this.InitObjects(Welt.Instance.GetDisplayables())
+                
+        member this.initializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
+            this.initialize()
+            this.initializeWorld(ursprung, umgebungsLaenge, malX, malY, malZ)
+
+        member this.initializeForWorldData(weltDaten:WeltDaten) =
+            this.initializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
 
         member this.AddSimulationObjects(simulationObjects) =
             this.AddObjects(simulationObjects)

@@ -35,6 +35,17 @@ module WeltModul =
     let logDebug = Debug(logger)
     let cancelMoveablesWorkflows = new CancellationTokenSource()
 
+    type WeltDaten =
+       struct 
+           val ursprung: Vector3       
+           val laenge: float32     
+           val malX  :  int       
+           val malY  :  int   
+           val malZ  :  int    
+           new (ursprung: Vector3, laenge: float32, malX:int, malY:int, malZ:int) = { ursprung = ursprung; laenge = laenge; malX = malX; malY = malY; malZ = malZ}
+           override this.ToString() = "Welt(" + this.ursprung.ToString() + ")"
+       end
+
     [<AllowNullLiteral>] 
     type Welt() =         
         static let mutable instance = null
