@@ -32,9 +32,18 @@ module DisplayableObject =
         let mutable world = Matrix.Translation(start - Vector3.Zero)
         let mutable lastColor=color
         let mutable changed=false
+        
+        static let mutable highValue = 0  
+
+        do
+            highValue <- highValue + 1
 
         new(name, geometry, color, position) =  Displayable(name, geometry, new Surface(), color, position)
         new () = Displayable("", Kugel("", 1.0f, Color.Transparent), Surface(), Color.Transparent , Vector3.Zero)  
+
+        static member HighValue
+            with get() = highValue
+            and set(value) = highValue <- value
         
         abstract member Copy:unit -> Displayable  
         default this.Copy () = this

@@ -738,7 +738,7 @@ module AtomBuilder =
         
         GeometricModel.setCylinderRaster (Raster.Grob)
 
-        let mutable filePath = "C:\\Users\\Lugi2\\Source\\repos\\DNAandProteins\\MoleculeData\\data\\Insulin.pdb"
+        let mutable filePath = "C:\\Users\\Lugi2\\Source\\repos\\EcoChemical\\ExampleMolecules\\molecules\\Insulin.pdb"
         let object = FileInfo(filePath)   
         let fileName = object.FullName
         let moleculeName = object.Name.Split('.').[0]

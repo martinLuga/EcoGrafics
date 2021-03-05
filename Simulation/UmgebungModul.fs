@@ -145,7 +145,7 @@ module UmgebungModul =
                 ()
             else
                 objekte.Add(object.Name, object)
-                logInfo( this.ToString() + " - ENTHAELT: " + object.ToString()  )
+                logDebug( this.ToString() + " - ENTHAELT: " + object.ToString()  )
                 if object.isMoveable() then
                     moveables <- moveables + 1
                     
@@ -163,7 +163,7 @@ module UmgebungModul =
         //
         // ----------------------------------------------------------------------------------------------------
         member this.Control(object:Moveable) =
-            logInfo(this.Name + " - Control Waiting to shift " + object.Name)  
+            logDebug(this.Name + " - Control Waiting to shift " + object.Name)  
             lock object.Mutex (fun () ->
                 let istJetztDrin = this.umgibt(object.Center) 
                 let istJetztDraussen = not istJetztDrin
@@ -178,13 +178,13 @@ module UmgebungModul =
                     ()
                 else 
                     if betritt then 
-                        logError(object.Name + " - betritt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count + 1).ToString() + " Objekten")
+                        logWarn(object.Name + " - betritt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count + 1).ToString() + " Objekten")
                         objekte.Add(object.Name, object)
                         moveables <- moveables + 1  
                         object.ResetCollision()
                     else
                         if verlässt then 
-                            logError(object.Name + " - verlässt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count - 1).ToString() + " Objekten")
+                            logWarn(object.Name + " - verlässt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count - 1).ToString() + " Objekten")
                             let res = objekte.Remove(object.Name) 
                             if not res then
                                 ()

@@ -13,6 +13,7 @@ open log4net
 open SharpDX
 
 open Base.Logging
+open Base.Framework
 
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
@@ -33,7 +34,6 @@ module WeltModul =
 
     let logger = LogManager.GetLogger("Simulation.Welt")
     let logDebug = Debug(logger)
-    let cancelMoveablesWorkflows = new CancellationTokenSource()
 
     type WeltDaten =
        struct 
@@ -43,6 +43,22 @@ module WeltModul =
            val malY  :  int   
            val malZ  :  int    
            new (ursprung: Vector3, laenge: float32, malX:int, malY:int, malZ:int) = { ursprung = ursprung; laenge = laenge; malX = malX; malY = malY; malZ = malZ}
+
+           member this.toPoints() =
+                toPoints(this.ursprung, this.laenge, this.malX, this.malY, this.malZ)
+           
+           member this. toBoundaries() =
+                toBoundary(this.ursprung, this.laenge, this.malX, this.malY, this.malZ) 
+
+            member this.Randomizer () =
+                let mutable (MIN, MAX) = this.toBoundaries()
+                let minV = MIN + new Vector3(1.0f, 1.0f, 1.0f)
+                let maxV = MAX - new Vector3(1.0f, 1.0f, 1.0f)
+                let pos = randomPositionFromTo(minV, maxV)
+                let dir = randomDirectionFromTo(minV, maxV)
+                let velocity = randomSpeed(3)
+                new Motion(pos, dir, velocity)
+
            override this.ToString() = "Welt(" + this.ursprung.ToString() + ")"
        end
 

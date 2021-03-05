@@ -81,7 +81,7 @@ module MyGPU =
         let mutable rootObjectParmIdx = 0
         let mutable rootFrameParmIdx = 0
         let mutable textureHeapWrapper:HeapWrapper = null
-        let mutable geometryWrapper:GeometryCache = null
+        let mutable geometryCache:GeometryCache = null
 
         let mutable pipelineProvider:PipelineProvider=null
         let mutable directRecorder:Recorder = null
@@ -270,16 +270,16 @@ module MyGPU =
         // Geometry
         // 
         member this.installGeometryCache() =
-            geometryWrapper <- new GeometryCache(device)
+            geometryCache <- new GeometryCache(device)
 
         member this.resetGeometryCache() =
-            geometryWrapper.Reset()
+            geometryCache.Reset()
 
         member this.InstallObjectGeometry(geometryName, meshData:MeshData)=
-            geometryWrapper.Append(geometryName, meshData.Vertices, meshData.Indices) 
+            geometryCache.Append(geometryName, meshData.Vertices, meshData.Indices) 
 
         member this.FinalizeGeometryCache(commandList) =
-            geometryWrapper.createBuffers(commandList)
+            geometryCache.createBuffers(commandList)
 
         member this.InstallGeometry(meshData:Dictionary<string,MeshData>)=
             for mesh in meshData do
@@ -359,8 +359,8 @@ module MyGPU =
                 let commandList = this.CurrFrameResource.Recorder.CommandList 
 
                 // Objekt Geometrie
-                commandList.SetVertexBuffer(0, geometryWrapper.getVertexBuffer(geometryName))
-                commandList.SetIndexBuffer(Nullable (geometryWrapper.getIndexBuffer(geometryName)))
+                commandList.SetVertexBuffer(0, geometryCache.getVertexBuffer(geometryName))
+                commandList.SetIndexBuffer(Nullable (geometryCache.getIndexBuffer(geometryName)))
                 commandList.PrimitiveTopology <- topology
 
                 // Objekt Daten 
@@ -376,7 +376,7 @@ module MyGPU =
                     let textureIdx = textures.Item(textureName)
                     commandList.SetGraphicsRootDescriptorTable(0, textureHeapWrapper.GetGpuHandle(textureIdx)) 
             
-                commandList.DrawIndexedInstanced(geometryWrapper.getIndexCount(geometryName), 1, 0, 0, 0) 
+                commandList.DrawIndexedInstanced(geometryCache.getIndexCount(geometryName), 1, 0, 0, 0) 
 
         member this.EndDraw() =
             

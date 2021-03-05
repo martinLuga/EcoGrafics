@@ -142,10 +142,11 @@ module GraficSystem =
             this.addDisplayable(displayable)
             myGpu.RefreshGeometry(geometries)
 
-        member this.AddObjects(displayables:Displayable list) = 
+            
+        abstract member AddObjects: Displayable list -> unit
+        default this.AddObjects(displayables:Displayable list) = 
             for displayable in displayables do
                 this.addDisplayable(displayable)
-            //myGpu.RefreshGeometry(geometries)
             this.InstallObjects()
 
         member this.RefreshObject(displayable:Displayable) = 

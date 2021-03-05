@@ -161,6 +161,11 @@
       <Project>{067099b7-5b0e-4fae-a40f-fc784e59be9c}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\EcoChemical\Elements\Elements.fsproj">
+      <Name>Elements</Name>
+      <Project>{89cf4490-ca5f-459c-80b1-9a9a7587e3e6}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\EcoChemical\MoleculeBuild\MoleculeBuild.fsproj">
       <Name>MoleculeBuild</Name>
       <Project>{392b03a9-1bb7-439b-9047-1b2286e06774}</Project>

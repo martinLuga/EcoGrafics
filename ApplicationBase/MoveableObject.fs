@@ -35,6 +35,7 @@ module MoveableObject =
     let TURN_AMOUNT = 0.08f             // Stärke einer Bewegungsänderung  
     let FARVALUE: float32 = 5.0f        // Abstand zwischen zwei Objekten
     let NEAR_DISTANCE: float32 = 2.0f   // Objekte sind nah, wenn Abstand < NEAR_DISTANCE
+    let DEF_RANDOM_INTERVAL = 4000L 
 
     let logger = LogManager.GetLogger("objects.MoveableObject")
     let logDebug = Debug(logger)
@@ -47,6 +48,17 @@ module MoveableObject =
         let zs = sprintf "%4.2f" v.Z
         "(" + xs + "," + ys  + "," + zs + ")"
 
+    type Motion =
+       struct 
+           val position:  Vector3 
+           val direction: Vector3 
+           val velocity : float32 
+           val randMove : bool
+           new (position:  Vector3, direction: Vector3 , velocity : float32, randMove : bool) = { position = position; direction = direction; velocity = velocity; randMove = randMove}
+           new (position:  Vector3, direction: Vector3 , velocity : float32) = { position = position; direction = direction; velocity = velocity; randMove = false}
+           override this.ToString() = "Motion(" + this.position.ToString() + "|" + this.direction.ToString()+ "|" + this.velocity.ToString() + ")" 
+       end
+
     // ----------------------------------------------------------------------------------------------------
     // MOVEABLE
     // Oberklasse für alle beweglichen Objekte
@@ -56,7 +68,7 @@ module MoveableObject =
     type Moveable(name: string, geometry:Geometric, surface: Surface, color:Color , position: Vector3, direction:Vector3, velocity: float32,  moveRandom: bool) =
         inherit Displayable(name, geometry, surface, color, position)
     
-        static let mutable randomInterval: int64 = 10L       // Zeit zwischen 2 Richtungsänderungen bei Random         
+        static let mutable randomInterval: int64 = DEF_RANDOM_INTERVAL       // Zeit zwischen 2 Richtungsänderungen bei Random         
     
         let mutable moveRandom = moveRandom
         let mutable lastPosition = position
@@ -90,7 +102,7 @@ module MoveableObject =
                 mov.Move(clock.ElapsedMilliseconds)
         }
 
-        static let mutable randomDirectionFunc = updateDirectionRandom2
+        static let mutable randomDirectionFunc = updateDirectionRandom
 
         static member RandomInterval 
             with get() = randomInterval
@@ -155,7 +167,7 @@ module MoveableObject =
                 collisionState <- this.Geometry.intersects this.Position other.Geometry other.Position
                 let distance = Vector3.Distance(this.Position, collisionState.closest)
                 if collisionState.collides then 
-                    logInfo(this.Name + " - Collision detected with " + other.Name + " at " + formatVector(collisionState.closest))          
+                    logDebug(this.Name + " - Collision detected with " + other.Name + " at " + formatVector(collisionState.closest))          
                     this.IsColliding(other)
                 else   
                     this.informFarTo(other)
@@ -181,7 +193,7 @@ module MoveableObject =
                 else 
                     logDebug(this.Name + " --- Collision with other " + other.Name + " !!!")
                     
-            logInfo(this.ToString() + " --- Collision with " + other.Name + " ended")
+            logDebug(this.ToString() + " --- Collision with " + other.Name + " ended")
             this.ResetCollision() // HACK
 
         member this.ResetCollision() =
@@ -308,6 +320,11 @@ module MoveableObject =
             with get() = moveRandom
             and set (aValue) = moveRandom <- aValue
 
+        member this.SetMotion(motion:Motion) =
+            this.Position <- motion.position
+            this.Direction <- motion.direction
+            this.Velocity <- motion.velocity
+
         override this.MoveDirection(newDirection:Vector3) (newSpeed:float32) =
             this.Direction <- newDirection
             this.Velocity <- newSpeed
@@ -347,7 +364,7 @@ module MoveableObject =
         // Normale am Treffpunkt bilden
         member this.reflect(other:Displayable) =
             let anotherNormal = other.getNormalAt(this.hitPoint(other))
-            logInfo(this.ToString() + " --- refl at " + other.Name + " N= " + formatVector(anotherNormal))
+            logDebug(this.ToString() + " --- reflected at " + other.Name + " N= " + formatVector(anotherNormal))
             this.Direction <- Vector3.Reflect(this.Direction, anotherNormal)
             this.Position <- this.LastPosition 
         

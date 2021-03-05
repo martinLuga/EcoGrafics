@@ -89,6 +89,10 @@ module SimulationSystem =
         member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
             Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
             this.InitObjects(Welt.Instance.GetDisplayables())
+
+        member this.initializeWorldFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) =
+            Welt.Instance.InitFromPoints(xmin, xmax, ymin, ymax, zmin, zmax, laenge)          
+            this.InitObjects(Welt.Instance.GetDisplayables())
                 
         member this.initializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
             this.initialize()
@@ -97,8 +101,12 @@ module SimulationSystem =
         member this.initializeForWorldData(weltDaten:WeltDaten) =
             this.initializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
 
-        member this.AddSimulationObjects(simulationObjects) =
-            this.AddObjects(simulationObjects)
+        member this.initializeForPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) =
+            this.initialize()
+            this.initializeWorldFromPoints(xmin, xmax, ymin, ymax, zmin, zmax, laenge)     
+
+        override this.AddObjects(simulationObjects) =
+            base.AddObjects(simulationObjects)
             Welt.Instance.registriereObjektListe(simulationObjects)
 
         member this.SetCameraPos(newCameraPos) = 
@@ -109,10 +117,11 @@ module SimulationSystem =
                 MathUtil.TwoPi / 200.0f,        // Scrollamount horizontal
                 MathUtil.TwoPi / 200.0f)        // Scrollamount vertical
 
-        member this.SetLightPos(newLightPos) =
-            initLight (
-                newLightPos,
-                Color.White)  
+        member this.SetLightPos(dir) =
+            lightDir <- Vector3.Transform(dir, worldMatrix)
+            frameLight <- new DirectionalLight(Color.White.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
+            this.FrameLight <- frameLight
+            this.LightDir <- lightDir
 
         member this.changeColorTemperature temperature =
             writeToOutputWindow("Temperatur is" + temperature.ToString())
