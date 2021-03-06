@@ -1,32 +1,37 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net472</TargetFramework> 
 
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="WeltObjects.fs" />
-    <Compile Include="SimulationObject.fs" />
-    <Compile Include="UmgebungModul.fs" />
-    <Compile Include="WeltModul.fs" />
-    <Compile Include="SimulationSystem.fs" />
-    <Compile Include="ScenarioSupport.fs" />
+    <Compile Include="Scenarios.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="WindowLayout.fs" />
+    <Compile Include="Control.fs" />
+    <Compile Include="Program.fs" />
+    <None Include="resource\log4net.config" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\EcoBase\Base\Base.fsproj" />
     <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj" />
     <ProjectReference Include="..\DirectX\DirectX.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
-    <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
     <ProjectReference Include="..\Shader\Shader.fsproj" />
+    <ProjectReference Include="..\Simulation\Simulation.fsproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
+  <ItemGroup />
 </Project>

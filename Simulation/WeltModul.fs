@@ -98,7 +98,8 @@ module WeltModul =
             yMAX <- MAX.Y
             zMIN <- MIN.Z
             zMAX <- MAX.Z
-            this.createUmgebungen() 
+            this.createUmgebungen()
+            this.HideUmgebungen() 
 
         member this.InitFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) = 
             weltUrsprung <- Vector3(xmin, ymin, zmin)
@@ -113,6 +114,7 @@ module WeltModul =
             zMIN <- zmin
             zMAX <- zmax
             this.createUmgebungen() 
+            this.HideUmgebungen() 
 
         member this.createUmgebungen() =
             umgebungen <- new Dictionary<Vector3, Umgebung>()

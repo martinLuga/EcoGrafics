@@ -71,7 +71,7 @@ module UmgebungModul =
         let mutable laenge = laenge
         let mutable objekte = new Dictionary<String, Displayable>() 
         let mutable moveables = 0 
-        let mutable visible = true
+        let mutable visible = false
         let mutable workflowActive = false
         let mutable ID = ""
 

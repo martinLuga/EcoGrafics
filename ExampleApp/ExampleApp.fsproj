@@ -72,7 +72,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
-    <Compile Include="Objects.fs" />
+    <Compile Include="Scenario.fs" />
     <Compile Include="WindowLayout.fs" />
     <Compile Include="Configuration.fs" />
     <Compile Include="Control.fs" />
