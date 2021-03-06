@@ -8,10 +8,15 @@
 
 open log4net
 
+open SharpDX
+
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
+
 open Base.GlobalDefs
 open Base.Logging
+
+open Geometry.CollisionDetection
 
 module SimulationObject =
 
@@ -89,6 +94,12 @@ module SimulationObject =
         abstract lookAround : unit -> unit
         default this.lookAround () = 
             ()
+
+        member this.canSee(other:Displayable, inDirection:Vector3) =
+            let result = this.Geometry.canSee this.Position inDirection other.Geometry other.Position
+            if result then                
+                logDebug(this.Name + " <<<SEES>>> " + other.Name)
+            result
 
         // ----------------------------------------------------------------------------------------------------
         // SimulationObject: ENERGY

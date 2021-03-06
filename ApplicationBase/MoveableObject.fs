@@ -72,7 +72,6 @@ module MoveableObject =
     
         let mutable moveRandom = moveRandom
         let mutable lastPosition = position
-        let mutable maxStep = 0.1f
         let mutable direction = direction
         let mutable lastDirection = direction
         let mutable velocity = velocity
@@ -91,7 +90,7 @@ module MoveableObject =
         let u_mutex = new Mutex(true, name)
 
         // 
-        // Motion 
+        // Motion WF
         // 
         let motionWorkflow(mov:Moveable)  = async {
             let ID = System.DateTime.Now.ToString() 
@@ -124,12 +123,6 @@ module MoveableObject =
         override this.hitPoint(someDisplayable:Displayable) =
             collisionState.closest
 
-        member this.canSee(other:Displayable, inDirection:Vector3) =
-            let result = this.Geometry.canSee this.Position inDirection other.Geometry other.Position
-            if result then                
-                logDebug(this.Name + " <<<SEES>>> " + other.Name)
-            result
-
         member this.MotionWorkflow =
             motionWorkflow(this)
 
@@ -142,7 +135,6 @@ module MoveableObject =
         member this.WorkflowActive 
             with get() = workflowActive
             and set(value) = workflowActive <- value
-
 
         member this.ActivateWorkflow() =
             logWarn(this.Name + " Activate WF: " + this.Name)

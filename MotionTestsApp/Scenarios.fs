@@ -12,14 +12,14 @@ open SharpDX
 
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
-open ApplicationBase.WindowLayout
 open ApplicationBase.WindowControl
-open ApplicationBase.GraficSystem
+open ApplicationBase.WindowLayout
 
 open Base.Logging
 
 open Geometry.GeometricModel
 open Geometry.ObjectConvenience
+open Geometry.GeometryUtils
 
 open Shader.ShaderSupport
 
@@ -27,6 +27,7 @@ open Simulation.ScenarioSupport
 open Simulation.WeltModul
 open Simulation.WeltObjects
 open Simulation.TestScenariosCommon
+open Simulation.SimulationSystem
 
 // ----------------------------------------------------------------------------------------------------
 // TestsScenarios für die Bewegung
@@ -35,6 +36,18 @@ open Simulation.TestScenariosCommon
 // 2. Zwei Objekte prallen im Winkel von der Wand ab
 // ----------------------------------------------------------------------------------------------------
 module Scenarios =
+
+    let printWeltDaten(weltDaten:WeltDaten) =
+        let points = toPoints(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
+        let text = "Welt:" + points.ToString()
+        writeToMessageWindow(text)  
+
+    let printScenario(scenarioName) =
+        logInfo("Start Scenario: " + scenarioName) 
+        mainWindow.Text <- "Scenario:" + scenarioName
+
+    let hilited (displayable:Displayable) =
+        displayable.createHilite()  
 
     type Texture = Geometry.GeometricModel.Texture
 
@@ -45,24 +58,14 @@ module Scenarios =
     // Kugeln, die sich zwischen zwei Wänden bewegen
     // Kugeln bewegen sich zwischen den beiden Wänden hin und her
     // ----------------------------------------------------------------------------------------------------
-    let scenarioCollisionMitWand() = 
-        let logInfo  = Info(logger)
-        logInfo("SCENARIO Start")  
-        mainWindow.Text <- "Scenario - Kollision mit Wand"
+    let scenarioCollisionMitWand() =  
+        printScenario("CollisionMitWand")
+        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
+        printWeltDaten(weltDaten)
 
-        // Welt
-        let umgebungsLänge = 10.0f
-        Welt.Instance.InitFromPoints( -20.0f, 20.0f, 0.0f, 20.0f, -20.0f, 20.0f, 10.0f)        
-        let weltDisplayables = Welt.Instance.GetDisplayables()
-        
-        // Kamera
-        initCamera(
-            Vector3(-5.0f, 20.0f, -50.0f),
-            Vector3.Zero,                   // Camera target
-            aspectRatio,                    // Aspect ratio
-            MathUtil.TwoPi / 200.0f,        // Scrollamount horizontal
-            MathUtil.TwoPi / 200.0f)        // Scrollamount vertical
-        initLight (new Vector3( 25.0f,  -25.0f,  10.0f), Color.White)    
+        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
+        MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))    
 
         setPixelShader(ShaderClass.PhongPSType)
         SetRasterizerState(RasterType.Solid)
@@ -70,7 +73,6 @@ module Scenarios =
         // ----------------------------------------------------------------------------------------------------
         // Zwei parallele vertikale Wände
         // ----------------------------------------------------------------------------------------------------
-        MySystem.Instance.ClearObjects()
         let wallLinks = 
             new Landscape(
              name="wallLinks",
@@ -167,35 +169,23 @@ module Scenarios =
                 moveRandom=false
             )
 
-        let simulationObjects = [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable; sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable]
-        let simulationObjects = [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable; sphere1:>Displayable]
+        let displayables = [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable; sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable]
+        MySimulation.Instance.AddObjects(displayables)
 
-        let displayables = List.concat[simulationObjects; weltDisplayables]
-        MySystem.Instance.InitObjects(displayables)
-
-        Welt.Instance.registriereObjektListe(simulationObjects)
-        //Welt.Instance.HideUmgebungen()
- 
     // ----------------------------------------------------------------------------------------------------
     // Kollisionstest Einfallswinkel = Ausfallswinkel
     //  Zwei Kugeln gegen eine Wand
     //  Sphere - Quader
     // ----------------------------------------------------------------------------------------------------
     let scenarioEinfallswinkelGleichAusfallswinkel() = 
-        let logInfo  = Info(logger)
-        logInfo("Einfallswinkel gleich Ausfallswinkel")   
-        mainWindow.Text <- "Scenario - Einfallswinkel gleich Ausfallswinkel"           
+        printScenario("EinfallswinkelGleichAusfallswinkel")
 
-        let umgebungsLänge = 10.0f
-        Welt.Instance.InitFromPoints( -20.0f, 20.0f, -10.0f, 20.0f, -20.0f, 20.0f, 10.0f)  
-        
-        initCamera(
-            Vector3(0.0f, 15.0f, -70.0f),
-            Vector3.Zero,                   // Camera target
-            aspectRatio,                    // Aspect ratio
-            MathUtil.TwoPi / 200.0f,        // Scrollamount horizontal
-            MathUtil.TwoPi / 200.0f)        // Scrollamount vertical
-        initLight (new Vector3( 25.0f,  -25.0f,  10.0f), Color.White)  
+        let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)        
+        printWeltDaten(weltDaten)
+
+        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.SetCameraPos(Vector3(0.0f, 15.0f, -70.0f))
+        MySimulation.Instance.SetLightPos (new Vector3(  25.0f,  -25.0f,  10.0f))
 
         setPixelShader(ShaderClass.PhongPSType)
         SetRasterizerState(RasterType.Solid)
@@ -203,7 +193,7 @@ module Scenarios =
         // ----------------------------------------------------------------------------------------------------
         // Zwei Kugeln und dazwischen eine Wand  
         // ---------------------------------------------------------------------------------------------------- 
-        MySystem.Instance.ClearObjects()  
+        MySimulation.Instance.ClearObjects()  
         let sphere1 = 
             new Moveable( 
              name="sphere1",
@@ -237,44 +227,29 @@ module Scenarios =
                 color=Color.Transparent
              ) 
              
-        let weltDisplayables = Welt.Instance.GetDisplayables()
-        let simDisplayables =  [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
-        let displayables = List.concat[simDisplayables; weltDisplayables]
-        MySystem.Instance.InitObjects(displayables)
-
-        Welt.Instance.registriereObjektListe(simDisplayables)
-        Welt.Instance.HideUmgebungen()
+        let displayables =  [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
+        MySimulation.Instance.AddObjects(displayables)
 
     // ----------------------------------------------------------------------------------------------------
     // Kollisionstest Sphere - Sphere
     // Zwei Objekte. die sich aufeinander zu bewegen und reflektiert werden
     // ----------------------------------------------------------------------------------------------------
     let scenarioCollisionKugelUndKorpus() = 
-        let logInfo  = Info(logger)
-        logInfo("Kollision von Kugel und Korpus")         
-        mainWindow.Text <- "Scenario - Kollision von Kugel und Korpus"
+        printScenario("CollisionKugelUndKorpus")
+
+        let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 2, 4)        
+        printWeltDaten(weltDaten)
 
         setPixelShader(ShaderClass.PhongPSType) 
         SetRasterizerState(RasterType.Solid)
 
-        // Welt
-        let umgebungsLänge = 10.0f
-        Welt.Instance.InitFromPoints(-20.0f, 20.0f, 0.0f, 20.0f, -20.0f, 20.0f,  10.0f) 
-        let weltDisplayables = Welt.Instance.GetDisplayables()        
-        
-        initCamera(
-            Vector3(-5.0f, 15.0f, -50.0f),
-            Vector3.Zero,                   // Camera target
-            aspectRatio,                    // Aspect ratio
-            MathUtil.TwoPi / 200.0f,        // Scrollamount horizontal
-            MathUtil.TwoPi / 200.0f)        // Scrollamount vertical
-        initLight (new Vector3( 15.0f,  -15.0f,  10.0f), Color.White) 
+        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 15.0f, -50.0f))
+        MySimulation.Instance.SetLightPos (new Vector3( 15.0f,  -15.0f,  10.0f)) 
 
         // ----------------------------------------------------------------------------------------------------
         // Eine Kugel und ein Korpus
         // ---------------------------------------------------------------------------------------------------- 
-        MySystem.Instance.ClearObjects() 
-
         let radius = 1.0f
         let sphere1 = 
            new Moveable( 
@@ -297,12 +272,8 @@ module Scenarios =
                 position=Vector3(2.0f, Welt.Instance.GroundHeight+0.5f, 2.0f)
             ) 
 
-        let simDisplayables  = [sphere1:>Displayable; plate1:>Displayable]
-        let displayables = List.concat[simDisplayables; weltDisplayables]
-
-        Welt.Instance.registriereObjektListe(simDisplayables)
-        MySystem.Instance.InitObjects(displayables)
-        Welt.Instance.HideUmgebungen()
+        let displayables  = [sphere1:>Displayable; plate1:>Displayable]
+        MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Initialize
