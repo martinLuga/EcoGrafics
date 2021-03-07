@@ -20,8 +20,6 @@ open ApplicationBase.ShaderConfiguration
 open Simulation.SimulationObject
 open Simulation.SimulationSystem
 
-open Scenarios
-
 // ----------------------------------------------------------------------------------------------------
 // Einstellungen für die Simulation
 // Begrenzungen des Object space
@@ -80,22 +78,17 @@ module Configuration =
     // ----------------------------------------------------------------------------------------------------
     let Configure () =  
 
-        logger.Info("Configure")
+        logger.Info("Application.Configure")
 
-        Moveable.RandomInterval <- 8L  
-
+        Moveable.RandomInterval <- 8L 
         Moveable.RandomDirectionFunc <- updateDirectionRandomOnGround
-
         Simulateable.LookAroundInterval <- 150L  
 
         clock.Start()
-
 
         // Simulation System
         MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
         MySimulation.Instance.initialize()
         MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")   
-        
-        initializeScenarios()
 
         tessellationFactor <- 1.0f

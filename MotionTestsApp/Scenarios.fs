@@ -10,24 +10,24 @@ open log4net
 
 open SharpDX
 
+open Base.Logging
+
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
 open ApplicationBase.WindowControl
 open ApplicationBase.WindowLayout
 
-open Base.Logging
-
 open Geometry.GeometricModel
 open Geometry.ObjectConvenience
 open Geometry.GeometryUtils
-
-open Shader.ShaderSupport
 
 open Simulation.ScenarioSupport
 open Simulation.WeltModul
 open Simulation.WeltObjects
 open Simulation.TestScenariosCommon
 open Simulation.SimulationSystem
+
+open Control
 
 // ----------------------------------------------------------------------------------------------------
 // TestsScenarios für die Bewegung
@@ -52,6 +52,7 @@ module Scenarios =
     type Texture = Geometry.GeometricModel.Texture
 
     let logger = LogManager.GetLogger("Scenarios.Motion")
+    let logInfo  = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
     // Kollisionstest mit unbeweglichem Objekt
@@ -63,12 +64,9 @@ module Scenarios =
         let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
         printWeltDaten(weltDaten)
 
-        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorldData(weltDaten)
         MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
         MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))    
-
-        setPixelShader(ShaderClass.PhongPSType)
-        SetRasterizerState(RasterType.Solid)
 
         // ----------------------------------------------------------------------------------------------------
         // Zwei parallele vertikale Wände
@@ -169,26 +167,26 @@ module Scenarios =
                 moveRandom=false
             )
 
-        let displayables = [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable; sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable]
-        MySimulation.Instance.AddObjects(displayables)
+        logInfo(">>>>>> Wall Hinten =" + wallHinten.ToString())
 
-    // ----------------------------------------------------------------------------------------------------
-    // Kollisionstest Einfallswinkel = Ausfallswinkel
-    //  Zwei Kugeln gegen eine Wand
-    //  Sphere - Quader
-    // ----------------------------------------------------------------------------------------------------
+        displayables <- [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
+        MySimulation.Instance.AddObjects(displayables)        
+        MySimulation.Instance.UnhideUmgebungen()
+
+    /// <summary>
+    /// Einfallswinkel = Ausfallswinkel
+    /// Zwei Kugeln gegen eine Wand
+    /// Sphere - Quader
+    /// </summary>
     let scenarioEinfallswinkelGleichAusfallswinkel() = 
         printScenario("EinfallswinkelGleichAusfallswinkel")
 
         let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)        
         printWeltDaten(weltDaten)
 
-        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorldData(weltDaten)
         MySimulation.Instance.SetCameraPos(Vector3(0.0f, 15.0f, -70.0f))
         MySimulation.Instance.SetLightPos (new Vector3(  25.0f,  -25.0f,  10.0f))
-
-        setPixelShader(ShaderClass.PhongPSType)
-        SetRasterizerState(RasterType.Solid)
 
         // ----------------------------------------------------------------------------------------------------
         // Zwei Kugeln und dazwischen eine Wand  
@@ -227,23 +225,20 @@ module Scenarios =
                 color=Color.Transparent
              ) 
              
-        let displayables =  [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
+        displayables <- [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
         MySimulation.Instance.AddObjects(displayables)
 
-    // ----------------------------------------------------------------------------------------------------
-    // Kollisionstest Sphere - Sphere
-    // Zwei Objekte. die sich aufeinander zu bewegen und reflektiert werden
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Kollision Kugel an einem Korpus
+    /// Zwei Objekte. die sich aufeinander zu bewegen und reflektiert werden
+    /// </summary>
     let scenarioCollisionKugelUndKorpus() = 
-        printScenario("CollisionKugelUndKorpus")
+        printScenario("KollisionKugelUndKorpus")
 
         let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 2, 4)        
         printWeltDaten(weltDaten)
 
-        setPixelShader(ShaderClass.PhongPSType) 
-        SetRasterizerState(RasterType.Solid)
-
-        MySimulation.Instance.initializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorldData(weltDaten)
         MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 15.0f, -50.0f))
         MySimulation.Instance.SetLightPos (new Vector3( 15.0f,  -15.0f,  10.0f)) 
 
@@ -272,13 +267,13 @@ module Scenarios =
                 position=Vector3(2.0f, Welt.Instance.GroundHeight+0.5f, 2.0f)
             ) 
 
-        let displayables  = [sphere1:>Displayable; plate1:>Displayable]
+        displayables <- [sphere1:>Displayable; plate1:>Displayable]
         MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Initialize
     /// </summary>
-    let initializeScenarios() =
+    let Initialize() =
         AddScenario(0, "CollisionMitWand", scenarioCollisionMitWand)
         AddScenario(1, "EinfallswinkelGleichAusfallswinkel", scenarioEinfallswinkelGleichAusfallswinkel)
         AddScenario(2, "CollisionKugelUndKorpus", scenarioCollisionKugelUndKorpus)

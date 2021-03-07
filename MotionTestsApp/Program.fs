@@ -25,6 +25,7 @@ module Program =
     let main argv = 
         WindowLayout.Setup("ANT SIMULATION")
         Configuration.Configure()
+        Scenarios.Initialize()
         Control.Init() 
         displayWindows()
         Control.Start()   

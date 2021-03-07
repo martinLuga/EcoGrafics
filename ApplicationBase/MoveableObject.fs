@@ -14,12 +14,11 @@ open System.Diagnostics
 
 open SharpDX
 
+open Base.Logging
+
 open Geometry.GeometricModel
 open Geometry.GeometryUtils
 open Geometry.CollisionDetection
-
-open Base.Logging
-open Base.GlobalDefs
 
 open DisplayableObject
 
@@ -59,12 +58,11 @@ module MoveableObject =
            override this.ToString() = "Motion(" + this.position.ToString() + "|" + this.direction.ToString()+ "|" + this.velocity.ToString() + ")" 
        end
 
-    // ----------------------------------------------------------------------------------------------------
-    // MOVEABLE
-    // Oberklasse für alle beweglichen Objekte
-    // Subklassen: 
-    //  SimulationObject
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Oberklasse für alle beweglichen Objekte
+    /// Subklassen: 
+    /// SimulationObject
+    /// </summary>
     type Moveable(name: string, geometry:Geometric, surface: Surface, color:Color , position: Vector3, direction:Vector3, velocity: float32,  moveRandom: bool) =
         inherit Displayable(name, geometry, surface, color, position)
     
@@ -83,15 +81,13 @@ module MoveableObject =
         let mutable stoptime:int64 = 0L
         let mutable moveOnGround=false
         let mutable collidesWith=null
-        let mutable collisionState = {collides=false; closest=Vector3.Zero}
         let mutable cancelWorkflow = new CancellationTokenSource()
         let mutable workflowActive = false
-        let mutex = new Mutex(false, name)
-        let u_mutex = new Mutex(true, name)
-
-        // 
-        // Motion WF
-        // 
+        let mutex = new Mutex() 
+ 
+        /// <summary>
+        /// Motion WF
+        /// </summary>
         let motionWorkflow(mov:Moveable)  = async {
             let ID = System.DateTime.Now.ToString() 
             logInfo("Motion WF started for "  + mov.Name + formatVector(mov.Position)) 
@@ -102,17 +98,19 @@ module MoveableObject =
         }
 
         static let mutable randomDirectionFunc = updateDirectionRandom
-
+         
         static member RandomInterval 
-            with get() = randomInterval
-            and set(aValue) = randomInterval <- aValue 
-            
+             with get() = randomInterval
+             and set(aValue) = randomInterval <- aValue 
+
         static member RandomDirectionFunc
             with get() = randomDirectionFunc
             and set (aValue) = randomDirectionFunc <- aValue
 
         new () = Moveable("", Kugel("", 1.0f, Color.Transparent), Surface(), Color.Transparent , Vector3.Zero, Vector3.Zero, 0.0f, false)  
         new (name , geometry, surface, color, position) =  Moveable(name, geometry, surface, color, position, Vector3.Zero, 0.0f, false)  
+
+        override this.isMoveable() = true
      
         override this.ToString() = 
             name + formatVector(this.Position) + "/" + formatVector(this.Direction) + "/" + this.Velocity.ToString()
@@ -120,94 +118,50 @@ module MoveableObject =
         override this.isMoving() =
             this.Velocity > 0.0f
 
-        override this.hitPoint(someDisplayable:Displayable) =
-            collisionState.closest
-
-        member this.MotionWorkflow =
-            motionWorkflow(this)
-
-        member this.Mutex 
-            with get() = mutex
-        
-        member this.U_Mutex 
-            with get() = u_mutex
-
-        member this.WorkflowActive 
-            with get() = workflowActive
-            and set(value) = workflowActive <- value
-
-        member this.ActivateWorkflow() =
-            logWarn(this.Name + " Activate WF: " + this.Name)
-            workflowActive <- true
-
-        member this.DeactivateWorkflow() =
-            logWarn(this.Name + " Deactivate WF: " + this.Name)
-            workflowActive <- false
-
-        // ----------------------------------------------------------------------------------------------------
-        // Kollisions-Logik
-        // ----------------------------------------------------------------------------------------------------
-        // Hits         : Stellt fest, ob das Moveable ein Displayable berührt 
-        // IsColliding : Entsprechende Aktion, im allgemeinen reflect
-        //              : Wenn bereits in Kollision , keine weitere
-        //              : doActionWith
-        //              : default: Reflektieren
-        // ----------------------------------------------------------------------------------------------------
-        override this.CheckNear(other:Displayable) =
-            logDebug(this.Name + " CheckNear waiting: " + other.Name)
-            lock this.Mutex (fun () ->
-                collisionState <- this.Geometry.intersects this.Position other.Geometry other.Position
-                let distance = Vector3.Distance(this.Position, collisionState.closest)
-                if collisionState.collides then 
-                    logDebug(this.Name + " - Collision detected with " + other.Name + " at " + formatVector(collisionState.closest))          
-                    this.IsColliding(other)
-                else   
-                    this.informFarTo(other)
-            )  
-            logDebug(this.Name + " CheckNear done: " + other.Name)   
-
         override this.hits(other:Displayable) =
             let state = this.Geometry.intersects this.Position other.Geometry other.Position
             if state.collides then                
-                logDebug(this.Name + " <<<HITS>>> " + other.Name + " at " + formatVector(collisionState.closest))
+                logInfo(this.Name + " <<<HITS>>> " + other.Name + " at " + this.Position.ToString())
             state.collides
 
-        override this.IsColliding (other:Displayable) =
-            if this.InCollision = false then
-                logDebug(this.ToString() + " --- Collision Start " + other.Name + " at " + formatVector(collisionState.closest))
-                this.InCollision <- true
-                this.CollidesWith <- other    
-                this.doActionWith(other)
-            else
-                if this.CollidesWith = other then 
-                    logDebug(this.ToString() + " --- Still Colliding with " + other.Name)
-                    ()
-                else 
-                    logDebug(this.Name + " --- Collision with other " + other.Name + " !!!")
-                    
-            logDebug(this.ToString() + " --- Collision with " + other.Name + " ended")
-            this.ResetCollision() // HACK
-
-        member this.ResetCollision() =
-            this.InCollision <- false
-            this.CollidesWith <- null   
-
-        override this.informFarTo (other:Displayable) = 
-            if this.InCollision = true && other = this.CollidesWith then
-                logDebug(this.Name + "--- farTo " + other.Name  )
-                this.InCollision <- false
-                this.CollidesWith <- null
+        /// <summary>
+        /// Kollisions-Logik: Stellt fest, ob das Moveable ein Displayable berührt 
+        /// IsColliding : Entsprechende Aktion, doActionWith : default: Reflektieren
+        /// 
+        /// Darf nicht concurrent laufen, deshalb mutex
+        /// Wird in folgenden Threads aufgerufen
+        ///     SimulationSystem umgebungWorkflow        
+        ///     Umgebung collisionWorkflow
+        /// </summary>
+        override this.CheckNear(other:Displayable) =
+            let collisionState = this.Geometry.intersects this.Position other.Geometry other.Position
+            if collisionState.collides then 
+                collides <- true
+                logDebug(this.Name + " - Collision detected with " + other.Name + " at " + formatVector(collisionState.closest)) 
+                mutex.WaitOne() |> ignore 
+                this.doActionWith(other) 
+                logDebug(this.Name + " - Collision action performed with " + other.Name + " at " + formatVector(collisionState.closest))
+                mutex.ReleaseMutex()
+                collides <- false
 
         abstract doActionWith: Displayable -> unit
         default this.doActionWith (other:Displayable) =  
-            //logDebug(this.Name + " --- Action " + other.Name  ) 
             if other.isPermeable() then 
                 logDebug(this.Name + " <--- Is permeable " + other.Name + " Do Nothing= " )
             else this.reflect(other)
 
-        // ----------------------------------------------------------------------------------------------------
-        // Move
-        // ----------------------------------------------------------------------------------------------------
+        // Am anderen Objekt reflektieren
+        member this.reflect(other:Displayable) =
+            let hitPoint = this.hitPoint(other)
+            logDebug(this.Name + " --- reflect at " + other.Name + " P= " + formatVector(hitPoint))
+            let anotherNormal = other.getNormalAt(hitPoint)
+            logDebug(this.Name + " --- reflected at " + other.Name + " N= " + formatVector(anotherNormal))
+            this.Direction <- Vector3.Reflect(this.Direction, anotherNormal)
+            logDebug( " !!! Is now: "  + this.ToString())
+
+        /// <summary>
+        /// Move
+        /// </summary>
         member this.MoveOnGround
             with get() = moveOnGround
             and set (aValue) = moveOnGround <- aValue
@@ -252,10 +206,6 @@ module MoveableObject =
             with get() = stoptime
             and set (aValue) = stoptime <- aValue
 
-        member this.InCollision
-            with get() = collides
-            and set (aValue) = collides <- aValue
-
         member this.CollidesWith
             with get() = collidesWith
             and set (aValue) = collidesWith <- aValue
@@ -278,34 +228,17 @@ module MoveableObject =
         default this.groundPositionAt(position:Vector3) =
             Vector3(position.X, position.X, position.Z)
 
-        // ----------------------------------------------------------------------------------------------------
-        // Moveable: Motion
-        // Steuerung der Bewegung über Direction Position, Speed
-        // ----------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// Moveable: Motion
+        /// Steuerung der Bewegung über Direction Position, Speed
+        /// </summary>
         member this.Move(time: int64) = 
-            
-            logDebug(this.Name + " - Move Waiting ... ")
-            lock this.Mutex (fun () ->
-
-                this.Lifetime <- time
-
-                if moveRandom && lifetime%Moveable.RandomInterval = 0L then
-                   this.updateDirectionRandom()
-
+            this.Lifetime <- time
+            if not collides then
+                if moveRandom && lifetime%randomInterval = 0L then
+                    this.updateDirectionRandom()
                 this.computePosition()
-
-                logDebug(this.ToString() + " moved ")
-
-                let stopped = this.Stoptime - this.Lifetime 
-                if stopped <> (- this.Lifetime) then
-    
-                    match stopped with
-                    | s when s > 0L ->          //  Noch gestoppt
-                        ()
-                    | s when s <= 0L ->         //  Läuft genau jetzt ab
-                        this.proceed()
-                    | _ -> ()
-            )
+                logDebug(this.Name + " - Moved to " + this.Position.ToString())
 
         // Active movement
         member this.MoveRandom
@@ -321,29 +254,23 @@ module MoveableObject =
             this.Direction <- newDirection
             this.Velocity <- newSpeed
 
-        override this.stop() = 
+        override this.Stop() = 
             this.LastSpeed <- this.Velocity
             this.Velocity <- 0.0f
             this.Stopped <- true
 
-        member this.stop(stoptime) =
+        member this.Stop(stoptime) =
+            // TODO
             this.Stoptime <- this.Lifetime + stoptime
             printfn "Gestoppt %O bis %O" this.Name this.Stoptime
-            base.stop()
-
-        member this.updateDirection (newDirection) =    
-            if not this.InCollision then    
-                logDebug(this.Name + "<<<UPDATEDIR>>> TO " + newDirection.ToString())
-                this.Direction <- newDirection
+            base.Stop()
 
         member this.updateDirectionRandom() =
-            let dir = Moveable.RandomDirectionFunc random direction 
-            this.updateDirection(dir)            
+            // TODO
+            ()          
 
         member this.invertDirection() =
             this.Direction <- this.Direction * -1.0f     
-
-        override this.isMoveable() = true
 
         member this.computePosition() =
             this.LastPosition <- this.Position
@@ -351,15 +278,13 @@ module MoveableObject =
             if moveOnGround then
                 let groundPosition = this.groundPositionAt(this.Position)
                 pos.Y <- groundPosition.Y + (this.height / 2.0f) + 0.2f 
-            this.Position <-  pos               
+            this.Position <-  pos              
         
-        // Normale am Treffpunkt bilden
-        member this.reflect(other:Displayable) =
-            let anotherNormal = other.getNormalAt(this.hitPoint(other))
-            logDebug(this.ToString() + " --- reflected at " + other.Name + " N= " + formatVector(anotherNormal))
-            this.Direction <- Vector3.Reflect(this.Direction, anotherNormal)
-            this.Position <- this.LastPosition 
-        
+
+        /// <summary>
+        ///Ist das noch aktuell
+        /// </summary>
+        // TODO
         member this.gotoPosition(targetPosition) = 
             this.LastPosition <- this.Position 
             this.Direction <- targetPosition - this.Position 
@@ -383,12 +308,29 @@ module MoveableObject =
             let state = this.Geometry.intersects this.Position another.Geometry another.Position
             state.collides
 
+        /// <summary>
+        /// Workflow
+        /// Start, Stop
+        /// </summary>
+        member this.MotionWorkflow =
+            motionWorkflow this
+
         member this.startWorkflow() =  
             cancelWorkflow <- new CancellationTokenSource() 
             let starteable = motionWorkflow this
             Async.Start(starteable, cancelWorkflow.Token)
             workflowActive <- true
 
+        member this.stopWorkflow() = 
+            cancelWorkflow.Cancel()
+            logInfo("Workflow stopped ")
+            workflowActive <- false
+
+    /// <summary>
+    /// Oberklasse für alle unbeweglichen Objekte
+    /// Subklassen: 
+    ///     Landscape
+    /// </summary>
     type Immoveable(name: string, geometry:Geometric, surface: Surface, color:Color, position: Vector3) =
         inherit Displayable(name, geometry, surface, color, position)
         new(name, geometry, color, position) = Immoveable(name, geometry, new Surface() , color, position)
@@ -401,4 +343,4 @@ module MoveableObject =
             state.collides
 
         override this.ToString() = 
-            name + ": " + this.Position.ToString() 
+            name + formatVector(this.Position) + " | " +  this.Geometry.BoundingBox(this.Position).ToString()   

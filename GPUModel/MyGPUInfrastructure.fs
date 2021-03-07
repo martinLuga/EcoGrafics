@@ -6,7 +6,6 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 // 
 
-open log4net
 
 open System
 open System.Threading 
@@ -14,13 +13,9 @@ open System.Windows.Forms
 open System.Collections.Generic 
 open System.Diagnostics
 
-open SharpDX
-open SharpDX.Mathematics.Interop
 open SharpDX.Direct3D 
 open SharpDX.Direct3D12
 open SharpDX.DXGI
-
-open Base.GlobalDefs
 
 open DirectX.Assets
 open DirectX.D3DUtilities

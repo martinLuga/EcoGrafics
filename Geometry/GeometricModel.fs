@@ -6,14 +6,13 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-
 open log4net
 
 open SharpDX 
 open SharpDX.Direct3D 
 
 open Base.GlobalDefs
-open Base.Framework
+open Base.Logging
 
 open DirectX.MeshObjects
 open DirectX.MathHelper
@@ -32,12 +31,16 @@ open VertexDreiD
 // ----------------------------------------------------------------------------------------------------
 module GeometricModel = 
 
-    let logger = LogManager.GetLogger("GeometricModel")
+    let logger = LogManager.GetLogger("Geometric.GeometricModel")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger)
+    let logWarn  = Warn(logger)
+    let logError = Error(logger)
 
     exception GeometryException of string
 
     let approximatelyEqual (a : float32, b: float32) =
-        abs(b - a) < 0.5f
+        abs(b - a) < 0.9f
 
     let mutable instanceCount = 1
 
@@ -330,13 +333,15 @@ module GeometricModel =
                 PlanePosition.TOP  
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
                 PlanePosition.BOTTOM  
-            else    
-                raise (GeometryException("Plane-Position für Normale nicht ermittelt"))// Error
+            else 
+                logError("Seite nicht ermittelt für " + this.ToString())
+                logError("Getroffen in Punkt: " + position.ToString())
+                raise (GeometryException("Plane-Position für Normale nicht ermittelt")) 
 
         // Quader : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
             let planePosition = this.planePositionAt(hitPosition)
-            //logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
+            logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
             match planePosition with
             | PlanePosition.FRONT  -> 
                 Vector3.UnitZ * -1.0f

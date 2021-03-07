@@ -41,7 +41,10 @@ module SimulationSystem =
     let logger = LogManager.GetLogger("Simulation.SimulationSystem")
     let logDebug = Debug(logger)
     let logInfo  = Info(logger)    
-    let mutable cancelAll = new CancellationTokenSource()
+    let mutable cancelAll           = new CancellationTokenSource()
+    let mutable cancelMotion        = new CancellationTokenSource()
+    let mutable cancelCollision     = new CancellationTokenSource()
+    let mutable cancelUmgebungen    = new CancellationTokenSource()
 
     let DEFAULT_CAMERA_POS = Vector3(-5.0f, 5.0f, -15.0f)
     let DEFAULT_SIM_POS = Vector3.Zero 
@@ -56,6 +59,28 @@ module SimulationSystem =
     type MySimulation(graficWindow:MyWindow) =
         inherit MySystem(graficWindow)
         static let mutable instance = new MySimulation()  // Singleton
+
+        /// <summary>
+        /// Umgebungen Workflow 
+        /// Kontrollieren, dass kein Objekt die Welt verlässt
+        /// </summary>
+        let umgebungWorkflow (system:MySimulation) = async {
+            let ID = System.DateTime.Now.ToString()   
+            clock.Start()
+            let umgebungen = Welt.Instance.Umgebungen.Values 
+            let graficWorld = system.Displayables
+            let moveableObjects = graficWorld.Values |> Seq.filter (fun x -> (x :? Moveable))|> Seq.map(fun x -> (x:?>Moveable)) 
+            let worldLimits = Welt.Instance.WorldLimits
+            logInfo("Umgebungen WF started with " + umgebungen.Count.ToString() + " Umgebungen ")
+            while true do      
+                do! Async.Sleep 1
+                for moveable in moveableObjects do                   
+                    for limitObject in worldLimits do
+                        moveable.CheckNear(limitObject)
+                    for umgebung in umgebungen do
+                        umgebung.Monitor(moveable)
+            logInfo("UmgebungWorkflow terminated")
+        }
         
         new() = new MySimulation(MyWindow.Instance)
 
@@ -70,6 +95,8 @@ module SimulationSystem =
             MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
             MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
 
+        member this.UmgebungWorkflow =
+            umgebungWorkflow this
 
         member this.initialize() =
             this.ClearObjects()  
@@ -98,7 +125,7 @@ module SimulationSystem =
             this.initialize()
             this.initializeWorld(ursprung, umgebungsLaenge, malX, malY, malZ)
 
-        member this.initializeForWorldData(weltDaten:WeltDaten) =
+        member this.InitializeForWorldData(weltDaten:WeltDaten) =
             this.initializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
 
         member this.initializeForPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) =
@@ -142,26 +169,12 @@ module SimulationSystem =
             if temperature > 80.0f then
                MyWindow.Instance.SetBackColor System.Drawing.Color.Fuchsia                         // über 80 Grad                 
 
-        member this.UmgebungWorkflow = async {
-            let ID = System.DateTime.Now.ToString()   
-            clock.Start()
-            let umgebungen = Welt.Instance.Umgebungen.Values 
-            let graficWorld = this.Displayables
-            let moveables = graficWorld.Values |> Seq.filter (fun x -> (x :? Moveable))|> Seq.map(fun x -> (x:?>Moveable)) 
-            let worldLimits = Welt.Instance.WorldLimits
-            logInfo("Umgebung WF started with " + umgebungen.Count.ToString() + " Umgebungen ")
-            while true do      
-                do! Async.Sleep 1
-                for movbl in moveables do                   
-                    for imm in worldLimits do
-                        movbl.CheckNear(imm)
-                    for umgebung in umgebungen do
-                        umgebung.Control(movbl)
-            logInfo("UmgebungWorkflow terminated")
-        }
-
-        member this.hideUmgebungen() =
+        member this.HideUmgebungen() =
             Welt.Instance.HideUmgebungen()
+            this.InstallObjects() 
+
+        member this.UnhideUmgebungen() =
+            Welt.Instance.UnhideUmgebungen()
             this.InstallObjects() 
         
         member this.toggleUmgebungen() =
@@ -169,21 +182,56 @@ module SimulationSystem =
             this.InstallObjects()
 
         /// <summary>
-        /// Workflow
+        /// Starte alle Workflows
         /// </summary>
         member this.startWorkflows() = 
              cancelAll <- new CancellationTokenSource()
-             let motionWorkflows = Welt.Instance.MotionWorkflows         
-             let collisionWorkflows = Welt.Instance.CollisionWorkflows
              let asynctasks =
-                 motionWorkflows
-                 |> Seq.append collisionWorkflows
+                 Welt.Instance.MotionWorkflows
                  |> Seq.append [this.UmgebungWorkflow]
                  |> Async.Parallel 
  
              Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelAll.Token)|> ignore
              logInfo("All workflows started ")
+             this.startUmgebungWorkflows()
              this.IsRunnung <- true
+
+        /// <summary>
+        /// Umgebung- Workflow
+        /// </summary>
+        member this.startUmgebungenWorkflow() = 
+            cancelUmgebungen <- new CancellationTokenSource()  
+            let starteable = umgebungWorkflow this
+            Async.Start(starteable, cancelUmgebungen.Token)
+            logInfo("Umgebungen WF started ")
+
+        member this.stoptUmgebungenWorkflow() =
+            cancelUmgebungen.Cancel()
+            logInfo("Umgebungen WF deaktiviert")
+
+        /// <summary>
+        /// Motion
+        /// </summary>
+        member this.startMotionWorkflows() = 
+            cancelMotion <- new CancellationTokenSource()             
+            let motionWorkflows = Welt.Instance.MotionWorkflows 
+            let asynctasks = 
+                motionWorkflows
+                |> Async.Parallel
+
+            Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelMotion.Token)|> ignore
+            logInfo("All motion workflows started ")
+            this.IsRunnung <- true
+
+        member this.startUmgebungWorkflows() =
+            for umg in Welt.Instance.Umgebungen.Values do
+                if umg.hasElements() then
+                    umg.startWorkflow()
+
+        member this.stopMotionWorkflows() =
+            cancelMotion.Cancel()
+            logInfo("All motions stopped ")
+            this.IsRunnung <- false
 
         member this.stopWorkflows() = 
             cancelAll.Cancel()

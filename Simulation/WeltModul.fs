@@ -156,6 +156,9 @@ module WeltModul =
             with get() = umgebungen
             and set(value) = umgebungen <- value 
 
+        member this.NichtLeereUmgebungen() =
+            umgebungen.Values |> Seq.filter (fun u  -> u.hasElements())
+
         member this.GetUmgebungenAsDisplayables() =
             this.Umgebungen.Values |> Seq.toList |> List.map (fun umgebung -> umgebung :> Displayable)
 
@@ -188,12 +191,9 @@ module WeltModul =
             umgebungen.Values 
             |> Seq.collect (fun x -> (x.Moveables))
 
-        member this.CollisionWorkflows =
-            umgebungen.Values 
-            |> Seq.map (fun x -> (x.CollisionWorkflow))
-
         member this.MotionWorkflows =
-            this.Moveables |> Seq.map(fun x -> x.MotionWorkflow)
+            this.Moveables 
+            |> Seq.map(fun x ->( x.MotionWorkflow))
 
         // ----------------------------------------------------------------------------------------------------
         // Welt-Displayables
@@ -271,6 +271,10 @@ module WeltModul =
         member this.HideUmgebungen() =
             for umgebung in umgebungen.Values do
                 umgebung.HideSurface()
+
+        member this.UnhideUmgebungen() =
+            for umgebung in umgebungen.Values do
+                umgebung.UnhideSurface()
 
         member this.ToggleUmgebungen() =
             for umgebung in umgebungen.Values do

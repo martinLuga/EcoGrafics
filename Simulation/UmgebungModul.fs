@@ -21,21 +21,21 @@ open Base.Logging
 
 open Geometry.GeometricModel 
 
-// ----------------------------------------------------------------------------------------------------
-// Kollisionserkennung über Umgebungen
-//  Der Gedanke ist, dass Bereiche, in denen nur ein oder kein bewegliches Objekt vorhanden sind,
-//  nicht geprüft werden müssen und somit keine Prüfung jeder gegen jeden stattfindet, was bei vielen Objekten 
-//  zu einer Explosion von Prüfungen führt.
-//
-//  Jedes Simulations-Objekt befindet sich in einer Umgebung
-//  Bei einer Bewegung (neue Position) bleibt es in der Umgebung, 
-//      wenn alle Koordinaten innerhalb der Begrenzungen bleiben 
-//      oder geht in eine neue Umgebung über, wenn eine Koordinate ausserhalb liegt 
-//
-//  Wenn in einer Umgebung mindestens 2 Objekte vorhanden sind und eines davon bewglich ist, wird für
-//  diese Umgebung eine Kollisions-Workflow gestartet.
-//
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
+/// Kollisionserkennung über Umgebungen
+///  Der Gedanke ist, dass Bereiche, in denen nur ein oder kein bewegliches Objekt vorhanden sind,
+///  nicht geprüft werden müssen und somit keine Prüfung jeder gegen jeden stattfindet, was bei vielen Objekten 
+///  zu einer Explosion von Prüfungen führt.
+///
+///  Jedes Simulations-Objekt befindet sich in einer Umgebung
+///  Bei einer Bewegung (neue Position) bleibt es in der Umgebung, 
+///      wenn alle Koordinaten innerhalb der Begrenzungen bleiben 
+///      oder geht in eine neue Umgebung über, wenn eine Koordinate ausserhalb liegt 
+///
+///  Wenn in einer Umgebung mindestens 2 Objekte vorhanden sind und eines davon bewglich ist, wird für
+///  diese Umgebung eine Kollisions-Workflow gestartet.
+///
+/// </summary>
 module UmgebungModul =
 
     type System.Single with
@@ -70,20 +70,20 @@ module UmgebungModul =
 
         let mutable laenge = laenge
         let mutable objekte = new Dictionary<String, Displayable>() 
-        let mutable moveables = 0 
         let mutable visible = false
         let mutable workflowActive = false
         let mutable ID = ""
+        let mutable cancelWorkflow     = new CancellationTokenSource()
 
-        // 
-        // Kollisionen innerhalb dieser Umgebung  
-        // WF wird gestartet, wenn mindestens 2 Objekte in dieser Umgebung vorhanden sind
-        // 
-        let collisionUmgebungWorkflow (umgebung:Umgebung) = async { 
+        ///  
+        ///  Kollisionen innerhalb dieser Umgebung  
+        ///  WF wird gestartet, wenn mindestens 2 Objekte in dieser Umgebung vorhanden sind
+        ///  
+        let collisionWorkflow (umgebung:Umgebung) = async { 
             let start = clock.ElapsedMilliseconds
             ID <- start.ToString()
             let mutable changed = true 
-            logInfo("CollisionUmgebungWorkflow started for: " + umgebung.Name)
+            logInfo("CollisionWorkflow started for: " + umgebung.Name)
             let immoveables = umgebung.Objekte |> Seq.filter (fun (x:Displayable) -> not(x.isMoveable())&&not(x.isPermeable()))            
             while true do 
                 do! Async.Sleep 1
@@ -96,22 +96,35 @@ module UmgebungModul =
 
         }
 
+        /// <summary>
+        /// Workflow
+        /// </summary>
+        member this.startWorkflow() = 
+            cancelWorkflow <- new CancellationTokenSource()  
+            let starteable = collisionWorkflow this
+            Async.Start(starteable, cancelWorkflow.Token)
+            workflowActive <- true
+            logInfo(this.Name + " - WF started ")
+
+        member this.stopWorkflow() =
+            cancelWorkflow.Cancel()
+            workflowActive <- false
+            logInfo(this.Name + " - WF stopped ")
+
+        member this.controlWorkflows() = 
+            this.stopWorkflow()         // in jedem Fall stoppen, denn die anz moveables hat sich geändert
+            if this.hasElements() then
+               this.startWorkflow()
+        
         member this.Objekte
             with get() = objekte.Values
 
         member this.Moveables =
             objekte.Values |> Seq.filter (fun x -> x.isMoveable()) |> Seq.map(fun(x) -> x :?> Moveable) 
 
-        member this.CollisionWorkflow =
-            collisionUmgebungWorkflow this
-
         member this.Visible 
             with get() = visible
             and set(value) = visible <- value
-
-        member this.WorkflowActive 
-            with get() = workflowActive
-            and set(value) = workflowActive <- value
 
         member this.ToggleSurface() = 
             this.Visible <- not this.Visible
@@ -123,13 +136,17 @@ module UmgebungModul =
             this.Changed <- true
             this.Refresh()
 
-        // 
-        // Bei der Neuanlage die Unterscheidung
-        // das Moveable soll möglichst nur in einer Umgebung liegen (Mittelpunkt)
-        // Ein Immoveable kann in mehreren Umgebungen sein
-        // 
+        member this.UnhideSurface() = 
+            this.Visible <- true
+            this.Changed <- true
+            this.Refresh()
+
+        /// <summary>
+        /// Bei der Neuanlage die Unterscheidung
+        /// das Moveable soll möglichst nur in einer Umgebung liegen (Mittelpunkt)
+        /// Ein Immoveable kann in mehreren Umgebungen sein.
+        /// </summary>
         member this.enthaelt(object:Displayable) =
-            logDebug( this.ToString() + " - NEU/ENTHAELT " + object.ToString()  )
             if object.isMoveable() then 
                  this.umgibt(object.Center)
             else
@@ -145,53 +162,51 @@ module UmgebungModul =
                 ()
             else
                 objekte.Add(object.Name, object)
-                logDebug( this.ToString() + " - ENTHAELT: " + object.ToString()  )
-                if object.isMoveable() then
-                    moveables <- moveables + 1
+                logDebug( this.ToString() + " - enthält: " + object.ToString() )
                     
-        // ----------------------------------------------------------------------------------------------------
-        //  Steuerung
-        // 
-        //  Wenn ein bewegliches Objekt 
-        //      keine Aktion
-        //
-        //  Wenn ein bewegliches Objekt eine Umgebung neu betritt:
-        //      zu objekten hinzufügen
-        //
-        //  Wenn ein bewegliches Objekt eine Umgebung verlässt:
-        //      aus objekten entfernen
-        //
-        // ----------------------------------------------------------------------------------------------------
-        member this.Control(object:Moveable) =
-            logDebug(this.Name + " - Control Waiting to shift " + object.Name)  
-            lock object.Mutex (fun () ->
-                let istJetztDrin = this.umgibt(object.Center) 
-                let istJetztDraussen = not istJetztDrin
-                let warVorherDrin = objekte.ContainsKey(object.Name)
-                let warVorherDraussen = not warVorherDrin
+        /// <summary>
+        /// Steuerung des Übergangs eines beweglichen Objekts von einer Umgebung in eine andere
+        /// Wenn Objekt nicht in Umgebung  : keine Aktion
+        /// Wenn Objekt eine Umgebung neu betritt: zu objekten hinzufügen
+        /// Wenn Objekt eine Umgebung verlässt: aus objekten entfernen
+        /// </summary>
+        member this.Monitor(object:Moveable) = 
 
-                let istUnverändert = (istJetztDrin && warVorherDrin) || (istJetztDraussen && warVorherDraussen)
-                let betritt = (istJetztDrin && warVorherDraussen)
-                let verlässt = (istJetztDraussen && warVorherDrin)
+            let istJetztDrin = this.umgibt(object.Center) 
+            let istJetztDraussen = not istJetztDrin
+            let warVorherDrin = objekte.ContainsKey(object.Name)
+            let warVorherDraussen = not warVorherDrin
 
-                if istUnverändert then
-                    ()
-                else 
-                    if betritt then 
-                        logWarn(object.Name + " - betritt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count + 1).ToString() + " Objekten")
-                        objekte.Add(object.Name, object)
-                        moveables <- moveables + 1  
-                        object.ResetCollision()
-                    else
-                        if verlässt then 
-                            logWarn(object.Name + " - verlässt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count - 1).ToString() + " Objekten")
-                            let res = objekte.Remove(object.Name) 
-                            if not res then
-                                ()
-                            moveables <- moveables - 1
-                            object.ResetCollision()
-                    this.Refresh()
-            )
+            let istUnverändert = (istJetztDrin && warVorherDrin) || (istJetztDraussen && warVorherDraussen)
+            let betritt = (istJetztDrin && warVorherDraussen)
+            let verlässt = (istJetztDraussen && warVorherDrin)
+
+            let statusToString() =
+                if istUnverändert then 
+                    "unverändert"
+                    else 
+                        if betritt then 
+                            "betritt"
+                        else 
+                            if verlässt then 
+                                "verlässt"
+                            else "" 
+
+            if istUnverändert then
+                ()
+            else
+                logDebug(this.Name + " monitoring " + object.Name + " status " + statusToString())
+                if betritt then 
+                    logWarn(object.Name + " - betritt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count + 1).ToString() + " Objekten")
+                    objekte.Add(object.Name, object)
+                else
+                    if verlässt then 
+                        logWarn(object.Name + " - verlässt Umgebung " + this.ToString() + " jetzt mit: "+ (objekte.Count - 1).ToString() + " Objekten")
+                        let res = objekte.Remove(object.Name) 
+                        if not res then
+                            ()
+                this.Refresh()
+                this.controlWorkflows()
 
         member this.Refresh() =
             if this.Visible then 
@@ -208,11 +223,17 @@ module UmgebungModul =
                 this.Surface.Material.Ambient  <- Color.Transparent.ToColor4()
                 this.Surface.Material.Emissive <- Color.Transparent.ToColor4()
 
-        member this.isEmpty() =
-            moveables = 0 
+        member this.moveables() =
+            objekte.Values |> Seq.filter (fun x -> x.isMoveable()) 
+
+        member this.anzahlMoveables() =
+            this.moveables()|> Seq.length
 
         member this.hasElements() =
-            moveables > 0 
+            this.anzahlMoveables() > 0 
+
+        member this.isEmpty() =
+            this.anzahlMoveables() = 0 
 
         override this.ToString() =
             let act = if workflowActive then "-Active" else "-Inactive"

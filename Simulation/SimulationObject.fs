@@ -119,7 +119,7 @@ module SimulationObject =
             this.Energy <- this.Energy - energyAmount 
             logWarn(this.Name + " " + energyAmount.ToString() + " Energy abgegeben. Jetzt " + this.Energy.ToString())
             if this.Energy <= 0.0f then
-                this.stop()
+                this.Stop()
                 logger.Error(this.Name + " Alle Energy abgegeben. Tot " )
 
         override this.isAlive() =  
@@ -182,25 +182,24 @@ module SimulationObject =
         member this.heartbeat(time: int64) = 
         
             base.Move(time)               // Movement
+           
+            match this.TaskStatus with
 
-            if not this.InCollision then
-                match this.TaskStatus with
-
-                | TaskStatus.IDLE ->
-                    this.stageTask()        // Sind Tasks vorhanden, Stage: this.ActiveTask setzen      
+            | TaskStatus.IDLE ->
+                this.stageTask()        // Sind Tasks vorhanden, Stage: this.ActiveTask setzen      
                 
-                | TaskStatus.STAGED ->      // Start Action ausführen, danach Status = Active
-                    this.startTask()            
+            | TaskStatus.STAGED ->      // Start Action ausführen, danach Status = Active
+                this.startTask()            
         
-                | TaskStatus.ACTIVE ->      // ExecuteAction wird solange ausgeführt, solange Status = Active
-                    this.executeTask()
+            | TaskStatus.ACTIVE ->      // ExecuteAction wird solange ausgeführt, solange Status = Active
+                this.executeTask()
 
-                | TaskStatus.COMPLETED_SUCCESS 
-                | TaskStatus.COMPLETED_FAILED ->
-                    this.terminateTask()    // TerminateAction wird ausgeführt
-                    this.purgeTask()
+            | TaskStatus.COMPLETED_SUCCESS 
+            | TaskStatus.COMPLETED_FAILED ->
+                this.terminateTask()    // TerminateAction wird ausgeführt
+                this.purgeTask()
 
-                | _ -> logError("Task???" + this.TaskStatus.ToString())
+            | _ -> logError("Task???" + this.TaskStatus.ToString())
 
         // ----------------------------------------------------------------------------------------------------
         // SIMULATIONOBJCT: doActionWith

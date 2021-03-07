@@ -126,8 +126,8 @@ module DisplayableObject =
         abstract member MoveDirection : Vector3 -> float32 -> unit  
         default this.MoveDirection (newDirection:Vector3) (newSpeed:float32) = ()
 
-        abstract member stop : unit -> unit  
-        default this.stop() = ()
+        abstract member Stop : unit -> unit  
+        default this.Stop() = ()
 
         abstract member IsColliding: Displayable -> unit 
         default this.IsColliding (another:Displayable) = ()

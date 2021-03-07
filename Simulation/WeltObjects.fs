@@ -51,6 +51,3 @@ module WeltObjects =
                 true
             else
                 false
-
-        override this.ToString() = 
-            "Landscape:" + name + ": " + this.Position.ToString() 
