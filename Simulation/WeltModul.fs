@@ -26,10 +26,10 @@ open WeltObjects
 
 open UmgebungModul
 
-// ----------------------------------------------------------------------------------------------------
-// Kollisionserkennung über Umgebungen
-// Die Welt enthät alle Umgebungen
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
+/// Kollisionserkennung über Umgebungen
+/// Die Welt enthät alle Umgebungen
+/// </summary>
 module WeltModul = 
 
     let logger = LogManager.GetLogger("Simulation.Welt")
@@ -85,6 +85,36 @@ module WeltModul =
                 instance
             and set(value) = instance <- value
 
+        // Getter, setter
+        member this.XMIN
+            with get() = xMIN
+
+        member this.XMAX
+            with get() = xMAX
+
+        member this.YMIN
+            with get() = yMIN
+
+        member this.YMAX
+            with get() = yMAX
+
+        member this.ZMIN
+            with get() = zMIN
+
+        member this.ZMAX
+            with get() = zMAX
+
+        member this.GroundHeight
+            with get() = yMIN
+
+        /// <summary>
+        /// Intializer, der eine Welt mit einer Seitenlänge erstellt
+        /// </summary>
+        /// <param name="ursprung">Unten links vorne</param> 
+        /// <param name="laenge">Seitenlänge einer Umgebung</param>
+        /// <param name="malX">In x-Richtung malX Umgebungen</param>
+        /// <param name="malY">In y-Richtung malY Umgebungen</param>
+        /// <param name="malZ">In z-Richtung malZ Umgebungen</param>
         member this.Initialize(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int) = 
             let (MIN, MAX) = toBoundary(ursprung, laenge, malX, malY, malZ)
             weltUrsprung <- ursprung
@@ -99,6 +129,7 @@ module WeltModul =
             zMIN <- MIN.Z
             zMAX <- MAX.Z
             this.createUmgebungen()
+            this.registriereWorldLimits()
             this.HideUmgebungen() 
 
         member this.InitFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) = 
@@ -114,8 +145,12 @@ module WeltModul =
             zMIN <- zmin
             zMAX <- zmax
             this.createUmgebungen() 
+            this.registriereWorldLimits()
             this.HideUmgebungen() 
 
+        /// <summary>
+        /// Ausgehend von den Definitionswerten der Welt werden Umgebungen erzeugt
+        /// </summary>
         member this.createUmgebungen() =
             umgebungen <- new Dictionary<Vector3, Umgebung>()
             for i = 0 to einheitenX-1 do 
@@ -129,28 +164,6 @@ module WeltModul =
                         let js = sprintf "%03i" j
                         let ks = sprintf "%03i" k
                         this.erzeugeUmgebung(is + "-" + js + "-" + ks, punkt)
-
-        member this.XMIN
-            with get() = xMIN
-            and set(v) = xMIN <- v 
-        member this.XMAX
-            with get() = xMAX
-            and set(v) = xMAX <- v
-        member this.YMIN
-            with get() = yMIN
-            and set(v) = yMIN <- v
-        member this.YMAX
-            with get() = yMAX
-            and set(v) = yMAX <- v
-        member this.ZMIN
-            with get() = zMIN
-            and set(v) = zMIN <- v
-        member this.ZMAX
-            with get() = zMAX
-            and set(v) = zMAX <- v
-
-        member this.GroundHeight
-            with get() = yMIN
 
         member this.Umgebungen
             with get() = umgebungen
@@ -179,13 +192,18 @@ module WeltModul =
         member this.umgebungenZuObjekt(objekt:Displayable) = 
             umgebungen.Values |> Seq.filter (fun umg -> umg.enthaelt(objekt))
 
-        member this.registriereObjekt(objekt:Displayable) = 
+        /// <summary>
+        /// Object addieren registrieren
+        /// </summary>   
+        member this.registriereBeiUmgebung(objekt:Displayable) = 
             let umgebungen = this.umgebungenZuObjekt(objekt) 
             for umgebung in umgebungen do
-                umgebung.Add(objekt)
+                logDebug(umgebung.ToString() + " registriere " + objekt.ToString())
+                umgebung.Add(objekt)            
+            logDebug(" ---------- " )
 
-        member this.registriereObjektListe list  =
-            List.map (fun o ->  this.registriereObjekt o) list |> ignore 
+        member this.registriereObjekteBeiUmgebung list  =
+            List.map (fun o ->  this.registriereBeiUmgebung o) list |> ignore 
 
         member this.Moveables =
             umgebungen.Values 
@@ -195,9 +213,9 @@ module WeltModul =
             this.Moveables 
             |> Seq.map(fun x ->( x.MotionWorkflow))
 
-        // ----------------------------------------------------------------------------------------------------
-        // Welt-Displayables
-        // ----------------------------------------------------------------------------------------------------   
+        /// <summary>
+        /// Welt-Limits
+        /// </summary>   
         member this.Ground =
             new Landscape(
                 name="ground",
@@ -262,12 +280,15 @@ module WeltModul =
                 this.frontLimit:>Displayable;
             ]
 
+        member this.registriereWorldLimits() =
+            this.registriereObjekteBeiUmgebung this.WorldLimits 
+
         member this.GetDisplayables() =
             List.concat [this.GetUmgebungenAsDisplayables(); this.WorldLimits ]
 
-        // ----------------------------------------------------------------------------------------------------
-        // Collision
-        // ----------------------------------------------------------------------------------------------------    
+        /// <summary>
+        /// Umgebungen
+        /// </summary>    
         member this.HideUmgebungen() =
             for umgebung in umgebungen.Values do
                 umgebung.HideSurface()

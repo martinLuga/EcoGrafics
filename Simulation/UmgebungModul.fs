@@ -162,7 +162,7 @@ module UmgebungModul =
                 ()
             else
                 objekte.Add(object.Name, object)
-                logDebug( this.ToString() + " - enthält: " + object.ToString() )
+                logDebug(this.ToString() + " wurde hinzugefügt " + object.ToString())
                     
         /// <summary>
         /// Steuerung des Übergangs eines beweglichen Objekts von einer Umgebung in eine andere
@@ -228,12 +228,15 @@ module UmgebungModul =
 
         member this.anzahlMoveables() =
             this.moveables()|> Seq.length
+        
+        member this.anzahlObjects() =
+            objekte.Values |> Seq.length
 
         member this.hasElements() =
-            this.anzahlMoveables() > 0 
+            this.anzahlObjects() > 0 
 
         member this.isEmpty() =
-            this.anzahlMoveables() = 0 
+            this.anzahlObjects() = 0 
 
         override this.ToString() =
             let act = if workflowActive then "-Active" else "-Inactive"

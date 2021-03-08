@@ -137,9 +137,15 @@ module GeometricModel =
             box.Maximum <- snd (this.Boundaries(objectPosition))
             box
 
+        member this.OuterLimit(objectPosition) = 
+            let mutable box = this.BoundingBox(objectPosition) 
+            let xMax = box.Maximum.X - box.Minimum.X
+            let yMax = box.Maximum.Y - box.Minimum.Y
+            let zMax = box.Maximum.Z - box.Minimum.Z
+            max xMax (max yMax zMax)  
+
         member this.CenterAtPosition(objectPosition) = 
             this.Center + objectPosition
-
 
     // ----------------------------------------------------------------------------------------------------
     // Kugel
@@ -239,16 +245,16 @@ module GeometricModel =
             else if approximatelyEqual(position.X, this.Maximum.X) then 
                 PlanePosition.RIGHT  
             else if approximatelyEqual(position.Y, this.Minimum.Y) then 
-                PlanePosition.TOP  
+                PlanePosition.BOTTOM 
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
-                PlanePosition.BOTTOM  
+                PlanePosition.TOP    
             else    
                 raise (GeometryException("Plane-Position nicht ermittelt"))          // Error
 
-        // QUADER : Die Normale je nach Seite
+        // Würfel : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
             let planePosition = this.planePositionAt(hitPosition)
-            //logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
+            logDebug(this.Name + " PLANEPOS  " + planePosition.ToString())
             match planePosition with
             | PlanePosition.FRONT  -> 
                 Vector3.UnitZ * -1.0f
@@ -330,9 +336,9 @@ module GeometricModel =
             else if approximatelyEqual(position.X, this.Maximum.X) then 
                 PlanePosition.RIGHT  
             else if approximatelyEqual(position.Y, this.Minimum.Y) then 
-                PlanePosition.TOP  
+                PlanePosition.BOTTOM 
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
-                PlanePosition.BOTTOM  
+                PlanePosition.TOP  
             else 
                 logError("Seite nicht ermittelt für " + this.ToString())
                 logError("Getroffen in Punkt: " + position.ToString())
@@ -341,7 +347,7 @@ module GeometricModel =
         // Quader : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
             let planePosition = this.planePositionAt(hitPosition)
-            logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
+            logDebug(this.Name + " PLANEPOS  " + planePosition.ToString())
             match planePosition with
             | PlanePosition.FRONT  -> 
                 Vector3.UnitZ * -1.0f
@@ -455,16 +461,16 @@ module GeometricModel =
             else if approximatelyEqual(position.X, this.Maximum.X) then 
                 PlanePosition.RIGHT  
             else if approximatelyEqual(position.Y, this.Minimum.Y) then 
-                PlanePosition.TOP  
+                PlanePosition.BOTTOM 
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
-                PlanePosition.BOTTOM  
+                PlanePosition.TOP  
             else    
                 raise (GeometryException("Plane-Position für Normale nicht ermittelt"))
 
         // PYRAMIDE : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
             let planePosition = this.planePositionAt(hitPosition)
-            //logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
+            //logDebug(this.Name + " PLANEPOS  " + planePosition.ToString())
             match planePosition with
             | PlanePosition.FRONT  -> 
                 Vector3.UnitZ * -1.0f
@@ -760,16 +766,16 @@ module GeometricModel =
             else if approximatelyEqual(position.X, this.Maximum.X) then 
                 PlanePosition.RIGHT  
             else if approximatelyEqual(position.Y, this.Minimum.Y) then 
-                PlanePosition.TOP  
+                PlanePosition.BOTTOM 
             else if approximatelyEqual(position.Y, this.Maximum.Y) then 
-                PlanePosition.BOTTOM  
+                PlanePosition.TOP  
             else    
                 raise (GeometryException("Plane-Position  nicht ermittelt"))
 
         // Quader : Die Normale je nach Seite
         override this.getNormalAt(hitPosition, position: Vector3) = 
             let planePosition = this.planePositionAt(hitPosition)
-            //logger.Debug(this.Name + " PLANEPOS  " + planePosition.ToString())
+            //logDebug(this.Name + " PLANEPOS  " + planePosition.ToString())
             match planePosition with
             | PlanePosition.FRONT  -> 
                 Vector3.UnitZ * -1.0f

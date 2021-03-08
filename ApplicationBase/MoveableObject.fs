@@ -78,6 +78,7 @@ module MoveableObject =
         let mutable neartime:int64 = 0L
         let mutable stopped = false
         let mutable collides = false
+        let mutable near = false
         let mutable stoptime:int64 = 0L
         let mutable moveOnGround=false
         let mutable collidesWith=null
@@ -124,6 +125,15 @@ module MoveableObject =
                 logInfo(this.Name + " <<<HITS>>> " + other.Name + " at " + this.Position.ToString())
             state.collides
 
+        member this.CalculateNear(othername:string, distance:float32) = 
+            let olimit = this.Geometry.OuterLimit(this.Position)
+            let isNear = distance < olimit 
+            let nearString =  if isNear then "near " + othername else "far " + othername
+            let compString =  if isNear then "< " else " > "
+            let objString = " THIS " + this.ToString()
+            logDebug(this.Name + " Is " + nearString + "  >> dist " + distance.ToString("#0.00") + compString + olimit.ToString() + objString)
+            isNear
+
         /// <summary>
         /// Kollisions-Logik: Stellt fest, ob das Moveable ein Displayable berührt 
         /// IsColliding : Entsprechende Aktion, doActionWith : default: Reflektieren
@@ -136,13 +146,18 @@ module MoveableObject =
         override this.CheckNear(other:Displayable) =
             let collisionState = this.Geometry.intersects this.Position other.Geometry other.Position
             if collisionState.collides then 
-                collides <- true
-                logDebug(this.Name + " - Collision detected with " + other.Name + " at " + formatVector(collisionState.closest)) 
                 mutex.WaitOne() |> ignore 
+                collides <- true
+                collidesWith <- other
+                logDebug(this.Name + " !!! collides with " + other.Name + " at " + formatVector(collisionState.closest)) 
                 this.doActionWith(other) 
-                logDebug(this.Name + " - Collision action performed with " + other.Name + " at " + formatVector(collisionState.closest))
-                mutex.ReleaseMutex()
+                logDebug(this.Name + " !!! Collision action performed with " + other.Name + " at " + formatVector(collisionState.closest))
                 collides <- false
+                mutex.ReleaseMutex()
+            else 
+                collides <- false
+                collidesWith <- null
+                //near <- this.CalculateNear(other.Name, collisionState.distance)
 
         abstract doActionWith: Displayable -> unit
         default this.doActionWith (other:Displayable) =  
@@ -156,8 +171,9 @@ module MoveableObject =
             logDebug(this.Name + " --- reflect at " + other.Name + " P= " + formatVector(hitPoint))
             let anotherNormal = other.getNormalAt(hitPoint)
             logDebug(this.Name + " --- reflected at " + other.Name + " N= " + formatVector(anotherNormal))
-            this.Direction <- Vector3.Reflect(this.Direction, anotherNormal)
-            logDebug( " !!! Is now: "  + this.ToString())
+            direction <- Vector3.Reflect(direction, anotherNormal)
+            this.stepForward()  // Sonst immer noch in collision
+            logDebug(this.Name + " --- is now: "  + this.ToString())
 
         /// <summary>
         /// Move
@@ -218,6 +234,9 @@ module MoveableObject =
             this.Stopped <- false
             this.Stoptime <- 0L
 
+        member this.stepForward() =
+            this.Position <- this.Position + direction * 0.2f 
+
         member this.stepAside() =
             this.LastDirection <- this.Direction
             let mutable newDirection =  this.Direction
@@ -234,11 +253,13 @@ module MoveableObject =
         /// </summary>
         member this.Move(time: int64) = 
             this.Lifetime <- time
-            if not collides then
+            if collides then
+                logDebug(this.Name + " !!! in collision ")
+            else
                 if moveRandom && lifetime%randomInterval = 0L then
                     this.updateDirectionRandom()
                 this.computePosition()
-                logDebug(this.Name + " - Moved to " + this.Position.ToString())
+                logDebug(" !!! Moving " + this.ToString())
 
         // Active movement
         member this.MoveRandom

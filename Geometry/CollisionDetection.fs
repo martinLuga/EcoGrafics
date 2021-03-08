@@ -24,14 +24,18 @@ module CollisionDetection =
     let mutable result = false
 
     type CollisionState = 
-        {closest: Vector3;  collides: bool}
+        {closest: Vector3;  collides: bool; distance:float32}
 
-    // ----------------------------------------------------------------------------------------------------
-    // Intersection of GeometricTypes
-    // Result:
+    /// <summary>
+    /// Intersection of GeometricTypes
+    /// </summary>
+
+    /// <summary>
+    /// Kugel mit Kugel
     //  Point of intersection
+    //  Distance between center and center
     //  True, if intersection
-    // ----------------------------------------------------------------------------------------------------
+    /// </summary>
     let kugelKugel (kugel1:Kugel) (posKugel1:Vector3)(kugel2:Kugel)(posKugel2:Vector3) =
         let mutable sphere1 = BoundingSphere( posKugel1, kugel1.Radius )
         let mutable sphere2 = BoundingSphere()
@@ -40,34 +44,47 @@ module CollisionDetection =
         let mutable closest = Vector3.Zero
         Collision.ClosestPointSphereSphere (&sphere1, &sphere2, &closest) 
         let result = Collision.SphereIntersectsSphere(&sphere1, &sphere2)
+        let distance = Collision.DistanceSphereSphere(&sphere1, &sphere2)
         let state = {
-                closest = closest;
-                collides = result
+            collides = result;
+            distance = distance;
+            closest = closest; 
             }
         state
 
-    let kugelPlane (kugel1:Kugel) (posKugel1:Vector3)(plane2:QuadPlane)(posPlane2:Vector3) =
-        let mutable sphere1 = BoundingSphere(posKugel1, kugel1.Radius) 
+    /// <summary>
+    /// Kugel mit Plane
+    /// Point of intersection
+    /// Distance between center and center
+    /// True, if intersection
+    /// </summary>
+    /// <param name="kugel">Kugel </param>
+    /// <param name="posKugel">Position der Kugel</param>
+    /// <param name="plane">Eine Plane</param>
+    /// <param name="posPlane">Position der Plane</param>
+    let kugelPlane (kugel:Kugel) (posKugel:Vector3)(plane:QuadPlane)(posPlane:Vector3) =
+        let mutable sphere1 = BoundingSphere(posKugel, kugel.Radius) 
         let mutable plane1 = Plane()  
-        plane1.Normal <- plane2.getNormalAt(Vector3.Zero, posPlane2)    
+        plane1.Normal <- plane.getNormalAt(Vector3.Zero, posPlane)    
         let result = Collision.PlaneIntersectsSphere(&plane1, &sphere1)
         let mutable closest = Vector3.Zero
         Collision.ClosestPointPlanePoint(&plane1, &sphere1.Center, &closest)
+        let distance = Collision.DistancePlanePoint(&plane1, &closest)
         let state = {
-                closest = closest;
-                collides = (result = PlaneIntersectionType.Intersecting)
+            collides = (result = PlaneIntersectionType.Intersecting)
+            distance = distance;
+            closest = closest;
             }
-        state        
+        state  
 
-    let kugelCylinder (kugel1:Kugel) (posKugel1:Vector3)(cylinder2:Cylinder)(posCylinder2:Vector3) =
-        let (b1min, b1max) = kugel1.Boundaries(posKugel1)
-        let (b2min, b2max) = cylinder2.Boundaries(posCylinder2)  
+    let kugelCylinder (kugel:Kugel) (posKugel:Vector3)(cylinder:Cylinder)(posCylinder:Vector3) =
+        let mutable bs2 = BoundingSphere(posKugel, kugel.Radius)
+        let mutable bb = cylinder.BoundingBox(posCylinder)  
         let mutable closest = Vector3.Zero
-        let result = 
-            b1max.X < b2min.X || b2max.X < b1min.X || 
-            b1max.Y < b2min.Y || b2max.Y < b1min.Y || 
-            b1max.Z < b2min.Z || b2max.Z < b1min.Z 
+        let result = Collision.BoxIntersectsSphere(&bb, &bs2)
+        let distance = Collision.DistanceSpherePoint(&bs2, &closest)
         let state = {
+                distance = distance;
                 closest = closest;
                 collides = result 
             }
@@ -80,33 +97,39 @@ module CollisionDetection =
         let mutable closest = Vector3.Zero
         Collision.ClosestPointBoxPoint(&bb2, &center, &closest)
         let result = Collision.BoxIntersectsBox(&bb1, &bb2)
+        let distance = Collision.DistanceBoxPoint(&bb1, &closest)
         let state = {
+                distance = distance;
                 closest = closest;
                 collides = result
             }
         state   
 
     let boxKugel (box:Geometric) (posBox:Vector3)(kugel:Kugel)(posKugel:Vector3) =
-        let mutable bb1 = box.BoundingBox(posBox) 
-        let mutable bs2 = BoundingSphere(posKugel, kugel.Radius)
+        let mutable bb = box.BoundingBox(posBox) 
+        let mutable bs = BoundingSphere(kugel.CenterAtPosition(posKugel), kugel.Radius)
         let mutable closest = Vector3.Zero
-        Collision.ClosestPointBoxPoint(&bb1, &bs2.Center, &closest)
-        let result = Collision.BoxIntersectsSphere(&bb1, &bs2) 
+        Collision.ClosestPointBoxPoint(&bb, &bs.Center, &closest)
+        let result = Collision.BoxIntersectsSphere(&bb, &bs) 
+        let distance = Collision.DistanceSpherePoint(&bs,  &closest)
         let state = {
+                distance = distance;
                 closest = closest;
                 collides = result
             }
         state   
 
     let kugelBox(kugel:Kugel)(posKugel:Vector3)(box:Geometric) (posBox:Vector3) =
-        let mutable bb1 = box.BoundingBox(posBox) 
-        let mutable bs2 = BoundingSphere(kugel.CenterAtPosition(posKugel), kugel.Radius)
+        let mutable bb = box.BoundingBox(posBox) 
+        let mutable bs = BoundingSphere(kugel.CenterAtPosition(posKugel), kugel.Radius)
         let mutable closest = Vector3.Zero
-        Collision.ClosestPointBoxPoint(&bb1, &bs2.Center, &closest)
-        let result = Collision.BoxIntersectsSphere(&bb1, &bs2) 
+        Collision.ClosestPointBoxPoint(&bb, &bs.Center, &closest)
+        let result = Collision.BoxIntersectsSphere(&bb, &bs) 
+        let distance = Collision.DistanceSpherePoint(&bs,  &closest)
         let state = {
+                collides = result;
                 closest = closest;
-                collides = result
+                distance = distance
             }
         state  
 
@@ -116,7 +139,9 @@ module CollisionDetection =
         plane1.Normal <- plane2.getNormalAt(Vector3.Zero, posPlane2)
         let result =  Collision.PlaneIntersectsBox(&plane1, &bb1)
         let mutable closest = Vector3.Zero
+        let distance = Collision.DistanceBoxPoint(&bb1,  &closest)
         let state = {
+                distance = distance;
                 closest = closest;
                 collides = (result = PlaneIntersectionType.Intersecting)
             }
@@ -130,9 +155,12 @@ module CollisionDetection =
             bb1.Maximum.X < b2min.X || b2max.X < bb1.Minimum.X || 
             bb1.Maximum.Y < b2min.Y || b2max.Y < bb1.Minimum.Y || 
             bb1.Maximum.Z < b2min.Z || b2max.Z < bb1.Minimum.Z 
+
+        let distance = Collision.DistanceBoxPoint(&bb1,  &closest)
         let state = {
-                closest = closest;
-                collides = result 
+                collides = result; 
+                distance = distance;
+                closest = closest; 
             }
         state 
 
@@ -142,9 +170,9 @@ module CollisionDetection =
         let intersects = Collision.RayIntersectsBox(&ray, &bb, &maxRange)
         intersects 
 
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
     //  Erweiterung für Geometric für Kollisionen
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
     type Geometric with
 
         member this.intersects (objectPosition:Vector3) (another:Geometric) (anotherPosition: Vector3) =

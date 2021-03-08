@@ -169,9 +169,9 @@ module Scenarios =
 
         logInfo(">>>>>> Wall Hinten =" + wallHinten.ToString())
 
-        displayables <- [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallOben:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
+        displayables <- [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
         MySimulation.Instance.AddObjects(displayables)        
-        MySimulation.Instance.UnhideUmgebungen()
+        //MySimulation.Instance.UnhideUmgebungen()
 
     /// <summary>
     /// Einfallswinkel = Ausfallswinkel
@@ -219,7 +219,7 @@ module Scenarios =
         let wall = 
             new Landscape(
                 name="Wall",
-                geometry=new Quader("Wall", 1.0f, Welt.Instance.YMAX - Welt.Instance.YMIN, 20.0f, Color.Transparent),        
+                geometry=new Quader("Wall", 1.0f, Welt.Instance.YMAX - Welt.Instance.YMIN, 20.0f, Color.Transparent),       
                 surface=SURFACE_WALL(Color.Orange),
                 position=Vector3(0.0f, Welt.Instance.GroundHeight+0.5f, -10.0f),
                 color=Color.Transparent

@@ -58,7 +58,7 @@ module SimulationSystem =
     [<AllowNullLiteral>] 
     type MySimulation(graficWindow:MyWindow) =
         inherit MySystem(graficWindow)
-        static let mutable instance = new MySimulation()  // Singleton
+        static let mutable instance = new MySimulation(MyWindow.Instance)  // Singleton
 
         /// <summary>
         /// Umgebungen Workflow 
@@ -70,24 +70,25 @@ module SimulationSystem =
             let umgebungen = Welt.Instance.Umgebungen.Values 
             let graficWorld = system.Displayables
             let moveableObjects = graficWorld.Values |> Seq.filter (fun x -> (x :? Moveable))|> Seq.map(fun x -> (x:?>Moveable)) 
-            let worldLimits = Welt.Instance.WorldLimits
             logInfo("Umgebungen WF started with " + umgebungen.Count.ToString() + " Umgebungen ")
             while true do      
                 do! Async.Sleep 1
-                for moveable in moveableObjects do                   
-                    for limitObject in worldLimits do
-                        moveable.CheckNear(limitObject)
+                for moveable in moveableObjects do
                     for umgebung in umgebungen do
                         umgebung.Monitor(moveable)
             logInfo("UmgebungWorkflow terminated")
         }
-        
-        new() = new MySimulation(MyWindow.Instance)
+
+        member this.UmgebungWorkflow =
+            umgebungWorkflow this   
 
         static member Instance
             with get() = instance
             and set(value) = instance <- value
 
+        /// <summary>
+        /// Konstruktor
+        /// </summary>
         static member CreateInstance(defaultConfigurations: MyPipelineConfiguration list) =
             MyGPU.Instance.Initialize(MyWindow.Instance)
             MyGPU.Instance.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
@@ -95,9 +96,9 @@ module SimulationSystem =
             MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
             MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
 
-        member this.UmgebungWorkflow =
-            umgebungWorkflow this
-
+        /// <summary>
+        /// Initializer
+        /// </summary>
         member this.initialize() =
             this.ClearObjects()  
             this.SetPixelShader(ShaderClass.PhongPSType) 
@@ -116,10 +117,6 @@ module SimulationSystem =
         member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
             Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
             this.InitObjects(Welt.Instance.GetDisplayables())
-
-        member this.initializeWorldFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) =
-            Welt.Instance.InitFromPoints(xmin, xmax, ymin, ymax, zmin, zmax, laenge)          
-            this.InitObjects(Welt.Instance.GetDisplayables())
                 
         member this.initializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
             this.initialize()
@@ -128,13 +125,9 @@ module SimulationSystem =
         member this.InitializeForWorldData(weltDaten:WeltDaten) =
             this.initializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
 
-        member this.initializeForPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) =
-            this.initialize()
-            this.initializeWorldFromPoints(xmin, xmax, ymin, ymax, zmin, zmax, laenge)     
-
         override this.AddObjects(simulationObjects) =
             base.AddObjects(simulationObjects)
-            Welt.Instance.registriereObjektListe(simulationObjects)
+            Welt.Instance.registriereObjekteBeiUmgebung(simulationObjects)
 
         member this.SetCameraPos(newCameraPos) = 
             initCamera(
