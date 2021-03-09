@@ -263,7 +263,7 @@ module Scenario =
                 position=Vector3(2.0f, 0.0f, 2.0f)
           ) 
 
-        displayables <- [sphere:>Displayable]
+        displayables <- [sphere:>Displayable; plate1:>Displayable]
         MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>

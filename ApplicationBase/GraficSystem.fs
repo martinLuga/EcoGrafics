@@ -90,9 +90,12 @@ module GraficSystem =
         let mutable lastPixelShaderDesc:ShaderDescription=null
         let mutable isRunning:bool = false 
         let mutable tessellationFactor = 8.0f
-        let mutable rasterizationFactor = 8.0f
+        let mutable rasterizationFactor = 8.0f       
         let mutable rasterizerType = RasterType.Solid
-        let mutable blendType = BlendType.Opaque    
+        let mutable defaultRasterType:RasterType = RasterType.Undefinded
+        let mutable blendType = BlendType.Opaque   
+        let mutable defaultBlendType = BlendType.Undefinded 
+        let mutable defaultPixelShader = ShaderClass.NotSet
 
         new() = new MySystem(MyWindow.Instance)
 
@@ -119,9 +122,18 @@ module GraficSystem =
         /// </summary>
         member this.initialize() =
             this.ClearObjects()  
-            this.SetPixelShader(ShaderClass.PhongPSType) 
-            this.SetRasterizerState(RasterType.Wired)
-            this.SetBlendType(BlendType.Opaque) 
+            this.SetPixelShader(defaultPixelShader) 
+            this.SetRasterizerState(defaultRasterType)
+            this.SetBlendType(defaultBlendType) 
+
+        /// <summary>
+        /// Initializer
+        /// </summary>
+        member this.Configure(pixelShader, rasterType, blendType) =
+            this.ClearObjects()  
+            defaultPixelShader <- pixelShader 
+            defaultRasterType  <- rasterType
+            defaultBlendType   <- blendType 
 
         member this.IsRunning
             with get () = isRunning
@@ -150,6 +162,11 @@ module GraficSystem =
         member this.RasterizerType
             with get() = rasterizerType
             and set(value) = rasterizerType <- value
+
+            
+        member this.DefaultRasterizerType
+            with get() = defaultRasterType
+            and set(value) = defaultRasterType <- value
             
         member this.BlendType
             with get() = blendType
@@ -162,7 +179,6 @@ module GraficSystem =
         member this.AddObject(displayable:Displayable) = 
             this.addDisplayable(displayable)
             myGpu.RefreshGeometry(geometries)
-
             
         abstract member AddObjects: Displayable list -> unit
         default this.AddObjects(displayables:Displayable list) = 

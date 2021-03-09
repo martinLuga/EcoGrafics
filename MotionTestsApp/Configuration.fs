@@ -15,6 +15,7 @@ open SharpDX
 open ApplicationBase.MoveableObject
 open ApplicationBase.WindowControl
 open ApplicationBase.ShaderConfiguration 
+open Shader.ShaderSupport 
 
 open Simulation.SimulationObject
 open Simulation.SimulationSystem
@@ -44,35 +45,6 @@ module Configuration =
     let leftDirection       = Vector3.UnitX * -1.0f
 
     /// <summary>
-    //  Richtungsänderungen bei zufälliger Bewegung
-    /// </summary>
-    let updateDirectionRandom(random:Random) (dir:Vector3) =
-        let x = (random.Next(-10,10) |> float32 )  / 100.0f
-        let y = (random.Next(-10,10) |> float32  ) / 100.0f
-        let z = (random.Next(-10,10) |> float32  ) / 100.0f  
-        let dir = new Vector3(x, y, z)
-        dir.Normalize()
-        dir          
-
-    let updateDirectionRandom2(random:Random) (dir:Vector3) =
-        let deviation = 5  
-        let x = dir.X + (random.Next(-deviation,deviation) |> float32 )  / 10.0f
-        let y = dir.Y + (random.Next(-deviation,deviation) |> float32  ) / 10.0f
-        let z = dir.Z + (random.Next(-deviation,deviation) |> float32  ) / 10.0f  
-        let result = new Vector3(x, y, z)
-        result.Normalize()
-        result 
-
-    let updateDirectionRandomOnGround(random:Random) (dir:Vector3) =
-        let x = (random.Next(-10,10) |> float32 )  / 100.0f
-        let y = dir.Y
-        let z = (random.Next(-10,10) |> float32  ) / 100.0f  
-        let dir = new Vector3(x, y, z)
-        dir.Normalize()
-        logger.Debug("NEW DIR=" + dir.ToString())
-        dir  
-
-    /// <summary>
     //  GraphicSystem initialisieren
     /// </summary>
     let Configure () =  
@@ -80,13 +52,12 @@ module Configuration =
         logger.Info("Application.Configure")
 
         Moveable.RandomInterval <- 8L 
-        Moveable.RandomDirectionFunc <- updateDirectionRandomOnGround
         Simulateable.LookAroundInterval <- 150L  
 
         clock.Start()
 
         // Simulation System
         MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
-        MySimulation.Instance.initialize()
+        MySimulation.Instance.Configure(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)
         MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures") 
         MySimulation.Instance.TessellationFactor <- 1.0f

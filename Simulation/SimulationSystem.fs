@@ -67,7 +67,6 @@ module SimulationSystem =
         /// Kontrollieren, dass kein Objekt die Welt verlässt
         /// </summary>
         let umgebungWorkflow (system:MySimulation) = async {
-            let ID = System.DateTime.Now.ToString()   
             clock.Start()
             let umgebungen = Welt.Instance.Umgebungen.Values 
             let graficWorld = system.Displayables
@@ -97,24 +96,6 @@ module SimulationSystem =
             MyGPU.Instance.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
             MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
             MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
-
-        /// <summary>
-        /// Initializer
-        /// </summary>
-        member this.initialize() =
-            this.ClearObjects()  
-            this.SetPixelShader(ShaderClass.PhongPSType) 
-            this.SetRasterizerState(RasterType.Wired)
-            this.SetBlendType(BlendType.Opaque) 
-            initCamera(
-                DEFAULT_CAMERA_POS,
-                DEFAULT_SIM_POS,                // Camera target
-                aspectRatio,                    // Aspect ratio
-                MathUtil.TwoPi / 200.0f,        // Scrollamount horizontal
-                MathUtil.TwoPi / 200.0f)        // Scrollamount vertical
-            initLight (
-                DEFAULT_LIGHT_POS,
-                Color.White) 
 
         member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
             Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        

@@ -14,6 +14,7 @@ open ApplicationBase.GraficSystem
 open ApplicationBase.WindowLayout
 open ApplicationBase.WindowControl
 open ApplicationBase.ShaderConfiguration
+open Shader.ShaderSupport 
 
 // ----------------------------------------------------------------------------------------------------
 // Standard-Konfiguration für das GraphicSystem 
@@ -26,7 +27,7 @@ module Configuration =
 
         // Window
         MySystem.CreateInstance(graficWindow, [pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ]) 
-        MySystem.Instance.initialize()        
+        MySystem.Instance.Configure(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)      
         MySystem.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")     
 
         // Camera and light

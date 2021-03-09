@@ -39,7 +39,8 @@ module Control =
         clearOutputWindow()
         writeToOutputWindow("Shape is: " + ishape.ToString()) 
 
-    let initDisplayables () =
+    let initDisplayables () =        
+        MySystem.Instance.initialize()
         let displayables = ExampleObjects.getDisplayables (shape)
         MySystem.Instance.InitObjects(displayables)
 
@@ -124,9 +125,6 @@ module Control =
     let Init() =   
         InitTesselationFactor(4.0f)
         initShape(Shape.AtomBond)   
-        setPixelShader(ShaderClass.LambertPSType) 
-        SetRasterizerState(RasterType.Wired) 
-        SetBlendState(BlendType.Opaque)
         mainWindow.MainMenuStrip <- mainMenue
         mainWindow.Controls.Add(mainWindow.MainMenuStrip)    
         addStandardKeyMovements(graficWindow)
