@@ -39,6 +39,7 @@ open Shader.FrameResources.CookBook
 open Shader.ShaderSupport
   
 open ShaderConfiguration
+
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
 //
@@ -53,8 +54,6 @@ module GraficSystem =
     let logDebug = Debug(logger)
     let logInfo  = Info(logger)
 
-    let mutable isRunning = false
-
     type DirectionalLight = CookBook.DirectionalLight
     type FrameConstants = CookBook.FrameConstants
     type ObjectConstants = CookBook.ObjectConstants
@@ -63,10 +62,6 @@ module GraficSystem =
     type Texture =  DirectX.D3DUtilities.Texture
 
     type Material =  Geometry.GeometricModel.Material
-
-    let mutable tessellationFactor = 8.0f
-    let mutable rasterizerType = RasterType.Solid
-    let mutable blendType = BlendType.Opaque    
 
     exception GraficSystemError of string
 
@@ -93,7 +88,11 @@ module GraficSystem =
         let mutable lastVisibility=Visibility.Opaque        
         let mutable currentPixelShaderDesc:ShaderDescription=null
         let mutable lastPixelShaderDesc:ShaderDescription=null
-        let mutable isRunnung:bool = false 
+        let mutable isRunning:bool = false 
+        let mutable tessellationFactor = 8.0f
+        let mutable rasterizationFactor = 8.0f
+        let mutable rasterizerType = RasterType.Solid
+        let mutable blendType = BlendType.Opaque    
 
         new() = new MySystem(MyWindow.Instance)
 
@@ -115,12 +114,18 @@ module GraficSystem =
             MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
             MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
 
-        static member DropInstance() =
-            MySystem.Instance <- null
+        /// <summary>
+        /// Initializer
+        /// </summary>
+        member this.initialize() =
+            this.ClearObjects()  
+            this.SetPixelShader(ShaderClass.PhongPSType) 
+            this.SetRasterizerState(RasterType.Wired)
+            this.SetBlendType(BlendType.Opaque) 
 
-        member this.IsRunnung
-            with get() = isRunnung
-            and set(value) = isRunnung <- value
+        member this.IsRunning
+            with get () = isRunning
+            and  set(value) = isRunning <- value
             
         member this.FrameLight
             with get() = frameLight
@@ -133,6 +138,22 @@ module GraficSystem =
         member this.Displayables
             with get() = displayables
             and set(value) = displayables <- value
+
+        member this.TessellationFactor
+            with get() = tessellationFactor
+            and set(value) = tessellationFactor <- value
+        
+        member this.RasterizationFactor
+            with get() = rasterizationFactor
+            and set(value) = rasterizationFactor <- value
+
+        member this.RasterizerType
+            with get() = rasterizerType
+            and set(value) = rasterizerType <- value
+            
+        member this.BlendType
+            with get() = blendType
+            and set(value) = blendType <- value
 
         member this.SetPixelShader(shader: ShaderClass) =
             currentPixelShaderDesc <- ShaderDescForType(shader)
@@ -259,9 +280,11 @@ module GraficSystem =
         member this.InstallObjects() = 
             logInfo("InstallObjects") 
 
-            // pipeline
+            // All Tesselation-Modes, die in Geometries vorkommen
+            // Daraus ergeben sich die benötigten shader
             let tesselationModes = displayables.Values |> List.ofSeq |> List.map (fun disp -> disp.Geometry.tesselationMode()) |> List.distinct 
-            let pipelineConfig = this.shaderFromTessMode(tesselationModes.Head) 
+            
+            let pipelineConfig = this.configForTessMode(tesselationModes.Head) 
             if pipelineConfig <> lastPipelineConfig then
                 myGpu.SetConfig(pipelineConfig)
             lastPipelineConfig <- pipelineConfig  
@@ -336,7 +359,7 @@ module GraficSystem =
             let textureName = if displayable.Surface.Texture = null then "" else displayable.Surface.Texture.Name
             let tessMode = displayable.Geometry.tesselationMode()
             let visibility = displayable.Surface.Visibility
-            let pipelineConfig = this.shaderFromTessMode(tessMode) 
+            let pipelineConfig = this.configForTessMode(tessMode) 
             let blendType = this.blendTypeFromVisibility(visibility)
 
             // pipelineState
@@ -345,13 +368,15 @@ module GraficSystem =
             lastVisibility <- visibility
             if (lastPipelineConfig <> pipelineConfig)  then
                 myGpu.SetConfig(pipelineConfig)
-            lastPipelineConfig <- pipelineConfig        
+            lastPipelineConfig <- pipelineConfig
             myGpu.CurrentPixelShaderDesc <- currentPixelShaderDesc
             lastPixelShaderDesc <- currentPixelShaderDesc
+            
+            myGpu.RasterizerDesc <- rasterizerDescFromType(rasterizerType)
 
             myGpu.DrawPerObject(idx, geometryName, topology, matIdx, textureName)
 
-        member this.shaderFromTessMode(tessMode) =
+        member this.configForTessMode(tessMode) =
             match tessMode with 
             | TesselationMode.NONE    -> "Basic"
             | TesselationMode.TRI     -> "TesselatedTri"

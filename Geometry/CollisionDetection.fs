@@ -177,7 +177,7 @@ module CollisionDetection =
 
         member this.intersects (objectPosition:Vector3) (another:Geometric) (anotherPosition: Vector3) =
             match this with
-            | :? Würfel | :? Quader | :? QuadPatch | :? Pyramide | :? Corpus->
+            | :? Würfel | :? Quader | :? QuadPatch | :? Pyramide | :? Corpus | :? Polyeder ->
                 match another with
                 |  :? Kugel -> 
                     boxKugel this objectPosition (another:?> Kugel) anotherPosition
@@ -195,7 +195,7 @@ module CollisionDetection =
                 match another with
                 |  :? Kugel -> 
                     kugelKugel kugel1 objectPosition (another:?> Kugel) anotherPosition         
-                | :? Würfel | :? Quader | :? QuadPatch | :? Pyramide | :? Corpus->
+                | :? Würfel | :? Quader | :? QuadPatch | :? Pyramide | :? Corpus | :? Polyeder ->
                     kugelBox  kugel1 objectPosition another anotherPosition
                 | :? QuadPlane -> 
                     //logDebug("Intersect Kugel %O at %O with Plane %O at %O" kugel1 objectPosition another anotherPosition

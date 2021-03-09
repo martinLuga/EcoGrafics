@@ -13,18 +13,17 @@ open log4net
 open SharpDX
 
 open ApplicationBase.MoveableObject
-open ApplicationBase.GraficSystem
 open ApplicationBase.WindowControl
 open ApplicationBase.ShaderConfiguration 
 
 open Simulation.SimulationObject
 open Simulation.SimulationSystem
 
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
 // Einstellungen für die Simulation
-// Begrenzungen des Object space
-// DirectX Einstellungen
-// ----------------------------------------------------------------------------------------------------
+/// Begrenzungen des Object space
+/// DirectX Einstellungen
+/// </summary>
 module Configuration =
 
     let logger = LogManager.GetLogger("Configuration")
@@ -44,9 +43,9 @@ module Configuration =
     let rightDirection      = Vector3.UnitX *  1.0f
     let leftDirection       = Vector3.UnitX * -1.0f
 
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
     //  Richtungsänderungen bei zufälliger Bewegung
-    // ----------------------------------------------------------------------------------------------------
+    /// </summary>
     let updateDirectionRandom(random:Random) (dir:Vector3) =
         let x = (random.Next(-10,10) |> float32 )  / 100.0f
         let y = (random.Next(-10,10) |> float32  ) / 100.0f
@@ -73,9 +72,9 @@ module Configuration =
         logger.Debug("NEW DIR=" + dir.ToString())
         dir  
 
-    // ----------------------------------------------------------------------------------------------------
-    // GraphicSystem initialisieren
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    //  GraphicSystem initialisieren
+    /// </summary>
     let Configure () =  
 
         logger.Info("Application.Configure")
@@ -89,6 +88,5 @@ module Configuration =
         // Simulation System
         MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
         MySimulation.Instance.initialize()
-        MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")   
-
-        tessellationFactor <- 1.0f
+        MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures") 
+        MySimulation.Instance.TessellationFactor <- 1.0f

@@ -26,7 +26,7 @@ module Configuration =
 
         // Window
         MySystem.CreateInstance(graficWindow, [pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ]) 
-        
+        MySystem.Instance.initialize()        
         MySystem.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")     
 
         // Camera and light

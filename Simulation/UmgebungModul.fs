@@ -210,7 +210,7 @@ module UmgebungModul =
 
         member this.Refresh() =
             if this.Visible then 
-                if  this.isEmpty() then                    
+                if  this.containsMoveable() then                    
                     this.Surface.Material.Diffuse  <- Color4.White
                     this.Surface.Material.Ambient  <- Color4(0.2f) 
                     this.Surface.Material.Emissive <- Color.White.ToColor4() 
@@ -237,6 +237,9 @@ module UmgebungModul =
 
         member this.isEmpty() =
             this.anzahlObjects() = 0 
+
+        member this.containsMoveable() =
+            this.anzahlMoveables() > 0
 
         override this.ToString() =
             let act = if workflowActive then "-Active" else "-Inactive"

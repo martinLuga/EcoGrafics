@@ -157,7 +157,6 @@ module MoveableObject =
             else 
                 collides <- false
                 collidesWith <- null
-                //near <- this.CalculateNear(other.Name, collisionState.distance)
 
         abstract doActionWith: Displayable -> unit
         default this.doActionWith (other:Displayable) =  

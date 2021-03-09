@@ -7,15 +7,11 @@
 
 open Base.Logging
 
-open ApplicationBase.GraficSystem  
-
 open ApplicationBase.WindowControl
 
-// ----------------------------------------------------------------------------------------------------
-// SimulationApp
-// ----------------------------------------------------------------------------------------------------
-// Steuerung
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
+/// SimulationApp - Hauptprogramm
+/// </summary>
 module Program =
 
     configureLoggingInMap "EcoGrafics" "MotionTestsApp" "resource" "log4net.config"
@@ -25,7 +21,7 @@ module Program =
     let main argv = 
         WindowLayout.Setup("ANT SIMULATION")
         Configuration.Configure()
-        Scenarios.Initialize()
+        Scenario.Initialize()
         Control.Init() 
         displayWindows()
         Control.Start()   

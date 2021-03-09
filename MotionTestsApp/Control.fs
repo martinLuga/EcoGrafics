@@ -11,25 +11,23 @@ open System.Windows.Forms
 
 open log4net
 
-open ApplicationBase.WindowControl
 open ApplicationBase.WindowLayout
 open ApplicationBase.MoveableObject
-open ApplicationBase.DisplayableObject
-open ApplicationBase.GraficSystem  
+open ApplicationBase.DisplayableObject 
 
 open Base.Logging
 
 open Simulation.SimulationSystem
-open Simulation.WeltModul
 open Simulation.ScenarioSupport
 
 open WindowLayout
+open WindowControl
 
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
 // Steuerung
 // Shader-Auswahl
 // Move Rotate
-// ----------------------------------------------------------------------------------------------------
+/// </summary>
 module Control = 
 
     let logger = LogManager.GetLogger("app.Control")
@@ -61,27 +59,25 @@ module Control =
     let addScenarioKeyMovements() =
         graficWindow.KeyDown.Add(fun e -> if e.KeyCode = Keys.N  then execNextScenario())  
 
-    // ----------------------------------------------------------------------------------------------------    
-    // Menues
-    // ----------------------------------------------------------------------------------------------------  
+    /// <summary>    
+    /// Menues
+    /// </summary> 
+    
     // Menue Simulation
     let simulationSubmenue =  
         let simulationMenuItem = new ToolStripMenuItem("&Simulation")
-        let toggleWorkflowsMenuItem = new ToolStripMenuItem("&Toggle Workflows")
-        let startMotionMenuItem = new ToolStripMenuItem("&Start Motion")
-        let stopMotionMenuItem = new ToolStripMenuItem("&Stop Workflows")
-        let scenarioMenuItem = new ToolStripMenuItem("&Next Scenario")
+        let nextMenuItem = new ToolStripMenuItem("&Next Scenario")
         let restartMenuItem = new ToolStripMenuItem("&Restart Scenario")
-        simulationMenuItem.DropDownItems.Add(scenarioMenuItem)|>ignore
-        simulationMenuItem.DropDownItems.Add(stopMotionMenuItem)|>ignore
-        simulationMenuItem.DropDownItems.Add(startMotionMenuItem)|>ignore
+        let startWorkflowsMenuItem = new ToolStripMenuItem("&Start Motion")
+        let toggleWorkflowsMenuItem = new ToolStripMenuItem("&Toggle Motion")
+        simulationMenuItem.DropDownItems.Add(nextMenuItem)|>ignore
         simulationMenuItem.DropDownItems.Add(restartMenuItem)|>ignore
         simulationMenuItem.DropDownItems.Add(toggleWorkflowsMenuItem)|>ignore
-        stopMotionMenuItem.Click.Add(fun _ -> MySimulation.Instance.stopMotionWorkflows(); writeToMessageWindow("Workflows stopped"))
-        startMotionMenuItem.Click.Add(fun _ -> MySimulation.Instance.startMotionWorkflows(); writeToMessageWindow("Motion started"))
-        scenarioMenuItem.Click.Add(fun _ -> execNextScenario())
-        restartMenuItem.Click.Add(fun _ ->  restartScenario())
+        simulationMenuItem.DropDownItems.Add(startWorkflowsMenuItem)|>ignore
+        nextMenuItem.Click.Add(fun _ -> startNextScenario())
+        restartMenuItem.Click.Add(fun _ -> execActiveScenario ())
         toggleWorkflowsMenuItem.Click.Add(fun _ -> MySimulation.Instance.toggleWorkflows ())
+        startWorkflowsMenuItem.Click.Add(fun _ -> MySimulation.Instance.startWorkflows ())
         simulationMenuItem
 
     // Menue View
@@ -99,9 +95,9 @@ module Control =
 
     objectSpeedTrackBar.Scroll.Add(fun args -> changeObjectSpeed objectSpeedTrackBar.Value)
 
-    // ----------------------------------------------------------------------------------------------------    
-    // Init  Menue, Key-Function, Scenario
-    // ---------------------------------------------------------------------------------------------------- 
+    /// <summary>    
+    /// Init  Menue, Key-Function, Scenario
+    /// </summary> 
     let Init () = 
         mainWindow.MainMenuStrip <- setupMenue
         mainWindow.Controls.Add(mainWindow.MainMenuStrip) 
@@ -113,7 +109,6 @@ module Control =
 
     let Start() = 
         logInfo("Start")
-        execScenario(0)
-        MySimulation.Instance.startWorkflows() 
+        execScenario(2) 
         MySimulation.Instance.Start()
         writeToMessageWindow("Application started") 

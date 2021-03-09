@@ -122,10 +122,10 @@ module Control =
     // Inits GUI, GraficSystem
     // ---------------------------------------------------------------------------------------------------- 
     let Init() =   
-        initTesselationFactor (4.0f)
+        InitTesselationFactor(4.0f)
         initShape(Shape.AtomBond)   
         setPixelShader(ShaderClass.LambertPSType) 
-        SetRasterizerState(RasterType.Wired)
+        SetRasterizerState(RasterType.Wired) 
         SetBlendState(BlendType.Opaque)
         mainWindow.MainMenuStrip <- mainMenue
         mainWindow.Controls.Add(mainWindow.MainMenuStrip)    

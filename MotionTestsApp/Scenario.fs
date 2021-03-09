@@ -35,7 +35,7 @@ open Control
 // 2. Zwei Objekte treffen aufeinander 
 // 2. Zwei Objekte prallen im Winkel von der Wand ab
 // ----------------------------------------------------------------------------------------------------
-module Scenarios =
+module Scenario =
 
     let printWeltDaten(weltDaten:WeltDaten) =
         let points = toPoints(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
@@ -59,7 +59,7 @@ module Scenarios =
     // Kugeln, die sich zwischen zwei Wänden bewegen
     // Kugeln bewegen sich zwischen den beiden Wänden hin und her
     // ----------------------------------------------------------------------------------------------------
-    let scenarioCollisionMitWand() =  
+    let CollisionMitWand() =  
         printScenario("CollisionMitWand")
         let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
         printWeltDaten(weltDaten)
@@ -167,18 +167,15 @@ module Scenarios =
                 moveRandom=false
             )
 
-        logInfo(">>>>>> Wall Hinten =" + wallHinten.ToString())
-
         displayables <- [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
         MySimulation.Instance.AddObjects(displayables)        
-        //MySimulation.Instance.UnhideUmgebungen()
 
     /// <summary>
     /// Einfallswinkel = Ausfallswinkel
     /// Zwei Kugeln gegen eine Wand
     /// Sphere - Quader
     /// </summary>
-    let scenarioEinfallswinkelGleichAusfallswinkel() = 
+    let EinfallswinkelGleichAusfallswinkel() = 
         printScenario("EinfallswinkelGleichAusfallswinkel")
 
         let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)        
@@ -191,7 +188,6 @@ module Scenarios =
         // ----------------------------------------------------------------------------------------------------
         // Zwei Kugeln und dazwischen eine Wand  
         // ---------------------------------------------------------------------------------------------------- 
-        MySimulation.Instance.ClearObjects()  
         let sphere1 = 
             new Moveable( 
              name="sphere1",
@@ -221,7 +217,7 @@ module Scenarios =
                 name="Wall",
                 geometry=new Quader("Wall", 1.0f, Welt.Instance.YMAX - Welt.Instance.YMIN, 20.0f, Color.Transparent),       
                 surface=SURFACE_WALL(Color.Orange),
-                position=Vector3(0.0f, Welt.Instance.GroundHeight+0.5f, -10.0f),
+                position=Vector3(0.0f, Welt.Instance.YMIN+0.5f, -10.0f),
                 color=Color.Transparent
              ) 
              
@@ -232,27 +228,27 @@ module Scenarios =
     /// Kollision Kugel an einem Korpus
     /// Zwei Objekte. die sich aufeinander zu bewegen und reflektiert werden
     /// </summary>
-    let scenarioCollisionKugelUndKorpus() = 
+    let CollisionKugelUndKorpus() = 
         printScenario("KollisionKugelUndKorpus")
 
-        let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 2, 4)        
+        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
         printWeltDaten(weltDaten)
 
         MySimulation.Instance.InitializeForWorldData(weltDaten)
-        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 15.0f, -50.0f))
-        MySimulation.Instance.SetLightPos (new Vector3( 15.0f,  -15.0f,  10.0f)) 
+        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
+        MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))   
 
         // ----------------------------------------------------------------------------------------------------
         // Eine Kugel und ein Korpus
         // ---------------------------------------------------------------------------------------------------- 
         let radius = 1.0f
-        let sphere1 = 
+        let sphere = 
            new Moveable( 
-               name="sphere1",
-               geometry=new Kugel("Sphere1", radius, Color.Transparent),   
+               name="sphere",
+               geometry=new Kugel("Sphere", radius, Color.Transparent),   
                surface=SURFACE_KUGEL(Color.OrangeRed),
                color=Color.Yellow, 
-               position=Vector3(-8.0f, Welt.Instance.GroundHeight + radius + 0.1f, 0.0f),
+               position=Vector3(-8.0f, Welt.Instance.YMIN + 0.1f, 0.0f),
                direction=Vector3(1.0f, 0.0f, 1.0f ),   
                velocity=OBJECT_VELOCITY,     
                moveRandom=false
@@ -262,18 +258,122 @@ module Scenarios =
             new Landscape(
                 name="plate1",
                 geometry=CORPUS(CONTOUR_PLATE),
-                surface=new Surface(MAT_DARKSLATEGRAY),
+                surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
-                position=Vector3(2.0f, Welt.Instance.GroundHeight+0.5f, 2.0f)
+                position=Vector3(2.0f, 0.0f, 2.0f)
+          ) 
+
+        displayables <- [sphere:>Displayable]
+        MySimulation.Instance.AddObjects(displayables)
+
+    /// <summary>
+     /// VerschiedeneGeometrien
+     /// TODO Probleme mit tesseierten Objekten
+     /// Beisst sich mit den Worl-Limits
+     /// </summary>
+    let VerschiedeneGeometrien() = 
+        printScenario("VerschiedeneGeometrien")
+
+        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
+        printWeltDaten(weltDaten)
+
+        MySimulation.Instance.InitializeForWorldData(weltDaten)
+        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -30.0f))
+        MySimulation.Instance.SetLightPos (new Vector3( 5.0f,  -25.0f,  10.0f))   
+
+        // ----------------------------------------------------------------------------------------------------
+        // Ein Korpus
+        // ----------------------------------------------------------------------------------------------------
+        /// Im Uhrteigersinn unten
+        let CONTOUR =
+            [|Vector3( 0.0f, 0.0f, -5.0f);
+              Vector3( 1.0f, 0.0f, -5.0f);
+              Vector3( 2.0f, 0.0f, -5.0f);
+              Vector3( 3.0f, 0.0f, -5.0f);
+
+              Vector3( 4.0f, 0.0f, -4.0f);
+              Vector3( 4.0f, 0.0f, -3.0f);
+              Vector3( 4.0f, 0.0f, -2.0f);
+              Vector3( 3.0f, 0.0f, -1.0f);
+
+              Vector3( 2.0f, 0.0f, -1.0f);
+              Vector3( 1.0f, 0.0f, -1.0f);
+              Vector3( 0.0f, 0.0f, -1.0f);
+              Vector3(-1.0f, 0.0f, -2.0f);
+
+              Vector3(-1.0f, 0.0f, -3.0f);
+              Vector3(-1.0f, 0.0f, -4.0f);
+              Vector3( 0.0f, 0.0f, -5.0f) 
+             |] 
+
+        let CORPUS = 
+            Corpus(
+                name="CORPUS",
+                center= Vector3(1.5f, 0.0f, -3.0f),
+                contour=CONTOUR,
+                height=2.0f,
+                colorBottom=Color.White,
+                colorTop=Color.White,
+                colorSide=Color.White
+            )
+        let corpus = 
+            new Landscape(
+                name="corpus",
+                geometry=CORPUS,
+                surface=new Surface(MAT_DARKGOLDENROD),
+                color=Color.Black,
+                position=Vector3(-10.0f, Welt.Instance.YMIN + 0.1f, 0.0f)
+        ) 
+
+       // Ein Polyeder
+        let polyeder = 
+            new Landscape(
+                name="polyeder",
+                geometry=new Polyeder(
+                    name="Icosahedron2", 
+                    center= Vector3(0.0f, 0.0f, -2.0f),
+                    radius=3.0f,
+                    color=Color.DarkBlue,
+                    tessFactor=4.0f                  
+                    ),
+                surface=new Surface(MAT_DARKGOLDENROD),
+                color=Color.Black,
+                position=Vector3(0.0f, Welt.Instance.YMIN + 0.1f, 0.0f)
             ) 
 
-        displayables <- [sphere1:>Displayable; plate1:>Displayable]
+        // Eine Fläche
+        let plane = 
+            new Immoveable(
+                name="plane",
+                geometry=new QuadPatch(
+                    name="Plane", 
+                    seitenLaenge=5.0f,
+                    color=Color.LightPink,
+                    tessFactor=12.0f
+                ),
+                surface=new Surface(                    
+                    Material( 
+                        name="mat1",
+                        ambient=Color4(0.2f),
+                        diffuse=Color4.White,
+                        specular=Color4.White,
+                        specularPower=20.0f,
+                        emissive=Color.DarkSlateGray.ToColor4()
+                     ) 
+                ),
+                position=Vector3(10.0f, Welt.Instance.YMIN + 0.1f, 0.0f),
+                color=Color.Gray
+            ) 
+
+        displayables <- [corpus:>Displayable; polyeder:>Displayable; plane:>Displayable]
+        MySimulation.Instance.ClearObjects()
         MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Initialize
     /// </summary>
     let Initialize() =
-        AddScenario(0, "CollisionMitWand", scenarioCollisionMitWand)
-        AddScenario(1, "EinfallswinkelGleichAusfallswinkel", scenarioEinfallswinkelGleichAusfallswinkel)
-        AddScenario(2, "CollisionKugelUndKorpus", scenarioCollisionKugelUndKorpus)
+        AddScenario(0, "CollisionMitWand", CollisionMitWand)
+        AddScenario(1, "EinfallswinkelGleichAusfallswinkel", EinfallswinkelGleichAusfallswinkel)
+        AddScenario(2, "CollisionKugelUndKorpus", CollisionKugelUndKorpus)
+        AddScenario(3, "VerschiedeneGeometrien",VerschiedeneGeometrien)

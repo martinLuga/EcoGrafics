@@ -40,7 +40,8 @@ module SimulationSystem =
 
     let logger = LogManager.GetLogger("Simulation.SimulationSystem")
     let logDebug = Debug(logger)
-    let logInfo  = Info(logger)    
+    let logInfo  = Info(logger) 
+    
     let mutable cancelAll           = new CancellationTokenSource()
     let mutable cancelMotion        = new CancellationTokenSource()
     let mutable cancelCollision     = new CancellationTokenSource()
@@ -49,7 +50,7 @@ module SimulationSystem =
     let DEFAULT_CAMERA_POS = Vector3(-5.0f, 5.0f, -15.0f)
     let DEFAULT_SIM_POS = Vector3.Zero 
     let DEFAULT_LIGHT_POS = Vector3(25.0f, -25.0f,  10.0f) 
- 
+
     /// <summary>
     /// SimulationSystem type 
     /// Erweiterung um Kollisions und Task Funktionalität
@@ -59,6 +60,7 @@ module SimulationSystem =
     type MySimulation(graficWindow:MyWindow) =
         inherit MySystem(graficWindow)
         static let mutable instance = new MySimulation(MyWindow.Instance)  // Singleton
+        let mutable isActive = false
 
         /// <summary>
         /// Umgebungen Workflow 
@@ -102,7 +104,7 @@ module SimulationSystem =
         member this.initialize() =
             this.ClearObjects()  
             this.SetPixelShader(ShaderClass.PhongPSType) 
-            this.SetRasterizerState(RasterType.Solid)
+            this.SetRasterizerState(RasterType.Wired)
             this.SetBlendType(BlendType.Opaque) 
             initCamera(
                 DEFAULT_CAMERA_POS,
@@ -187,7 +189,13 @@ module SimulationSystem =
              Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelAll.Token)|> ignore
              logInfo("All workflows started ")
              this.startUmgebungWorkflows()
-             this.IsRunnung <- true
+             isActive <- true
+
+        member this.stopWorkflows() =             
+            this.stopUmgebungWorkflows()
+            cancelAll.Cancel()
+            logInfo("All workflows stopped ")
+            isActive <- false
 
         /// <summary>
         /// Umgebung- Workflow
@@ -214,27 +222,26 @@ module SimulationSystem =
 
             Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelMotion.Token)|> ignore
             logInfo("All motion workflows started ")
-            this.IsRunnung <- true
+            isActive <- true
 
         member this.startUmgebungWorkflows() =
             for umg in Welt.Instance.Umgebungen.Values do
                 if umg.hasElements() then
                     umg.startWorkflow()
 
+        member this.stopUmgebungWorkflows() =
+            for umg in Welt.Instance.Umgebungen.Values do
+                if umg.hasElements() then
+                    umg.stopWorkflow()
+
         member this.stopMotionWorkflows() =
             cancelMotion.Cancel()
             logInfo("All motions stopped ")
-            this.IsRunnung <- false
-
-        member this.stopWorkflows() = 
-            cancelAll.Cancel()
-            logInfo("All workflows stopped ")
-            this.IsRunnung <- false
+            isActive <- false 
 
         member this.toggleWorkflows() =             
-            if this.IsRunnung then 
+            if isActive then 
                 this.stopWorkflows()
-            else
-                
+            else                
                 this.startWorkflows()
 

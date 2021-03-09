@@ -1,4 +1,4 @@
-﻿namespace ApplicationBase
+﻿namespace MotionTests
 //
 //  WindowControl.fs
 //
@@ -22,15 +22,17 @@ open GPUModel.MyGraphicWindow
 open Shader.FrameResources
 open Shader.ShaderSupport
 
-open WindowLayout 
-open GraficSystem
+open ApplicationBase.WindowLayout 
+
+open Simulation.SimulationSystem
+open ApplicationBase.ShaderConfiguration
 
  
-/// <summary>
+// ----------------------------------------------------------------------------------------------------
 //  Window-Actions
 //  STD-Menüs
 //  Steuern des Grafik-Fensters über Keys 
-/// </summary>   
+// ----------------------------------------------------------------------------------------------------   
 module WindowControl = 
 
     type Keys = System.Windows.Forms.Keys
@@ -44,7 +46,6 @@ module WindowControl =
     let mutable zoomFactor = 0.5f 
 
     let DEFAULT_TESSELATION_AMOUNT = 1.0f
-    let DEFAULT_RASTERIZATION_AMOUNT = 1.0f
 
     let mutable x, y, clientWidth, clientHeight = boundsMiddle () 
 
@@ -62,9 +63,9 @@ module WindowControl =
 
     let clock = new Stopwatch()
     
-    /// <summary>    
-    /// Message output
-    /// </summary> 
+    // ----------------------------------------------------------------------------------------------------    
+    //  Message output
+    // ---------------------------------------------------------------------------------------------------- 
     let writeToOutputWindow(text)=
         textBoxO.Text <- 
             textBoxO.Text + "\n" + text
@@ -82,53 +83,38 @@ module WindowControl =
     let clearMessageWindow()=
         textBoxM.Text <- ""
 
-    /// <summary>
-    /// Tesselation
-    /// </summary>
-    let InitTesselationFactor (newTessellationFactor) =
-        MySystem.Instance.TessellationFactor <- newTessellationFactor
+    // ----------------------------------------------------------------------------------------------------
+    // Tesselation
+    // ----------------------------------------------------------------------------------------------------
+    let initTesselationFactor (newTessellationFactor) =
+        MySimulation.Instance.TessellationFactor <- newTessellationFactor
+         
+    let increaseTesselationFactor() =
+        MySimulation.Instance.TessellationFactor <- MySimulation.Instance.TessellationFactor + DEFAULT_TESSELATION_AMOUNT
+        let msg = "Tesselation Factor: " + MySimulation.Instance.TessellationFactor.ToString()
+        writeToMessageWindow(msg)
 
-    let IncreaseTesselationFactor() =
-        MySystem.Instance.TessellationFactor <- MySystem.Instance.TessellationFactor + DEFAULT_TESSELATION_AMOUNT
-        writeToMessageWindow("Tesselation Factor: " + MySystem.Instance.TessellationFactor.ToString())
-
-    let DecreaseTesselationFactor() =
-        MySystem.Instance.TessellationFactor <- MySystem.Instance.TessellationFactor - DEFAULT_TESSELATION_AMOUNT 
-        writeToMessageWindow("Tesselation Factor: " + MySystem.Instance.TessellationFactor.ToString())
-    
-    let IncreaseRasterizationFactor() =
-        MySystem.Instance.RasterizationFactor <- MySystem.Instance.RasterizationFactor + DEFAULT_RASTERIZATION_AMOUNT
-        writeToMessageWindow("Rasterization Factor: " + MySystem.Instance.RasterizationFactor.ToString())
-
-    let DecreaseRasterizationFactor() =
-        MySystem.Instance.RasterizationFactor <- MySystem.Instance.RasterizationFactor - DEFAULT_RASTERIZATION_AMOUNT 
-        writeToMessageWindow("Rasterization Factor: " + MySystem.Instance.RasterizationFactor.ToString())
+    let decreaseTesselationFactor() =
+        MySimulation.Instance.TessellationFactor <- MySimulation.Instance.TessellationFactor - DEFAULT_TESSELATION_AMOUNT 
+        let msg = "Tesselation Factor: " + MySimulation.Instance.TessellationFactor.ToString()
+        writeToMessageWindow(msg)
 
     let setPixelShader (pstype: ShaderClass) = 
         writeToOutputWindow("PixelShader is now: " + pstype.ToString())
-        MySystem.Instance.SetPixelShader(pstype)
+        MySimulation.Instance.SetPixelShader(pstype)
 
-    let ToggleRasterizerState() =
-        MySystem.Instance.ToggleRasterizerState()
-
-    let SetRasterizerState(irasterizerState:RasterType) =
-        MySystem.Instance.SetRasterizerState(irasterizerState)
-
-    let SetBlendState(blendType:BlendType) =
-        MySystem.Instance.SetBlendType(blendType)
-
-    /// <summary>
-    /// Light
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------
+    // Light
+    // ----------------------------------------------------------------------------------------------------
     let initLight(dir:Vector3, color: Color) = 
         lightDir <- Vector3.Transform(dir, worldMatrix)
         frameLight <- new DirectionalLight(color.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
-        MySystem.Instance.FrameLight <- frameLight
-        MySystem.Instance.LightDir <- lightDir
+        MySimulation.Instance.FrameLight <- frameLight
+        MySimulation.Instance.LightDir <- lightDir
 
-    /// <summary>    
-    /// Initialisierung der Camera-Klasse
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------    
+    //  Initialisierung der Camera-Klasse
+    // ----------------------------------------------------------------------------------------------------
     let initCamera(cameraPosition, cameraTarget, aspectRatio, rotHorizontal, rotVertical) = 
         startCameraPosition <- cameraPosition
         startCameraTarget   <- cameraTarget
@@ -140,30 +126,39 @@ module WindowControl =
         startCameraTarget   <- cameraTarget
         Camera.reset(cameraPosition, cameraTarget, aspectRatio)
         
-    /// <summary>    
-    /// Drehungen zurücksetzen
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------    
+    //  Drehungen zurücksetzen
+    // ----------------------------------------------------------------------------------------------------
     let resetCamera() = 
         Camera.reset(startCameraPosition, startCameraTarget, startAspectRatio)   
 
-    /// <summary>    
-    /// Zoom durch Verändern des Abstands . Zoomfactor positiv/negativ Vergrößern/verkleinern
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------    
+    //  Zoom durch Verändern des Abstands . Zoomfactor positiv/negativ Vergrößern/verkleinern
+    // ----------------------------------------------------------------------------------------------------
     let zoom(deltaDistance) =
         Camera.Instance.Zoom deltaDistance
 
-    /// <summary>    
-    /// Rotation um das Target
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------    
+    //  Rotation um das Target
+    // ----------------------------------------------------------------------------------------------------
     let rotateHorizontal(right) = 
         Camera.Instance.RotateHorizontal(right)
 
     let rotateVertical(up) = 
         Camera.Instance.RotateVertical(up)
 
-    /// <summary>    
-    /// Key movements
-    /// </summary> 
+    let ToggleRasterizerState() =
+        MySimulation.Instance.ToggleRasterizerState()
+
+    let SetRasterizerState(irasterizerState:RasterType) =
+        MySimulation.Instance.SetRasterizerState(irasterizerState)
+
+    let SetBlendState(blendType:BlendType) =
+        MySimulation.Instance.SetBlendType(blendType)
+
+    // ----------------------------------------------------------------------------------------------------    
+    //  Key movements
+    // ---------------------------------------------------------------------------------------------------- 
     let addStandardKeyMovements(form:MyWindow) =
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Subtract  then zoom   zoomFactor)
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Add       then zoom  -zoomFactor)
@@ -174,9 +169,9 @@ module WindowControl =
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Left  then rotateHorizontal(false)) 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.End   then resetCamera())  
     
-    /// <summary>    
-    /// Movements from mouse behaviour
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------    
+    //  Movements from mouse behaviour
+    // ----------------------------------------------------------------------------------------------------
     let onMouseMove(evt:MouseEventArgs) = 
         let button= evt.Button
         let location = evt.Location
@@ -205,21 +200,21 @@ module WindowControl =
         let deltaDistance = (float32)evt.Delta  * 0.005f 
         Camera.Instance.Zoom deltaDistance
         
-    /// <summary>    
-    /// Mouse Events
-    /// </summary> 
+    // ----------------------------------------------------------------------------------------------------    
+    //  Mouse Events
+    // ---------------------------------------------------------------------------------------------------- 
     let addStandardMouseMovements(form:MyWindow) =
         graficWindow.MouseMove.Add(fun e  -> onMouseMove e) 
         graficWindow.MouseWheel.Add(fun e  -> onMouseWheel e)
 
-    /// <summary>
-    ///Menues
-    /// </summary>
+    // ----------------------------------------------------------------------------------------------------
+    // Menues
+    // ----------------------------------------------------------------------------------------------------
     let fileSubmenueStandard =  
         let fileMenuItem = new ToolStripMenuItem("&File")
         let exitMenuItem = new ToolStripMenuItem("&Exit")
         fileMenuItem.DropDownItems.Add(exitMenuItem)|>ignore
-        exitMenuItem.Click.Add(fun _ -> MySystem.Instance.Stop(); graficWindow.Close(); mainWindow.Close())
+        exitMenuItem.Click.Add(fun _ -> MySimulation.Instance.Stop(); graficWindow.Close(); mainWindow.Close())
         fileMenuItem
 
     let tesselationSubmenue =  
@@ -228,19 +223,9 @@ module WindowControl =
         let addDecreaseMenuItem = new ToolStripMenuItem("&Decrease")
         tesselationMenuItem.DropDownItems.Add(addIncreaseMenuItem)|>ignore
         tesselationMenuItem.DropDownItems.Add(addDecreaseMenuItem)|>ignore
-        addIncreaseMenuItem.Click.Add(fun _ -> IncreaseTesselationFactor())
-        addDecreaseMenuItem.Click.Add(fun _ -> DecreaseTesselationFactor())
+        addIncreaseMenuItem.Click.Add(fun _ -> increaseTesselationFactor())
+        addDecreaseMenuItem.Click.Add(fun _ -> decreaseTesselationFactor())
         tesselationMenuItem
-
-    let rasterizationSubmenue =  
-        let rasterizationMenuItem = new ToolStripMenuItem("&Rasterization")
-        let addIncreaseMenuItem = new ToolStripMenuItem("&Increase")
-        let addDecreaseMenuItem = new ToolStripMenuItem("&Decrease")
-        rasterizationMenuItem.DropDownItems.Add(addIncreaseMenuItem)|>ignore
-        rasterizationMenuItem.DropDownItems.Add(addDecreaseMenuItem)|>ignore
-        addIncreaseMenuItem.Click.Add(fun _ -> IncreaseRasterizationFactor())
-        addDecreaseMenuItem.Click.Add(fun _ -> DecreaseRasterizationFactor())
-        rasterizationMenuItem
 
     let zoomSubmenueStandard =     
         let zoomFactor = 0.5f
@@ -274,7 +259,6 @@ module WindowControl =
         let toggleStateMenuItem = new ToolStripMenuItem("&Toggle Rasterization")
         viewMenuItem.DropDownItems.Add(zoomSubmenueStandard)|>ignore
         viewMenuItem.DropDownItems.Add(tesselationSubmenue)|>ignore
-        viewMenuItem.DropDownItems.Add(rasterizationSubmenue)|>ignore
         viewMenuItem.DropDownItems.Add(toggleStateMenuItem)|>ignore
         toggleStateMenuItem.Click.Add(fun _ -> ToggleRasterizerState())
         viewMenuItem
@@ -291,8 +275,8 @@ module WindowControl =
         mainMenu.Items.Add(settingMenueStandard)|>ignore
         mainMenu
 
-    /// <summary>    
-    ///Display
-    /// </summary> 
+    // ----------------------------------------------------------------------------------------------------    
+    // Display
+    // ---------------------------------------------------------------------------------------------------- 
     let displayWindows() =
         mainWindow.Show()
