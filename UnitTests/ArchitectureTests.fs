@@ -40,7 +40,7 @@ module ArchitectureTests =
 
             this.myWindow <- graficWindow
 
-            MySystem.CreateInstance(this.myWindow,  [pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
+            MySystem.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
              
             initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 

@@ -71,6 +71,7 @@
     <Compile Include="GraficSystem.fs" />
     <Compile Include="WindowLayout.fs" />
     <Compile Include="WindowControl.fs" />
+    <Compile Include="ScenarioSupport.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

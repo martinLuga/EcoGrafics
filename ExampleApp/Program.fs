@@ -11,13 +11,12 @@ open Base.Logging
  
 open ApplicationBase.WindowControl
 
-// ----------------------------------------------------------------------------------------------------
-// BasicApp
-// ----------------------------------------------------------------------------------------------------
-// Test der Basisfunktionalitäten
-// Darstellung von Kugel Quader Zylinder
-// Ausführen von Bewegungen (Translation, Rotation)
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
+// /BasicApp
+/// Test der Basisfunktionalitäten
+/// Darstellung von Kugel Quader Zylinder
+/// Ausführen von Bewegungen (Translation, Rotation)
+/// </summary>
 module Program =
 
     configureLoggingInMap "EcoGrafics" "ExampleApp" "resource" "log4net.config"
@@ -29,7 +28,9 @@ module Program =
     let main argv = 
         logger.Info("Start Application")
         WindowLayout.Setup("DirectX Example Application")
-        Configuration.Configure()
+        Configuration.ConfigureSystem()
+        Configuration.ConfigureMenue()
+        Scenario.CreateScenarios()
         Control.Init() 
         displayWindows()
         Control.Start()        

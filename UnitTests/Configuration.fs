@@ -47,7 +47,7 @@ module Configuration =
                 rasterizerStateDesc=rasterSolidDescription
             )
 
-        MySystem.CreateInstance(graficWindow, [pipelineConfigTest])         
+        MySystem.CreateInstance([pipelineConfigTest])         
         MySystem.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")     
 
         // Camera and light

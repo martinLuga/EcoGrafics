@@ -18,6 +18,8 @@ open Base.GlobalDefs
 open ApplicationBase.MoveableObject
 open ApplicationBase.DisplayableObject
 open ApplicationBase.WindowControl
+open ApplicationBase.ScenarioSupport
+open ApplicationBase.GraficSystem
 
 open DirectX.Camera
 
@@ -49,7 +51,7 @@ type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomB
 ///      2. Bestimmte Konstellationen in Material führen im SimpleShader zur Nichtanzeige
 ///
 /// </summary>   
-module Common =
+module Scenario =
     open Geometry.GeometricModel2D
 
     let DISPLAYABLE_XMIN = 0.0f
@@ -219,16 +221,15 @@ module Common =
     let AXES =
         [xAxis:>Displayable;yAxis:>Displayable;zAxis:>Displayable]
 
-module Cube =
-    open Common
-    let getObjects() = 
+    let CubeObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let cube1 = 
             Immoveable(
                 name="cube1",
-                geometry=Common.BIG_CUBE,
+                geometry=BIG_CUBE,
                 surface=Surface(
-                    Common.MAT_BLUE
+                    MAT_BLUE
                 ),
                 color=Color.Black,
                 position=Vector3(-4.0f, 0.0f, 0.0f)
@@ -237,9 +238,9 @@ module Cube =
         let cube2 = 
             Immoveable(
                 name="cube2",
-                geometry=Common.SMALL_CUBE,
+                geometry=SMALL_CUBE,
                 surface=Surface(
-                    Common.MAT_RED,
+                    MAT_RED,
                     Visibility.Transparent
                 ),
                 color=Color.Green,
@@ -249,9 +250,9 @@ module Cube =
         let cube22 = 
             Immoveable(
                 name="cube22",
-                geometry=Common.SMALL_CUBE,
+                geometry=SMALL_CUBE,
                 surface=Surface(
-                    Common.MAT_GREEN
+                    MAT_GREEN
                 ),
                 color=Color.Green,
                 position=Vector3( 0.0f, -4.0f, 0.0f)
@@ -260,23 +261,23 @@ module Cube =
         let cube3 = 
             Immoveable(
                 name="cube3",
-                geometry=Common.BIG_CUBE,
+                geometry=BIG_CUBE,
                 surface=Surface(
-                    Common.MAT_MAGENTA
+                    MAT_MAGENTA
                 ),
                 color=Color.Green,
                 position=Vector3( 4.0f, 0.0f, 0.0f)
             ) 
-        [cube3:>Displayable; cube22:>Displayable; cube2:>Displayable; cube1:>Displayable]|> List.append AXES
+       
+        MySystem.Instance.InitObjects([cube3:>Displayable; cube22:>Displayable; cube2:>Displayable; cube1:>Displayable]|> List.append AXES)
 
-/// <summary> 
-/// Kugel
-///     Achtung: Im Material wird auch hasTexture gespeichert
-///     Bei gleichem Material wird diese Eigenschaft übernommen
-/// </summary>   
-module Sphere = 
-    open Common 
-    let getObjects() =
+    /// <summary> 
+    /// Kugel
+    ///     Achtung: Im Material wird auch hasTexture gespeichert
+    ///     Bei gleichem Material wird diese Eigenschaft übernommen
+    /// </summary>   
+    let SphereObjects() = 
+        MySystem.Instance.Reset()
         let DIFFUSE_LIGHT = Color.LightYellow.ToColor4()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let sphere1 = 
@@ -334,14 +335,13 @@ module Sphere =
                 position=Vector3(4.0f, 0.0f, 0.0f)
             )
 
-        [sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable] |> List.append AXES
+        MySystem.Instance.InitObjects([sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable] |> List.append AXES)
 
-/// <summary> 
-/// Pyramide
-/// </summary>   
-module Pyramid =
-    open Common
-    let getObjects() = 
+    /// <summary> 
+    /// Pyramide
+    /// </summary>   
+    let PyramidObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let pyramid1 = 
             new Immoveable(
@@ -427,16 +427,15 @@ module Pyramid =
              color=Color.Black,
              position=Vector3( 4.0f, 0.0f, 0.0f)
         ) 
-        [pyramid1:>Displayable; pyramid2:>Displayable; pyramid3:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([pyramid1:>Displayable; pyramid2:>Displayable; pyramid3:>Displayable]|> List.append AXES)
 
-/// <summary> 
-/// Quader
-/// Achtung. 2 verschiedene Materials dürfen nicht den gleichen Namen haben
-///          wegen Texture
-/// </summary>   
-module Adobe =
-    open Common
-    let getObjects() =
+    /// <summary> 
+    /// Quader
+    /// Achtung. 2 verschiedene Materials dürfen nicht den gleichen Namen haben
+    ///          wegen Texture
+    /// </summary>   
+    let AdobeObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let adobe1 = 
             new Immoveable(
@@ -521,21 +520,20 @@ module Adobe =
                 position=Vector3(4.0f, 0.0f, 0.0f)
             )  
 
-        [adobe1:>Displayable; adobe2:>Displayable;adobe3:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([adobe1:>Displayable; adobe2:>Displayable;adobe3:>Displayable]|> List.append AXES)
 
-/// <summary> 
-/// Drei Cylinder
-/// </summary>   
-module Cylinder =
-    open Common
-    let getObjects() =
+    /// <summary> 
+    /// Drei Cylinder
+    /// </summary>   
+    let CylinderObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         GeometricModel.setCylinderRaster (Raster.Mittel) 
         let cylinder1 = 
             new Immoveable(
              name="cylinder1",
              geometry=new Cylinder("cylinder1", 1.f, 3.0f, Color.Blue, Color.Green, true),
-             surface=Surface(Common.MAT_BLUE),
+             surface=Surface(MAT_BLUE),
              color=Color.Transparent,
              position=Vector3( -4.0f,  0.0f,  0.0f)
              )  
@@ -544,7 +542,7 @@ module Cylinder =
             new Immoveable(
              name="cylinder2",
              geometry=new Cylinder("cylinder2", 1.f, 3.0f, Color.Red, Color.Yellow, true),
-             surface=Surface(Common.MAT_DARKGOLDENROD,Visibility.Transparent),
+             surface=Surface(MAT_DARKGOLDENROD,Visibility.Transparent),
              color=Color.Transparent,
              position=Vector3( 0.0f,  0.0f,  0.0f)
             )  
@@ -553,18 +551,17 @@ module Cylinder =
             new Immoveable(
                 name="cylinder3",
                 geometry=new Cylinder("cylinder3", 1.0f, 3.0f, Color.Olive, Color.Orange, true),
-                surface=Surface(Common.MAT_MAGENTA),
+                surface=Surface(MAT_MAGENTA),
                 color=Color.Transparent,
                 position=Vector3(4.0f,  0.0f,  0.0f)
             )    
-        [cylinder1:>Displayable; cylinder2:>Displayable;  cylinder3:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([cylinder1:>Displayable; cylinder2:>Displayable;  cylinder3:>Displayable]|> List.append AXES)
 
-/// <summary>  
-/// Objekte definiert durch eine Menge von vertexes. Hier ein Schädel
-/// </summary>  
-module SkullContour =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// Objekte definiert durch eine Menge von vertexes. Hier ein Schädel
+    /// </summary>  
+    let SkullContourObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let skull1 = 
             new Immoveable(
@@ -603,14 +600,13 @@ module SkullContour =
                  position=Vector3( 4.0f, -3.0f,  0.0f)             
             )
 
-        [skull1:>Displayable; skull2:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([skull1:>Displayable; skull2:>Displayable]|> List.append AXES)
 
-/// <summary>  
-/// Objekte definiert durch eine Menge von Vertexes. Hier ein Auto
-/// </summary> 
-module CarContour =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// Objekte definiert durch eine Menge von Vertexes. Hier ein Auto
+    /// </summary> 
+    let  CarContourObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let car1 = 
             Immoveable(
@@ -630,14 +626,13 @@ module CarContour =
                  position=Vector3(0.0f, 0.0f,  0.0f)             
              )   
  
-        [car1:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([car1:>Displayable]|> List.append AXES)
 
-/// <summary>  
-/// 4 Atome mit einem Bond
-/// </summary>   
-module AtomWithBond =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// 4 Atome mit einem Bond
+    /// </summary>   
+    let AtomWithBondObjects() =
+        MySystem.Instance.Reset()
         GeometricModel.setCylinderRaster (Raster.Grob) 
         initCamera(Vector3( 0.0f, 5.0f, -10.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
 
@@ -723,18 +718,17 @@ module AtomWithBond =
 
 
         //let displayables = [atom1:>Displayable; atom2:>Displayable; atom3:>Displayable; atom4:>Displayable; bond12:>Displayable; bond21:>Displayable; bond13:>Displayable; bond34:>Displayable; bond43:>Displayable]
-        displayables|> List.append AXES
+        MySystem.Instance.InitObjects(displayables|> List.append AXES)
 
-/// <summary>  
-/// AtomBuilder Test
-/// Test der Darstellung  eines transparenten Kastens um ein Residuum
-/// Simple PixelShader weil die Farbe im Vertex beeinflusst werden soll
-/// </summary>   
-module AtomBuilder =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// AtomBuilder Test
+    /// Test der Darstellung  eines transparenten Kastens um ein Residuum
+    /// Simple PixelShader weil die Farbe im Vertex beeinflusst werden soll
+    /// </summary>   
+    let AtomBuilderObjects() =
+        MySystem.Instance.Reset()
         
-        logger.Debug("AtomBuilder.getObjects")
+        logger.Debug("Objects.AtomBuilder")
         
         GeometricModel.setCylinderRaster (Raster.Grob)
 
@@ -758,16 +752,14 @@ module AtomBuilder =
         //repositionCameraOnMolecule(residuum, 10.0f)
         let hilite = createHilite (residuum, "1") 
         let displayables = residuum.getDisplayables() |> List.append([hilite]) |> List.rev
-        displayables|> List.append AXES
+        MySystem.Instance.InitObjects(displayables|> List.append AXES)
 
-/// <summary>  
-/// Korpus test
-/// </summary>   
-module Korpus =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// Korpus test
+    /// </summary>   
+    let KorpusObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
-
 
         /// Im Uhrteigersinn unten
         let CONTOUR =
@@ -806,7 +798,7 @@ module Korpus =
             new Immoveable(
                 name="plate1",
                 geometry=CORPUS,
-                surface=new Surface(Common.MAT_DARKSLATEGRAY),
+                surface=new Surface(MAT_DARKSLATEGRAY),
                 color=Color.Black,
                 position=Vector3(-4.0f, 0.0f, 0.0f)
             )  
@@ -816,20 +808,19 @@ module Korpus =
                 name="plate2",
                 geometry=CORPUS,
                 surface=new Surface(
-                    Common.MAT_DARKGOLDENROD,
+                    MAT_DARKGOLDENROD,
                     Visibility.Transparent
                 ),
                 color=Color.Black,
                 position=Vector3(0.0f, 0.0f, 4.0f)
             )  
-        [plate1:>Displayable; plate2:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([plate1:>Displayable; plate2:>Displayable]|> List.append AXES)
 
-/// <summary>  
-/// Tesselated objects test
-/// </summary>   
-module GroundPlane =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// Tesselated objects test
+    /// </summary>   
+    let GroundPlaneObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let ground = 
             new Immoveable(
@@ -853,14 +844,13 @@ module GroundPlane =
                 position=Vector3(DISPLAYABLE_XMIN, DISPLAYABLE_YMIN, - 0.3f ),
                 color=Color.Gray
             ) 
-        [ground:>Displayable] |> List.append AXES
+        MySystem.Instance.InitObjects([ground:>Displayable] |> List.append AXES)
 
-/// <summary>  
-/// Tesselation Test. Zwei Ikosaeder, einer transparent, der andere opak.
-/// </summary>   
-module Icosahedron =
-    open Common
-    let getObjects() =
+    /// <summary>  
+    /// Tesselation Test. Zwei Ikosaeder, einer transparent, der andere opak.
+    /// </summary>   
+    let IcosahedronObjects() =
+        MySystem.Instance.Reset()
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let icosahedron1 = 
             new Immoveable(
@@ -872,7 +862,7 @@ module Icosahedron =
                     color=Color.DarkRed,
                     tessFactor=4.0f                  
                     ),
-                surface=new Surface(Common.MAT_DARKGOLDENROD),
+                surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Red,
                 position=Vector3(-4.0f, 2.0f, 0.0f)
                 ) 
@@ -887,42 +877,44 @@ module Icosahedron =
                     color=Color.DarkBlue,
                     tessFactor=4.0f                  
                     ),
-                surface=new Surface(Common.MAT_BLACK, Visibility.Transparent),
+                surface=new Surface(MAT_BLACK, Visibility.Transparent),
                 color=Color.Red,
                 position=Vector3(4.0f, 2.0f, 0.0f)
             ) 
-        [icosahedron1:>Displayable; icosahedron2:>Displayable]|> List.append AXES
+        MySystem.Instance.InitObjects([icosahedron1:>Displayable; icosahedron2:>Displayable]|> List.append AXES)
 
-/// <summary>  
-/// Many objects test
-/// </summary>   
-module ManyObjects =
+    /// <summary>  
+    /// Many objects test
+    /// </summary>   
+    let ManyObjectsObjects() =
+        MySystem.Instance.Reset()
 
-    let START_POS = Vector3(-15.0f, 0.0f, 0.0f)
-
-    let cube(i) = 
-        Immoveable(
-            name="cube" + i.ToString(),
-            geometry=Common.MINI_CUBE,
-            surface=Surface(
-                Common.MAT_GREEN
-            ),
-            color=Color.Green,
-            position=START_POS + Vector3.UnitX * 2.0f * (float32) i
-        )
-        :>Displayable
-        
-    let getObjects() =
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
-        seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
 
-/// <summary>  
-/// 2D - Objekte, z.B. Formen, Schrift (in Entwicklung)
-/// </summary>   
-module TwoD =    
-    open Geometry.GeometricModel2D
-    open Common
-    let getObjects() = 
+        let START_POS = Vector3(-15.0f, 0.0f, 0.0f)
+
+        let cube(i) = 
+            Immoveable(
+                name="cube" + i.ToString(),
+                geometry=MINI_CUBE,
+                surface=Surface(
+                    MAT_GREEN
+                ),
+                color=Color.Green,
+                position=START_POS + Vector3.UnitX * 2.0f * (float32) i
+            )
+            :>Displayable
+        
+ 
+        let result = seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
+
+        MySystem.Instance.InitObjects(result)
+
+    /// <summary>  
+    /// 2D - Objekte, z.B. Formen, Schrift (in Entwicklung)
+    /// </summary>   
+    let TwoDObjects() =
+        MySystem.Instance.Reset()  
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
         let square = 
             Immoveable(
@@ -933,31 +925,28 @@ module TwoD =
                     color=Color.White
                 ),
                 surface=Surface(
-                    Common.MAT_BLUE
+                    MAT_BLUE
                 ),
                 color=Color.White,
                 position=Vector3(2.0f, 0.0f, 0.0f)
             )  
-        [square:>Displayable; xAxis:>Displayable; yAxis:>Displayable] |> List.append AXES
+        MySystem.Instance.InitObjects([square:>Displayable; xAxis:>Displayable; yAxis:>Displayable] |> List.append AXES)
 
-/// <summary>  
-/// Auswahl der Beispiele
-/// </summary>   
-module ExampleObjects =
-
-    let getDisplayables (ishape:Shape) = 
-        match ishape with
-        | Shape.Cube -> Cube.getObjects()                  /// Cube Objekte
-        | Shape.Sphere  -> Sphere.getObjects()             /// Sphere Objekte
-        | Shape.Adobe -> Adobe.getObjects()                /// Adobe Objekte
-        | Shape.Pyramid -> Pyramid.getObjects()            /// Pyramide Objekte
-        | Shape.Cylinder -> Cylinder.getObjects()          /// Cylinder Objekte
-        | Shape.Skull -> SkullContour.getObjects()         /// Datei Objekte
-        | Shape.Car -> CarContour.getObjects()             /// Datei Objekte
-        | Shape.AtomBond -> AtomWithBond.getObjects()      /// Atom  Objekte
-        | Shape.AtomBuilder -> AtomBuilder.getObjects()    /// Atom  Objekte
-        | Shape.Korpus -> Korpus.getObjects()              /// Korpus Objekte
-        | Shape.GroundPlane -> GroundPlane.getObjects()    /// Plane
-        | Shape.Icosahedron -> Icosahedron.getObjects()    /// Icosahedron
-        | Shape.ManyObjects -> ManyObjects.getObjects()    /// Test mit vielen Objekten
-        | Shape.TwoD -> TwoD.getObjects()                  /// 2D Objekte
+    /// <summary>
+    /// Initialize
+    /// </summary>
+    let CreateScenarios() =
+        AddScenario(0,  "Cube",          CubeObjects)               /// Cube Objekte
+        AddScenario(1,  "Sphere",        SphereObjects)             /// Sphere Objekte
+        AddScenario(2,  "Adobe",         AdobeObjects)              /// Adobe Objekte
+        AddScenario(3,  "Pyramid",       PyramidObjects)            /// Pyramide Objekte
+        AddScenario(4,  "Cylinder",      CylinderObjects)           /// Cylinder Objekte
+        AddScenario(5,  "SkullContour",  SkullContourObjects)       /// Datei Objekte
+        AddScenario(6,  "CarContour",    CarContourObjects)         /// Datei Objekte
+        AddScenario(7,  "AtomWithBond",  AtomWithBondObjects)       /// Atom  Objekte
+        AddScenario(8,  "AtomBuilder",   AtomBuilderObjects)        /// Atom  Objekte
+        AddScenario(9,  "Korpus",        KorpusObjects)             /// Korpus Objekte
+        AddScenario(10, "GroundPlane",  GroundPlaneObjects)         /// Plane
+        AddScenario(11, "Icosahedron",  IcosahedronObjects)         /// Icosahedron
+        AddScenario(12, "ManyObjects",  ManyObjectsObjects)         /// Test mit vielen Objekten
+        AddScenario(13, "TwoD",         TwoDObjects)                /// 2D Objekte
