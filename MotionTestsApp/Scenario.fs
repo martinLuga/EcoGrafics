@@ -14,16 +14,12 @@ open Base.Logging
 
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
-open ApplicationBase.WindowControl
 open ApplicationBase.WindowLayout
 
 open Geometry.GeometricModel
 open Geometry.ObjectConvenience
-open Geometry.GeometryUtils
 
 open Simulation.ScenarioSupport
-open Simulation.WeltModul
-open Simulation.WeltObjects
 open Simulation.TestScenariosCommon
 open Simulation.SimulationSystem
 
@@ -36,11 +32,6 @@ open Control
 // 2. Zwei Objekte prallen im Winkel von der Wand ab
 // ----------------------------------------------------------------------------------------------------
 module Scenario =
-
-    let printWeltDaten(weltDaten:WeltDaten) =
-        let points = toPoints(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
-        let text = "Welt:" + points.ToString()
-        writeToMessageWindow(text)  
 
     let printScenario(scenarioName) =
         logInfo("Start Scenario: " + scenarioName) 
@@ -60,11 +51,9 @@ module Scenario =
     // Kugeln bewegen sich zwischen den beiden Wänden hin und her
     // ----------------------------------------------------------------------------------------------------
     let CollisionMitWand() =  
-        printScenario("CollisionMitWand")
-        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
-        printWeltDaten(weltDaten)
+        printScenario("CollisionMitWand") 
 
-        MySimulation.Instance.InitializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
         MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
         MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))    
 
@@ -72,7 +61,7 @@ module Scenario =
         // Zwei parallele vertikale Wände
         // ----------------------------------------------------------------------------------------------------
         let wallLinks = 
-            new Landscape(
+            new Immoveable(
              name="wallLinks",
              geometry=new Quader(name="Wall", laenge=2.0f, hoehe=8.0f, breite=4.0f, color=Color.Transparent), 
              surface=SURFACE_WALL(Color.DarkRed),
@@ -81,13 +70,13 @@ module Scenario =
              ) 
 
         let wallRechts = 
-            new Landscape(
-             name="wallRechts",
-             geometry=new Quader(name="Wall", laenge=2.0f, hoehe=8.0f, breite=4.0f, color=Color.Transparent),            
-             surface=SURFACE_WALL(Color.DarkRed),
-             position=Vector3(-4.0f, 0.0f, -2.0f),
-             color=Color.IndianRed
-             )  
+            new Immoveable(
+                name="wallRechts",
+                geometry=new Quader(name="Wall", laenge=2.0f, hoehe=8.0f, breite=4.0f, color=Color.Transparent),            
+                surface=SURFACE_WALL(Color.DarkRed),
+                position=Vector3(-4.0f, 0.0f, -2.0f),
+                color=Color.IndianRed
+            )  
 
         let sphere1 = 
             new Moveable( 
@@ -105,7 +94,7 @@ module Scenario =
         // Zwei parallele horizontale Wände
         // ----------------------------------------------------------------------------------------------------
         let wallOben = 
-            new Landscape(
+            new Immoveable(
                 name="wallOben",
                 geometry=new Quader(name="Wall2", laenge=8.0f, hoehe=2.0f, breite=4.0f, color=Color.Transparent), 
                 surface=SURFACE_WALL(Color.Orange),
@@ -114,7 +103,7 @@ module Scenario =
             )      
 
         let wallUnten = 
-            new Landscape(
+            new Immoveable(
                 name="wallUnten",
                 geometry=new Quader(name="Wall2", laenge=8.0f, hoehe=2.0f, breite=4.0f, color=Color.Transparent),
                 surface=SURFACE_WALL(Color.Orange),
@@ -124,21 +113,21 @@ module Scenario =
         
         let sphere2 = 
             new Moveable( 
-             name="sphere2",
-             geometry=new Kugel("Sphere2", 1.0f, Color.Transparent),  
-             surface=SURFACE_KUGEL(Color.Orange),
-             position=Vector3(4.0f, 4.0f, 0.0f),
-             direction=Vector3.UnitY,                    
-             velocity=OBJECT_VELOCITY,
-             color=Color.DarkOrange,
-             moveRandom=false
-             )
+                name="sphere2",
+                geometry=new Kugel("Sphere2", 1.0f, Color.Transparent),  
+                surface=SURFACE_KUGEL(Color.Orange),
+                position=Vector3(4.0f, 4.0f, 0.0f),
+                direction=Vector3.UnitY,                    
+                velocity=OBJECT_VELOCITY,
+                color=Color.DarkOrange,
+                moveRandom=false
+            )
 
         // ----------------------------------------------------------------------------------------------------        
         // Zwei parallele horizontale Wände Vorne / hinten
         // ----------------------------------------------------------------------------------------------------
         let wallVorne = 
-            new Landscape(
+            new Immoveable(
                 name="wallVorne",
                 geometry=new Quader(name="Wall3", laenge=4.0f, hoehe=8.0f, breite=2.0f, color=Color.Transparent),
                 surface=SURFACE_WALL(Color.DarkGreen),
@@ -147,7 +136,7 @@ module Scenario =
             ) 
 
         let wallHinten = 
-            new Landscape(
+            new Immoveable(
                 name="wallHinten",
                 geometry=new Quader(name="Wall3", laenge=4.0f, hoehe=8.0f, breite=2.0f, color=Color.Transparent), 
                 surface=SURFACE_WALL(Color.DarkGreen),
@@ -178,10 +167,7 @@ module Scenario =
     let EinfallswinkelGleichAusfallswinkel() = 
         printScenario("EinfallswinkelGleichAusfallswinkel")
 
-        let weltDaten = new WeltDaten(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)        
-        printWeltDaten(weltDaten)
-
-        MySimulation.Instance.InitializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)
         MySimulation.Instance.SetCameraPos(Vector3(0.0f, 15.0f, -70.0f))
         MySimulation.Instance.SetLightPos (new Vector3(  25.0f,  -25.0f,  10.0f))
 
@@ -190,15 +176,15 @@ module Scenario =
         // ---------------------------------------------------------------------------------------------------- 
         let sphere1 = 
             new Moveable( 
-             name="sphere1",
-             geometry=new Kugel("Sphere1", 1.0f, Color.Transparent),
-             surface=SURFACE_KUGEL(Color.DarkCyan),
-             color=Color.DarkCyan,
-             position=Vector3(-5.0f, 3.0f, 0.0f),
-             direction=new Vector3(1.0f,1.0f,0.0f), 
-             velocity=OBJECT_VELOCITY,
-             moveRandom=false
-             )
+                name="sphere1",
+                geometry=new Kugel("Sphere1", 1.0f, Color.Transparent),
+                surface=SURFACE_KUGEL(Color.DarkCyan),
+                color=Color.DarkCyan,
+                position=Vector3(-5.0f, 3.0f, 0.0f),
+                direction=new Vector3(1.0f,1.0f,0.0f), 
+                velocity=OBJECT_VELOCITY,
+                moveRandom=false
+            )
 
         let sphere2 = 
             new Moveable( 
@@ -210,16 +196,16 @@ module Scenario =
                 velocity=OBJECT_VELOCITY,
                 color=Color.DarkRed,
                 moveRandom=false
-             )
+            )
 
         let wall = 
-            new Landscape(
+            new Immoveable(
                 name="Wall",
-                geometry=new Quader("Wall", 1.0f, Welt.Instance.YMAX - Welt.Instance.YMIN, 20.0f, Color.Transparent),       
+                geometry=new Quader("Wall", 1.0f, MySimulation.Instance.WeltDecke - MySimulation.Instance.WeltBoden, 20.0f, Color.Transparent),       
                 surface=SURFACE_WALL(Color.Orange),
-                position=Vector3(0.0f, Welt.Instance.YMIN+0.5f, -10.0f),
+                position=Vector3(0.0f, MySimulation.Instance.WeltBoden+0.5f, -10.0f),
                 color=Color.Transparent
-             ) 
+            ) 
              
         displayables <- [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
         MySimulation.Instance.AddObjects(displayables)
@@ -231,10 +217,7 @@ module Scenario =
     let CollisionKugelUndKorpus() = 
         printScenario("KollisionKugelUndKorpus")
 
-        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
-        printWeltDaten(weltDaten)
-
-        MySimulation.Instance.InitializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
         MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
         MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))   
 
@@ -243,41 +226,38 @@ module Scenario =
         // ---------------------------------------------------------------------------------------------------- 
         let radius = 1.0f
         let sphere = 
-           new Moveable( 
-               name="sphere",
-               geometry=new Kugel("Sphere", radius, Color.Transparent),   
-               surface=SURFACE_KUGEL(Color.OrangeRed),
-               color=Color.Yellow, 
-               position=Vector3(-8.0f, Welt.Instance.YMIN + 0.1f, 0.0f),
-               direction=Vector3(1.0f, 0.0f, 1.0f ),   
-               velocity=OBJECT_VELOCITY,     
-               moveRandom=false
-           ) 
+            Moveable( 
+                name="sphere",
+                geometry=new Kugel("Sphere", radius, Color.Transparent),   
+                surface=SURFACE_KUGEL(Color.OrangeRed),
+                color=Color.Yellow, 
+                position=Vector3(-8.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f),
+                direction=Vector3(1.0f, 0.0f, 1.0f ),   
+                velocity=OBJECT_VELOCITY,     
+                moveRandom=false
+            ) 
 
         let plate1 = 
-            new Landscape(
+            Immoveable(
                 name="plate1",
                 geometry=CORPUS(CONTOUR_PLATE),
                 surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
                 position=Vector3(2.0f, 0.0f, 2.0f)
-          ) 
+            ) 
 
         displayables <- [sphere:>Displayable; plate1:>Displayable]
         MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
-     /// VerschiedeneGeometrien
-     /// TODO Probleme mit tesseierten Objekten
-     /// Beisst sich mit den Worl-Limits
-     /// </summary>
+    /// VerschiedeneGeometrien
+    /// TODO Probleme mit tesseierten Objekten
+    /// Beisst sich mit den Worl-Limits
+    /// </summary>
     let VerschiedeneGeometrien() = 
         printScenario("VerschiedeneGeometrien")
 
-        let weltDaten = new WeltDaten(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)        
-        printWeltDaten(weltDaten)
-
-        MySimulation.Instance.InitializeForWorldData(weltDaten)
+        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
         MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -30.0f))
         MySimulation.Instance.SetLightPos (new Vector3( 5.0f,  -25.0f,  10.0f))   
 
@@ -307,7 +287,7 @@ module Scenario =
              |] 
 
         let CORPUS = 
-            Corpus(
+            new Corpus(
                 name="CORPUS",
                 center= Vector3(1.5f, 0.0f, -3.0f),
                 contour=CONTOUR,
@@ -317,17 +297,17 @@ module Scenario =
                 colorSide=Color.White
             )
         let corpus = 
-            new Landscape(
+            new Immoveable(
                 name="corpus",
                 geometry=CORPUS,
                 surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
-                position=Vector3(-10.0f, Welt.Instance.YMIN + 0.1f, 0.0f)
-        ) 
+                position=Vector3(-10.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f)
+            ) 
 
        // Ein Polyeder
         let polyeder = 
-            new Landscape(
+            new Immoveable(
                 name="polyeder",
                 geometry=new Polyeder(
                     name="Icosahedron2", 
@@ -338,7 +318,7 @@ module Scenario =
                     ),
                 surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
-                position=Vector3(0.0f, Welt.Instance.YMIN + 0.1f, 0.0f)
+                position=Vector3(0.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f)
             ) 
 
         // Eine Fläche
@@ -352,16 +332,16 @@ module Scenario =
                     tessFactor=12.0f
                 ),
                 surface=new Surface(                    
-                    Material( 
+                    new Material( 
                         name="mat1",
                         ambient=Color4(0.2f),
                         diffuse=Color4.White,
                         specular=Color4.White,
                         specularPower=20.0f,
                         emissive=Color.DarkSlateGray.ToColor4()
-                     ) 
+                    ) 
                 ),
-                position=Vector3(10.0f, Welt.Instance.YMIN + 0.1f, 0.0f),
+                position=Vector3(10.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f),
                 color=Color.Gray
             ) 
 

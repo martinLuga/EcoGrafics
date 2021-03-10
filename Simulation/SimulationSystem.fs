@@ -63,10 +63,10 @@ module SimulationSystem =
         let mutable isActive = false
 
         /// <summary>
-        /// Umgebungen Workflow 
+        /// Neuen Umgebungen WF erzeugen 
         /// Kontrollieren, dass kein Objekt die Welt verlässt
         /// </summary>
-        let umgebungWorkflow (system:MySimulation) = async {
+        let createUmgebungenWorkflow (system:MySimulation) = async {
             clock.Start()
             let umgebungen = Welt.Instance.Umgebungen.Values 
             let graficWorld = system.Displayables
@@ -79,9 +79,6 @@ module SimulationSystem =
                         umgebung.Monitor(moveable)
             logInfo("UmgebungWorkflow terminated")
         }
-
-        member this.UmgebungWorkflow =
-            umgebungWorkflow this   
 
         static member Instance
             with get() = instance
@@ -97,21 +94,39 @@ module SimulationSystem =
             MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
             MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
 
-        member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
-            Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
-            this.InitObjects(Welt.Instance.GetDisplayables())
-                
-        member this.initializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
+        /// <summary>
+        /// Public Initializer
+        /// </summary>
+        member this.InitializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
             this.initialize()
             this.initializeWorld(ursprung, umgebungsLaenge, malX, malY, malZ)
 
         member this.InitializeForWorldData(weltDaten:WeltDaten) =
-            this.initializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
+            this.InitializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
+
+        /// <summary>
+        /// Private Initializer
+        /// </summary>
+        member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
+            Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
+            this.InitObjects(Welt.Instance.GetDisplayables())
 
         override this.AddObjects(simulationObjects) =
             base.AddObjects(simulationObjects)
             Welt.Instance.registriereObjekteBeiUmgebung(simulationObjects)
 
+        /// <summary>
+        /// Accessor
+        /// </summary>
+        member this.WeltBoden =
+            Welt.Instance.YMIN
+
+        member this.WeltDecke=
+            Welt.Instance.YMAX
+
+        /// <summary>
+        /// Initializer
+        /// </summary>
         member this.SetCameraPos(newCameraPos) = 
             initCamera(
                 newCameraPos,
@@ -164,7 +179,7 @@ module SimulationSystem =
              cancelAll <- new CancellationTokenSource()
              let asynctasks =
                  Welt.Instance.MotionWorkflows
-                 |> Seq.append [this.UmgebungWorkflow]
+                 |> Seq.append [createUmgebungenWorkflow this]
                  |> Async.Parallel 
  
              Async.StartAsTask (asynctasks, TaskCreationOptions.None, cancelAll.Token)|> ignore
@@ -183,7 +198,7 @@ module SimulationSystem =
         /// </summary>
         member this.startUmgebungenWorkflow() = 
             cancelUmgebungen <- new CancellationTokenSource()  
-            let starteable = umgebungWorkflow this
+            let starteable = createUmgebungenWorkflow this
             Async.Start(starteable, cancelUmgebungen.Token)
             logInfo("Umgebungen WF started ")
 

@@ -109,6 +109,6 @@ module Control =
 
     let Start() = 
         logInfo("Start")
-        execScenario(3) 
+        execScenario(0)
         MySimulation.Instance.Start()
         writeToMessageWindow("Application started") 
