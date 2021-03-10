@@ -5,6 +5,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Initializations.fs" />
+    <Compile Include="ArchitectureTests.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="GraficTests.fs" />
+    <Compile Include="ShaderTests.fs" />
+    <Compile Include="WindowLayout.fs" />
     <Content Include="textures\bricks.dds" />
     <Content Include="textures\bricks2.dds" />
     <Content Include="textures\bricks2_nmap.dds" />
@@ -43,13 +50,6 @@
     <Content Include="textures\WoodCrate01.dds" />
     <Content Include="textures\WoodCrate02.dds" />
     <None Include="resource\log4net.config" />
-    <Compile Include="Initializations.fs" />
-    <Compile Include="ArchitectureTests.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Configuration.fs" />
-    <Compile Include="GraficTests.fs" />
-    <Compile Include="ShaderTests.fs" />
-    <Compile Include="WindowLayout.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.12" />
