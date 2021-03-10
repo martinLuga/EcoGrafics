@@ -50,23 +50,15 @@ module ScenarioSupport =
             iActiveScenario <- 0
         scenarios.[iActiveScenario]()
 
-    let startActiveScenario() =   
-        MySimulation.Instance.initialize()     
-        execActiveScenario()
-        MySimulation.Instance.startWorkflows() 
-
-    let restartScenario() =
-        MySimulation.Instance.initialize()
+    let startActiveScenario() =      
         execActiveScenario()
         MySimulation.Instance.startWorkflows() 
 
     let startScenario(nr:int) =
-        MySimulation.Instance.initialize()
         execScenario(nr)
         MySimulation.Instance.startWorkflows() 
 
     let startNextScenario() =
-        MySimulation.Instance.initialize()
         execNextScenario()
         MySimulation.Instance.startWorkflows() 
 

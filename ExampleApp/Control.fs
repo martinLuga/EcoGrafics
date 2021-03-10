@@ -40,7 +40,7 @@ module Control =
         writeToOutputWindow("Shape is: " + ishape.ToString()) 
 
     let initDisplayables () =        
-        MySystem.Instance.initialize()
+        MySystem.Instance.Reset()
         let displayables = ExampleObjects.getDisplayables (shape)
         MySystem.Instance.InitObjects(displayables)
 

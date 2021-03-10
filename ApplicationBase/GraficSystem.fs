@@ -11,7 +11,6 @@ open log4net
 
 open System.Windows.Forms
 open System.Collections.Generic
-open System.Diagnostics
 
 open DirectX.D3DUtilities
 open DirectX.Camera
@@ -96,6 +95,7 @@ module GraficSystem =
         let mutable blendType = BlendType.Opaque   
         let mutable defaultBlendType = BlendType.Undefinded 
         let mutable defaultPixelShader = ShaderClass.NotSet
+        let mutable defaultConfigurations: MyPipelineConfiguration list = []
 
         new() = new MySystem(MyWindow.Instance)
 
@@ -108,19 +108,14 @@ module GraficSystem =
             with get() = instance
             and set(value) = instance <- value
 
-        static member CreateInstance(graficWindow:UserControl, defaultConfigurations: MyPipelineConfiguration list) =
-            let win =  graficWindow:?> MyWindow
-            MySystem.Instance <- new MySystem(win)
-            MyGPU.Instance.Initialize(win)
-            MyGPU.Instance.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
-            MyGPU.Instance.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
-            MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
-            MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
+        static member CreateInstance(defaultConfigurations: MyPipelineConfiguration list) =
+            MySystem.Instance <- new MySystem(MyWindow.Instance)
+            MySystem.Instance.ConfigureGPU(MyWindow.Instance, defaultConfigurations)
 
         /// <summary>
         /// Initializer
         /// </summary>
-        member this.initialize() =
+        member this.Reset() =
             this.ClearObjects()  
             this.SetPixelShader(defaultPixelShader) 
             this.SetRasterizerState(defaultRasterType)
@@ -129,11 +124,17 @@ module GraficSystem =
         /// <summary>
         /// Initializer
         /// </summary>
-        member this.Configure(pixelShader, rasterType, blendType) =
-            this.ClearObjects()  
+        member this.ConfigurePipeline(pixelShader, rasterType, blendType) =
             defaultPixelShader <- pixelShader 
             defaultRasterType  <- rasterType
             defaultBlendType   <- blendType 
+
+        member this.ConfigureGPU(graficWindow:UserControl, defaultConfigurations) =
+            MyGPU.Instance.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
+            MyGPU.Instance.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
+            MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
+            MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
+            MyGPU.Instance.Initialize(graficWindow)
 
         member this.IsRunning
             with get () = isRunning

@@ -44,7 +44,7 @@ module WindowLayout =
     // Start Display
     // ----------------------------------------------------------------------------------------------------
     let Setup(windowText) =
-        SetSubwindowWidth(300, 1400, 0)
+        SetSubwindowWidth(300, 1400, 300)
         mainTitle   <-  windowText
         antDataSelectionWindow.Parent <- mainWindow  
         ApplicationBase.WindowLayout.Setup(windowText)

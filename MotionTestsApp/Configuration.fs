@@ -6,58 +6,79 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System
+open System.Windows.Forms
 
 open log4net
 
 open SharpDX
 
 open ApplicationBase.MoveableObject
-open ApplicationBase.WindowControl
-open ApplicationBase.ShaderConfiguration 
+open ApplicationBase.ShaderConfiguration
+open ApplicationBase.WindowLayout
+
 open Shader.ShaderSupport 
 
 open Simulation.SimulationObject
 open Simulation.SimulationSystem
+open Simulation.ScenarioSupport
+
+open WindowLayout
+open WindowControl
 
 /// <summary>
-// Einstellungen für die Simulation
-/// Begrenzungen des Object space
-/// DirectX Einstellungen
+/// Window und Menues
+/// SimulationSystem
 /// </summary>
 module Configuration =
 
     let logger = LogManager.GetLogger("Configuration")
 
-    let simulationLightDir = new Vector3(1.0f, -1.0f, -1.0f) 
+    /// <summary>
+    ///  Window konfigurieren
+    /// </summary>
+    let ConfigureMenue () =  
+        logger.Info("Configuration.Menue")
+        // Menue Simulation
+        let simulationSubmenue =  
+            let simulationMenuItem = new ToolStripMenuItem("&Simulation")
+            let startMenuItem = new ToolStripMenuItem("&Start Scenario")
+            let nextMenuItem = new ToolStripMenuItem("&Next Scenario")
+            let toggleMenuItem = new ToolStripMenuItem("&Toggle Motion")
+            simulationMenuItem.DropDownItems.Add(startMenuItem)|>ignore
+            simulationMenuItem.DropDownItems.Add(nextMenuItem)|>ignore
+            simulationMenuItem.DropDownItems.Add(toggleMenuItem)|>ignore
+            startMenuItem.Click.Add(fun _   -> startActiveScenario())
+            nextMenuItem.Click.Add(fun _    -> startNextScenario())
+            toggleMenuItem.Click.Add(fun _  -> MySimulation.Instance.toggleWorkflows ())
+            simulationMenuItem
+        
+        // Menue View Erweiterung 
+        // Toggle Umgebung
+        let toggleUmgebungMenuItem = new ToolStripMenuItem("&Umgebung toggle")
+        viewSubmenueStandard.DropDownItems.Add(toggleUmgebungMenuItem)|>ignore
+        toggleUmgebungMenuItem.Click.Add(fun _ -> MySimulation.Instance.toggleUmgebungen ())
 
-    let collideHill2Position    = Vector3( 12.0f, 15.0f,  -4.0f) 
-    let collideGroundPosition   = Vector3(-10.0f, 10.0f, -12.0f) 
-    let collideFood1Position    = Vector3(-12.0f, 12.0f,  -5.0f) 
-    let collideFood2Position    = Vector3(2.0f, 12.0f,  -5.0f)
-    let collideFood1FromLeft    = Vector3(-20.0f,  2.0f,  -5.0f)
-    let dropInPosition          = Vector3(  0.0f, 10.0f,   0.0f)
+        // Menue Main
+        let mainMenue = 
+            let mainMenu = new  MenuStrip() 
+            mainMenu.Items.Add(fileSubmenueStandard)|>ignore 
+            mainMenu.Items.Add(settingMenueStandard)|>ignore
+            mainMenu.Items.Add(viewSubmenueStandard)|>ignore 
+            mainMenu.Items.Add(simulationSubmenue)|>ignore
+            mainMenu
 
-    let downDirection       = Vector3.UnitY * -1.0f
-    let backDirection       = Vector3.UnitZ *  1.0f
-    let forwardDirection    = Vector3.UnitZ * -1.0f
-    let rightDirection      = Vector3.UnitX *  1.0f
-    let leftDirection       = Vector3.UnitX * -1.0f
+        mainWindow.MainMenuStrip <- mainMenue
+        mainWindow.Controls.Add(mainWindow.MainMenuStrip) 
 
     /// <summary>
-    //  GraphicSystem initialisieren
+    ///  SimulationSystem konfigurieren
     /// </summary>
-    let Configure () =  
 
-        logger.Info("Application.Configure")
-
-        Moveable.RandomInterval <- 8L 
-        Simulateable.LookAroundInterval <- 150L  
-
-        clock.Start()
+    let ConfigureSystem() =  
+        logger.Info("Configuration.System")
 
         // Simulation System
-        MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ])
-        MySimulation.Instance.Configure(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)
+        MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri])
+        MySimulation.Instance.ConfigurePipeline(ShaderClass.PhongPSType, RasterType.Wired, BlendType.Opaque)
         MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures") 
         MySimulation.Instance.TessellationFactor <- 1.0f

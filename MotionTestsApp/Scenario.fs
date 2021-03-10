@@ -53,9 +53,12 @@ module Scenario =
     let CollisionMitWand() =  
         printScenario("CollisionMitWand") 
 
-        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
-        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
-        MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))    
+        MySimulation.Instance.Reset()
+        MySimulation.Instance.ConfigureWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
+        MySimulation.Instance.ConfigVision(
+            cameraPosition=Vector3(-5.0f,  20.0f, -50.0f),
+            lightDirection=Vector3(25.0f, -25.0f,  10.0f)
+        )    
 
         // ----------------------------------------------------------------------------------------------------
         // Zwei parallele vertikale Wände
@@ -156,8 +159,7 @@ module Scenario =
                 moveRandom=false
             )
 
-        displayables <- [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
-        MySimulation.Instance.AddObjects(displayables)        
+        MySimulation.Instance.AddObjects([wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable])
 
     /// <summary>
     /// Einfallswinkel = Ausfallswinkel
@@ -167,9 +169,12 @@ module Scenario =
     let EinfallswinkelGleichAusfallswinkel() = 
         printScenario("EinfallswinkelGleichAusfallswinkel")
 
-        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)
-        MySimulation.Instance.SetCameraPos(Vector3(0.0f, 15.0f, -70.0f))
-        MySimulation.Instance.SetLightPos (new Vector3(  25.0f,  -25.0f,  10.0f))
+        MySimulation.Instance.Reset()
+        MySimulation.Instance.ConfigureWorld(Vector3(-20.0f, -10.0f, -20.0f), 10.0f, 4, 3, 4)
+        MySimulation.Instance.ConfigVision(
+            new Vector3( 0.0f, 15.0f, -70.0f),
+            new Vector3( 25.0f,  -25.0f,  10.0f)
+        )
 
         // ----------------------------------------------------------------------------------------------------
         // Zwei Kugeln und dazwischen eine Wand  
@@ -207,8 +212,7 @@ module Scenario =
                 color=Color.Transparent
             ) 
              
-        displayables <- [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable]
-        MySimulation.Instance.AddObjects(displayables)
+        MySimulation.Instance.AddObjects([wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable])
 
     /// <summary>
     /// Kollision Kugel an einem Korpus
@@ -217,9 +221,12 @@ module Scenario =
     let CollisionKugelUndKorpus() = 
         printScenario("KollisionKugelUndKorpus")
 
-        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
-        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -50.0f))
-        MySimulation.Instance.SetLightPos (new Vector3( 25.0f,  -25.0f,  10.0f))   
+        MySimulation.Instance.Reset()
+        MySimulation.Instance.ConfigureWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
+        MySimulation.Instance.ConfigVision(
+            new Vector3( -5.0f, 20.0f, -50.0f),
+            new Vector3( 25.0f,  -25.0f,  10.0f)
+        )   
 
         // ----------------------------------------------------------------------------------------------------
         // Eine Kugel und ein Korpus
@@ -246,8 +253,7 @@ module Scenario =
                 position=Vector3(2.0f, 0.0f, 2.0f)
             ) 
 
-        displayables <- [sphere:>Displayable; plate1:>Displayable]
-        MySimulation.Instance.AddObjects(displayables)
+        MySimulation.Instance.AddObjects([sphere:>Displayable; plate1:>Displayable])
 
     /// <summary>
     /// VerschiedeneGeometrien
@@ -257,9 +263,12 @@ module Scenario =
     let VerschiedeneGeometrien() = 
         printScenario("VerschiedeneGeometrien")
 
-        MySimulation.Instance.InitializeForWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
-        MySimulation.Instance.SetCameraPos(Vector3(-5.0f, 20.0f, -30.0f))
-        MySimulation.Instance.SetLightPos (new Vector3( 5.0f,  -25.0f,  10.0f))   
+        MySimulation.Instance.Reset()
+        MySimulation.Instance.ConfigureWorld(Vector3(-20.0f, 0.0f, -20.0f), 10.0f, 4, 2, 4)
+        MySimulation.Instance.ConfigVision(
+            new Vector3(-5.0f, 20.0f, -30.0f),
+            new Vector3( 5.0f,  -25.0f,  10.0f)
+        )   
 
         // ----------------------------------------------------------------------------------------------------
         // Ein Korpus
@@ -345,15 +354,13 @@ module Scenario =
                 color=Color.Gray
             ) 
 
-        displayables <- [corpus:>Displayable; polyeder:>Displayable; plane:>Displayable]
-        MySimulation.Instance.ClearObjects()
-        MySimulation.Instance.AddObjects(displayables)
+        MySimulation.Instance.AddObjects([corpus:>Displayable; polyeder:>Displayable; plane:>Displayable])
 
     /// <summary>
     /// Initialize
     /// </summary>
-    let Initialize() =
+    let CreateScenarios() =
         AddScenario(0, "CollisionMitWand", CollisionMitWand)
         AddScenario(1, "EinfallswinkelGleichAusfallswinkel", EinfallswinkelGleichAusfallswinkel)
         AddScenario(2, "CollisionKugelUndKorpus", CollisionKugelUndKorpus)
-        AddScenario(3, "VerschiedeneGeometrien",VerschiedeneGeometrien)
+        AddScenario(3, "VerschiedeneGeometrien", VerschiedeneGeometrien)

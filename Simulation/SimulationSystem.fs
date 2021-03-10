@@ -8,6 +8,7 @@
 
 open System.Threading.Tasks
 open System.Threading
+open System.Windows.Forms
 
 open log4net
 open SharpDX
@@ -88,21 +89,18 @@ module SimulationSystem =
         /// Konstruktor
         /// </summary>
         static member CreateInstance(defaultConfigurations: MyPipelineConfiguration list) =
-            MyGPU.Instance.Initialize(MyWindow.Instance)
-            MyGPU.Instance.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
-            MyGPU.Instance.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
-            MyGPU.Instance.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
-            MyGPU.Instance.SetPipelineConfigurations(defaultConfigurations)
+            MySimulation.Instance <- new MySimulation(MyWindow.Instance)
+            MySimulation.Instance.ConfigureGPU(MyWindow.Instance, defaultConfigurations)
 
         /// <summary>
         /// Public Initializer
         /// </summary>
-        member this.InitializeForWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
-            this.initialize()
+        member this.ConfigureWorld(ursprung:Vector3, umgebungsLaenge:float32, malX:int, malY:int, malZ:int)  =
             this.initializeWorld(ursprung, umgebungsLaenge, malX, malY, malZ)
 
-        member this.InitializeForWorldData(weltDaten:WeltDaten) =
-            this.InitializeForWorld(weltDaten.ursprung, weltDaten.laenge, weltDaten.malX, weltDaten.malY, weltDaten.malZ)
+        member this.ConfigVision(cameraPosition:Vector3, lightDirection:Vector3) =
+            this.SetCameraPos(new Vector3(-5.0f,  20.0f, -50.0f))
+            this.SetLightPos (new Vector3(25.0f, -25.0f,  10.0f))
 
         /// <summary>
         /// Private Initializer

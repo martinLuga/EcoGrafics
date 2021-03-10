@@ -19,9 +19,10 @@ module Program =
     [<EntryPoint>]
     
     let main argv = 
-        WindowLayout.Setup("ANT SIMULATION")
-        Configuration.Configure()
-        Scenario.Initialize()
+        WindowLayout.Setup("Motion Tests")
+        Configuration.ConfigureSystem()
+        Configuration.ConfigureMenue()
+        Scenario.CreateScenarios()
         Control.Init() 
         displayWindows()
         Control.Start()   

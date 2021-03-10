@@ -27,7 +27,7 @@ module Configuration =
 
         // Window
         MySystem.CreateInstance(graficWindow, [pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri ]) 
-        MySystem.Instance.Configure(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)      
+        MySystem.Instance.ConfigurePipeline(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)      
         MySystem.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures")     
 
         // Camera and light
