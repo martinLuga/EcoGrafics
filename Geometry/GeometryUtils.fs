@@ -65,7 +65,7 @@ module GeometryUtils =
         let v3 = createVertex p3 normal color  (new Vector2(1.0f, 1.0f)) isTransparent
         let v4 = createVertex p4 normal color  (new Vector2(0.0f, 1.0f)) isTransparent
         let vert = {SV1 = v1; SV2 = v2; SV3 = v3; SV4 = v4}
-        let ind =  {IV1 = idx + 0; IV2 = idx + 1; IV3 = idx + 2; IV4 = idx + 3}
+        let ind =  {SI1 = idx + 0; SI2 = idx + 1; SI3 = idx + 2; SI4 = idx + 3}
         (vert, ind) 
 
     // ----------------------------------------------------------------------------------------------------

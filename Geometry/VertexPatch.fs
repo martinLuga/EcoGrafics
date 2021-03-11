@@ -1,5 +1,5 @@
 ﻿//
-//  Patch.fs
+//  VertexPatch.fs
 //
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2018 Martin Luga. All rights reserved.
@@ -16,45 +16,17 @@ open DirectX.MeshObjects
 open GeometryUtils
 open GeometryTypes
 
-// ----------------------------------------------------------------------------------------------------
-// Vertexes erzeugen  
-//      Patch
-//      Triangle
-// STATUS: IN_ARBEIT
-// ----------------------------------------------------------------------------------------------------
+/// <summary>
+/// Meshes bestehend aus Vertexes erzeugen
+/// </summary>
 module VertexPatch =
-
-    // Quadrat: 4 Ecken  
-    type QuadType = {QV1: Vertex ; QV2: Vertex ; QV3: Vertex; QV4: Vertex}
-    type QuadIndexType   = {QI1: int ; QI2: int ; QI3: int; QI4: int}
-    type QuadTextureType   = {UV1: Vector2 ; UV2: Vector2 ; UV3: Vector2; UV4: Vector2}
-
-    let deconstructQuad (sq:QuadType) = 
-        let {QV1 = sq1; QV2 = sq2; QV3 = sq3; QV4 = sq4 } = sq
-        [sq1; sq2; sq3; sq4]
-
-    let deconstructQuadIndex (si:QuadIndexType) = 
-        let {QI1=si1; QI2=si2; QI3=si3; QI4=si4} = si
-        [si1; si2; si3; si4]
-
-    let deconstructQuadTexture (uvi:QuadTextureType) = 
-        let {UV1=uvi1; UV2=uvi2; UV3=uvi3; UV4=uvi4 } = uvi
-        [uvi1; uvi2; uvi3; uvi4]
-
-    // Polygon: N Ecken  
-    type PolyType = {TV: Vertex[]}
-    type PolyIndexType = {ITV: int[]}
-    let deconstructPolygon(tr:PolyType) = 
-        tr.TV 
-    let deconstructPolygonIndex (ti:PolyIndexType) = 
-        ti.ITV
 
     let defaultTexture factor =         
         {UV1=new Vector2(0.0f, 0.0f); UV2=new Vector2(factor, 0.0f); UV3=new Vector2(factor, 1.0f);UV4=new Vector2(0.0f, factor)}
 
-    // ----------------------------------------------------------------------------------------------------
-    // Quadratisches Patch durch 4 Controlpoints   
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Quadratisches Patch durch 4 Controlpoints   
+    /// </summary>
     let quadVertices p1 p2 p3 p4 (color:Color) idx isTransparent =  
         let text = defaultTexture 1.0f 
         let texti = deconstructQuadTexture text |> Array.ofSeq 
@@ -63,22 +35,22 @@ module VertexPatch =
         let v3 = createVertex  p3  -Vector3.UnitY color texti.[2] isTransparent 
         let v4 = createVertex  p4  -Vector3.UnitY color texti.[3] isTransparent 
         let vert = {QV1 = v1; QV2 = v2; QV3 = v3; QV4 = v4}  
-        let ind =  {IV1 = idx + 0; IV2 = idx + 1; IV3 = idx + 2; IV4 = idx + 3}
+        let ind =  {QI1 = idx + 0; QI2 = idx + 1; QI3 = idx + 2; QI4 = idx + 3}
         (vert, ind)    
     
-    // ---------------------------------------------------------------------------------------------------- 
-    // Quadratisches Patch durch Punkt und Seitenlänge 
-    // Reihenfolge der Punkte ist der Uhrzeigersinn
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary> 
+    /// Quadratisches Patch durch Punkt und Seitenlänge 
+    /// Reihenfolge der Punkte ist der Uhrzeigersinn
+    /// </summary>
     let quadPointsFromSquare p1 quadLength (color:Color) idx  =  
         let p2 = p1 + Vector3.UnitX * quadLength 
         let p3 = p1 + Vector3.UnitX * quadLength + Vector3.UnitZ * quadLength   
         let p4 = p1 + Vector3.UnitZ * quadLength 
         quadVertices p4 p3 p2 p1  color  idx 
 
-    // ----------------------------------------------------------------------------------------------------
-    // Erzeugen der Meshdaten für ein quadratisches Patch   
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Erzeugen der Meshdaten für ein quadratisches Patch   
+    /// </summary>
     let quadContext p1 p2 p3 p4 (color:Color) isTransparent = 
         let qv = quadVertices p1 p2 p3 p4 color 0 isTransparent
         let qVertexes, qIndexes = qv   
@@ -88,9 +60,9 @@ module VertexPatch =
         let indices = quadIndexList |> Array.ofSeq 
         new MeshData(vertices, indices, PrimitiveTopology.PatchListWith4ControlPoints)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Erzeugen der Meshdaten für eine ebene Fläche
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Erzeugen der Meshdaten für eine ebene Fläche
+    /// </summary>
     let quadPlaneContext (laenge:float32) (patchLaenge:float32) color  isTransparent =
         let p1 = Vector3.Zero
         let quadVertexList = new List<QuadType>()
@@ -113,10 +85,10 @@ module VertexPatch =
         let indices = quadIndexList  |> List.ofSeq |> List.collect (fun ind -> deconstructQuadIndex ind)  |> Array.ofSeq 
         new MeshData(vertices, indices, PrimitiveTopology.PatchListWith4ControlPoints)       
         
-    // ----------------------------------------------------------------------------------------------------
-    // Vertices für ein dreieckiges Patch   
-    // Die Ecken werden immer im Uhrzeigersinn angelegt
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Vertices für ein dreieckiges Patch   
+    /// Die Ecken werden immer im Uhrzeigersinn angelegt
+    /// </summary>
     let triVertices p1 p2 p3 (color:Color) idx isTransparent= 
         let text = defaultTexture 1.0f 
         let texti = deconstructQuadTexture text |> Array.ofSeq 
@@ -128,10 +100,10 @@ module VertexPatch =
         let ind =  {ITV1 = idx + 0; ITV2 = idx + 1; ITV3 = idx + 2}
         (vert, ind)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Triangles für eine unregelmäßige Fläche 
-    // Die Fläche ist gegeben durch einen Mittelpunkt c und die Punkte die den Rand festlegen
-    // ----------------------------------------------------------------------------------------------------        
+    /// <summary>
+    /// Triangles für eine unregelmäßige Fläche 
+    /// Die Fläche ist gegeben durch einen Mittelpunkt c und die Punkte die den Rand festlegen
+    /// </summary>        
     let polygonTriangleList (center: Vector3) (point:Vector3[]) (color:Color) isTransparent = 
         let triangleVertexList = new List<TriangleType>()
         let triangleIndexList = new List<TriangleIndexType>()
@@ -142,11 +114,11 @@ module VertexPatch =
             triangleIndexList.Add(tIndexes) 
         (triangleVertexList, triangleIndexList)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Triangless für ein Band  
-    // Das Band  ist gegeben durch zwei parallele Konturen
-    // TODO Die Normalen sind nicht OK
-    // ----------------------------------------------------------------------------------------------------        
+    /// <summary>
+    /// Triangless für ein Band  
+    /// Das Band  ist gegeben durch zwei parallele Konturen
+    /// TODO Die Normalen sind nicht OK
+    /// </summary>        
     let stripeTriangleList (unten: Vector3[]) (oben:Vector3[]) (color:Color) isTransparent = 
         let triangleVertexList = new List<TriangleType>()
         let triangleIndexList = new List<TriangleIndexType>()
@@ -168,9 +140,9 @@ module VertexPatch =
 
         (triangleVertexList, triangleIndexList)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Erzeugen der Meshdaten für ein dreieckiges Patch   
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Erzeugen der Meshdaten für ein dreieckiges Patch   
+    /// </summary>
     let triContext p1 p2 p3 (color:Color) isTransparent = 
         let tv = triVertices p1 p2 p3  color 0 isTransparent 
         let tVertexes, tIndexes = tv   
@@ -180,9 +152,9 @@ module VertexPatch =
         let indices = triIndexList |> Array.ofSeq 
         new MeshData(vertices, indices, PrimitiveTopology.PatchListWith3ControlPoints)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Erzeugen der Meshdaten für ein Icosahedron
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Erzeugen der Meshdaten für ein Icosahedron
+    /// </summary>
     let icosahedronContext (radius:float32) color topology isTransparent = 
         let p1 = Vector3(-radius,  0.0f,   radius)    // vorn links
         let p2 = Vector3( radius,  0.0f,   radius)    // vorn rechts
@@ -217,9 +189,9 @@ module VertexPatch =
 
         new MeshData(vertices, indices, topology)  
 
-    // ----------------------------------------------------------------------------------------------------
-    // Alle Punkte um height in Y-Richtung verschieben
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Alle Punkte um height in Y-Richtung verschieben
+    /// </summary>
     let shiftPoints(contour:Vector3[]) (height:float32) = 
         contour |> Array.map (fun (vec:Vector3) -> vec + Vector3.Up * height) 
 
@@ -230,9 +202,9 @@ module VertexPatch =
         let indices = Array.append indices1 indices2  
         (vertices, indices, topology)
         
-    // ----------------------------------------------------------------------------------------------------
-    // Erzeugen der Meshdaten für ein Corpus. Eine unregelmäßige Fläche mit einer festen Höhe
-    // ----------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Erzeugen der Meshdaten für ein Corpus. Eine unregelmäßige Fläche mit einer festen Höhe
+    /// </summary>
     let corpusContext (center: Vector3)(lowerContour: Vector3[]) height colorBasis colorTop colorBorder (topology:PrimitiveTopology) isTransparent =
         // Meshdata untere Fläche mit center und lowerContour
         
