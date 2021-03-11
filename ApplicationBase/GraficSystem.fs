@@ -14,8 +14,7 @@ open System.Collections.Generic
 
 open DirectX.D3DUtilities
 open DirectX.Camera
-open DirectX.MeshObjects
- 
+open DirectX.MeshObjects 
 
 open SharpDX
 open SharpDX.Windows
@@ -26,6 +25,7 @@ open Base.FileSupport
 open Base.Logging
 
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 open DisplayableObject
 
@@ -60,7 +60,7 @@ module GraficSystem =
 
     type Texture =  DirectX.D3DUtilities.Texture
 
-    type Material =  Geometry.GeometricModel.Material
+    type Material =  Geometry.GeometricElements.Material
 
     exception GraficSystemError of string
 
@@ -204,7 +204,7 @@ module GraficSystem =
             else
                 displayables.Add(displayable.Name, displayable)
                 this.storeGeometry(displayable)
-                this.rememberMaterial(displayable.Surface.Material) 
+                this.rememberMaterial(displayable.Surface.Material)
 
         member this.storeGeometry(displayable:Displayable) =
             if geometries.ContainsKey(displayable.Geometry.Name) then

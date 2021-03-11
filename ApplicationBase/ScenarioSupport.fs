@@ -77,7 +77,6 @@ module TestScenariosCommon =
     let CORPUS (aContour) = 
         Corpus(
             name="CORPUS",
-            center= Vector3(1.5f, 0.0f, -3.0f),
             contour=aContour,
             height=5.0f,
             colorBottom=Color.White,

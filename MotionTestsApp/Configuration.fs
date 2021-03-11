@@ -36,6 +36,7 @@ module Configuration =
     /// </summary>
     let ConfigureMenue () =  
         logger.Info("Configuration.Menue")
+        
         // Menue Simulation
         let simulationSubmenue =  
             let simulationMenuItem = new ToolStripMenuItem("&Simulation")
@@ -77,6 +78,6 @@ module Configuration =
 
         // Simulation System
         MySimulation.CreateInstance([pipelineConfigBasic; pipelineConfigTesselateQuad; pipelineConfigTesselateTri])
-        MySimulation.Instance.ConfigurePipeline(ShaderClass.PhongPSType, RasterType.Wired, BlendType.Opaque)
+        MySimulation.Instance.ConfigurePipeline(ShaderClass.PhongPSType, RasterType.Solid, BlendType.Opaque)
         MySimulation.Instance.LoadTextureFiles("EcoGrafics", "ExampleApp", "textures") 
-        MySimulation.Instance.TessellationFactor <- 1.0f
+        //MySimulation.Instance.TessellationFactor <- 1.0f

@@ -5,7 +5,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="WeltObjects.fs" />
     <Compile Include="SimulationObject.fs" />
     <Compile Include="UmgebungModul.fs" />
     <Compile Include="WeltModul.fs" />

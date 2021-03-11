@@ -22,8 +22,6 @@ open Geometry.GeometricModel
 open Geometry.ObjectConvenience
 open Geometry.GeometryUtils
 
-open WeltObjects
-
 open UmgebungModul
 
 /// <summary>
@@ -34,6 +32,20 @@ module WeltModul =
 
     let logger = LogManager.GetLogger("Simulation.Welt")
     let logDebug = Debug(logger)
+
+    /// <summary>
+    //  Landscape  
+    /// </summary>   
+    type Landscape(name:string, geometry:Geometric, surface, color:Color, position: Vector3) = 
+        inherit Immoveable(name, geometry, surface, color, position) 
+
+        override this.isLandscape() = true
+
+        override this.isGround() =
+            if this.Name.ToUpper() = "GROUND" then 
+                true
+            else
+                false
 
     type WeltDaten =
        struct 
@@ -220,68 +232,80 @@ module WeltModul =
         /// Welt-Limits
         /// </summary>   
         member this.Ground =
-            new Immoveable(
-                name="ground",
-                geometry=new Quader("WeltGround", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
-                surface=SURFACE_GROUND,
-                position=Vector3(xMIN, yMIN-2.0f, zMIN),
-                color=Color.Transparent
+            lazy ( 
+                new Landscape(
+                    name="ground",
+                    geometry=new Quader("WeltGround", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
+                    surface=SURFACE_GROUND,
+                    position=Vector3(xMIN, yMIN-2.0f, zMIN),
+                    color=Color.Transparent
+                )
             )
 
         member this.leftLimit =
-            new Immoveable(
-                name="leftLimit",
-                geometry=new Quader("leftLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
-                surface=SURFACE_LIMIT("Limit", Color.Transparent),
-                position=Vector3(xMIN-2.0f, yMIN, zMIN),
-                color=Color.Transparent
+            lazy ( 
+                new Immoveable(
+                    name="leftLimit",
+                    geometry=new Quader("leftLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
+                    surface=SURFACE_LIMIT("Limit", Color.Transparent),
+                    position=Vector3(xMIN-2.0f, yMIN, zMIN),
+                    color=Color.Transparent
+                )
             )
                 
         member this.rightLimit =
-            new Immoveable(
-                name="rightLimit",
-                geometry=new Quader("rightLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
-                surface=SURFACE_LIMIT("Limit", Color.Transparent),
-                position=Vector3(xMAX, yMIN, zMIN),
-                color=Color.Transparent
+            lazy ( 
+                new Immoveable(
+                    name="rightLimit",
+                    geometry=new Quader("rightLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
+                    surface=SURFACE_LIMIT("Limit", Color.Transparent),
+                    position=Vector3(xMAX, yMIN, zMIN),
+                    color=Color.Transparent
+                )
             )
 
         member this.topLimit =
-            new Immoveable(
-                name="topLimit",
-                geometry=new Quader("topLimit", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
-                surface=SURFACE_LIMIT("Limit", Color.Transparent),
-                position=Vector3(xMIN, yMAX, zMIN),
-                color=Color.Transparent
+            lazy ( 
+                new Immoveable(
+                    name="topLimit",
+                    geometry=new Quader("topLimit", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
+                    surface=SURFACE_LIMIT("Limit", Color.Transparent),
+                    position=Vector3(xMIN, yMAX, zMIN),
+                    color=Color.Transparent
+                )
             )
 
         member this.backLimit =
-            new Immoveable(
-                name="backLimit",
-                geometry=new Quader("backLimit", xMAX - xMIN,  yMAX - yMIN,  2.0f, Color.Transparent),        
-                surface=SURFACE_LIMIT("Limit", Color.Transparent),
-                position=Vector3(xMIN, yMIN, zMAX),
-                color=Color.Transparent
+            lazy ( 
+                new Immoveable(
+                    name="backLimit",
+                    geometry=new Quader("backLimit", xMAX - xMIN,  yMAX - yMIN,  2.0f, Color.Transparent),        
+                    surface=SURFACE_LIMIT("Limit", Color.Transparent),
+                    position=Vector3(xMIN, yMIN, zMAX),
+                    color=Color.Transparent
+                )
             )
 
         member this.frontLimit =
-            new Landscape(
-                name="frontLimit",
-                geometry=new Quader("frontLimit", xMAX - xMIN,  yMAX - yMIN,  2.0f, Color.Transparent),        
-                surface=SURFACE_LIMIT("Limit", Color.Transparent),
-                position=Vector3(xMIN, yMIN, zMIN-2.0f),
-                color=Color.Transparent
+            lazy ( 
+                new Landscape(
+                    name="frontLimit",
+                    geometry=new Quader("frontLimit", xMAX - xMIN,  yMAX - yMIN,  2.0f, Color.Transparent),        
+                    surface=SURFACE_LIMIT("Limit", Color.Transparent),
+                    position=Vector3(xMIN, yMIN, zMIN-2.0f),
+                    color=Color.Transparent
+                )
             )
 
         member this.WorldLimits =
-            [
-                this.Ground:>Displayable;
-                this.topLimit:>Displayable;
-                this.leftLimit:>Displayable;
-                this.rightLimit:>Displayable;
-                this.backLimit:>Displayable;
-                this.frontLimit:>Displayable;
-            ]
+           [
+                this.Ground.Force():>Displayable;
+                this.topLimit.Force():>Displayable;
+                this.leftLimit.Force():>Displayable;
+                this.rightLimit.Force():>Displayable;
+                this.backLimit.Force():>Displayable;
+                this.frontLimit.Force():>Displayable;
+           ]
 
         member this.registriereWorldLimits() =
             this.registriereObjekteBeiUmgebung this.WorldLimits 

@@ -23,6 +23,7 @@ open VertexCylinder
 open VertexPyramid
 open VertexPatch
 open VertexDreiD
+open GeometricElements 
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
@@ -31,7 +32,7 @@ open VertexDreiD
 // ----------------------------------------------------------------------------------------------------
 module GeometricModel = 
 
-    let logger = LogManager.GetLogger("Geometric.GeometricModel")
+    let logger = LogManager.GetLogger("Geometric.Model")
     let logDebug = Debug(logger)
     let logInfo  = Info(logger)
     let logWarn  = Warn(logger)
@@ -93,10 +94,12 @@ module GeometricModel =
         member this.Color  
             with get () = color
             and set (value) = color <- value
-        member this.Maximum 
+        abstract Maximum:Vector3 with get, set
+        default this.Maximum 
             with get () = maximum
             and set (value) = maximum <- value
-        member this.Minimum 
+        abstract Minimum:Vector3 with get, set
+        default this.Minimum 
             with get () = minimum
             and set (value) = minimum <- value
         member this.TessFactor
@@ -487,89 +490,6 @@ module GeometricModel =
             | _ -> raise (GeometryException("Plane-Position für Normale nicht ermittelt"))
 
     // ----------------------------------------------------------------------------------------------------
-    // Material
-    // ----------------------------------------------------------------------------------------------------
-    type Material(name:string, diffuseAlbedo:Vector4, fresnelR0:Vector3, roughness:float32, 
-        ambient:Color4, diffuse:Color4, specular:Color4, specularPower:float32, emissive: Color4) =
-        let mutable ambient = ambient
-        let mutable diffuse = diffuse
-        let mutable specular = specular
-        let mutable emissive = emissive
-        member this.Name=name
-        member this.DiffuseAlbedo=diffuseAlbedo 
-        member this.FresnelR0=fresnelR0
-        member this.Roughness=roughness 
-        member this.SpecularPower=specularPower
-
-        new () = Material("", Vector4.Zero, Vector3.Zero, 0.0f)
-
-        new (name:string, diffuseAlbedo:Vector4, fresnelR0:Vector3, roughness:float32) =
-            Material(name,  diffuseAlbedo, fresnelR0, roughness, 
-                Color4.White, Color4.White, Color4.White, 0.0f, Color4.White)
-
-        new (name:string, ambient:Color4, diffuse:Color4, specular:Color4, specularPower:float32, emissive: Color4) =
-            Material(name,  Vector4.Zero, Vector3.Zero, 0.0f, 
-                ambient, diffuse, specular, specularPower, emissive)
-
-        override this.ToString() =
-            "Material: " + this.Name
-            
-        member this.Ambient
-            with get() = ambient
-            and set(value) = ambient <- value
-                
-        member this.Diffuse
-            with get() = diffuse
-            and set(value) = diffuse <- value
-
-        member this.Emissive
-            with get() = emissive
-            and set(value) = emissive <- value
-        
-        member this.Specular
-            with get() = specular
-            and set(value) = specular <- value
-
-        member this.isEmpty() =
-           this.Name = ""
-    
-    [<AllowNullLiteral>] 
-    type Texture(name:string, application:string, directory:string, fileName:string) =
-        member this.Name=name
-        member this.Application=application
-        member this.Directory=directory   
-        member this.FileName=fileName
-        new () = Texture("", "", "", "")
-        member this.isEmpty() =
-           this.Name = "" 
-        member this.PathName() =
-            this.Application + this.Directory + this.FileName
-
-    type Visibility = | Opaque | Transparent 
-
-    type Surface(texture:Texture, material:Material, visibility:Visibility) =
-        member this.Texture=texture
-        member this.Material=material 
-        member this.Visibility=visibility
-        
-        new () = Surface(Texture(), Material(), Visibility.Opaque)
-        new (material:Material) = Surface(null, material, Visibility.Opaque)
-        new (material:Material, visibility) = Surface(null, material, visibility)
-        new (material, texture) = Surface(material, texture, Visibility.Opaque)
-
-        member this.Copy () = new Surface(texture, material, visibility)
-        member this.hasTexture() =
-           not (this.Texture = null)
-        member this.hasMaterial() =
-           not (this.Material.isEmpty())
-        member this.isEmpty() =
-           this.Texture.isEmpty() && this.Material.isEmpty()
-
-    let seiteVonQuadrat( p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3) =
-        max (max ((p2 - p1).Length()) ((p3 - p2).Length()))
-            (max ((p4 - p3).Length()) ((p1 - p4).Length()))
-
-    // ----------------------------------------------------------------------------------------------------
     // Quadrat
     // ----------------------------------------------------------------------------------------------------
     type QuadPatch(name: string, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3, color:Color, tessFactor:float32) =
@@ -720,33 +640,39 @@ module GeometricModel =
 
     // ----------------------------------------------------------------------------------------------------
     // Corpus
-    // TODO: center ist zu berechnen als Schwerpunkt des Polygons
     // ----------------------------------------------------------------------------------------------------
-    type Corpus(name: string, center: Vector3, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
+    type Corpus(name: string, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
         inherit Geometric(name, Vector3.Zero, colorTop, PrimitiveTopology.PatchListWith3ControlPoints, DEFAULT_TESSELATION, DEFAULT_RASTER)
-        let mutable center=center
         member this.Contour=contour
-        member this.Height=height
         member this.ColorBottom=colorBottom
         member this.ColorTop=colorTop
         member this.ColorSide=colorSide
+        new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
+        
+        override this.Minimum with get() = computeMinPosition(contour)
+        override this.Maximum with get() = computeMaxPosition(this.upperContour())
 
-        new (name, center, contour, height, color) = Corpus (name, center, contour, height, color, color, color)  
+        // Einfache Lösung über den umschließenden Quader
+        // Besser wäre center zu berechnen als Schwerpunkt des Polygons
+        override this.Center= 
+            let x = this.Minimum.X + abs(this.Maximum.X - this.Minimum.X)/ 2.0f 
+            let y = this.Minimum.Y + abs(this.Maximum.Y - this.Minimum.Y)/ 2.0f 
+            let z = this.Minimum.Z + abs(this.Maximum.Z - this.Minimum.Z)/ 2.0f 
+            Vector3(x,y,z)
+
+        member   this.Height = height
+        member   this.Width  = this.Maximum.Z - this.Minimum.Z
+        member   this.Length = this.Maximum.X - this.Minimum.X
 
         override this.ToString() = this.Name 
-        override this.tesselationMode( ) = TesselationMode.TRI
-
-        override this.Center = center
+        override this.tesselationMode( ) = TesselationMode.TRI 
         
         override this.resize newSize  = 
             () // HACK
 
         // Umschließender Quader
-        // TODO: objectPosition berücksichtigen
         override this.Boundaries(objectPosition) = 
-            this.Minimum <- computeMinPosition(this.Contour) + objectPosition
-            this.Maximum <- computeMaxPosition(this.upperContour()) + objectPosition
-            (this.Minimum, this.Maximum)
+            (this.Minimum + objectPosition, this.Maximum + objectPosition)
 
         member this.upperContour() =
             this.Contour |> Array.map (fun point -> Vector3(point.X, point.Y + this.Height, point.Z))

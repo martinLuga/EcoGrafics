@@ -12,6 +12,7 @@ open SharpDX
 
 open Geometry
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 open Base.GlobalDefs
 
@@ -23,13 +24,15 @@ open ApplicationBase.GraficSystem
 
 open DirectX.Camera
 
+open Geometry.GeometricModel2D
+
 open Molecules.Atome
 open MoleculeDrawing.MoleculeDraw
 open MoleculeBuild
 
 open MoleculeBuild.BondBuilder
 
-type Texture = Geometry.GeometricModel.Texture
+type Texture = Geometry.GeometricElements.Texture
 
 type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomBond | AtomBuilder | Korpus | Icosahedron | GroundPlane | ManyObjects | TwoD
 
@@ -52,7 +55,22 @@ type Shape = Sphere  | Cube  | Cylinder  | Adobe | Pyramid | Skull | Car | AtomB
 ///
 /// </summary>   
 module Scenario =
-    open Geometry.GeometricModel2D
+
+    /// <summary> 
+    /// Text-Nachrichten Ausgabe
+    /// </summary> 
+    let writeObjectReport(objekt:Displayable) =
+        writeToOutputWindow("Objekt  : "   + objekt.Name) 
+        writeToOutputWindow("Geometry: "   + objekt.Geometry.ToString())
+        writeToOutputWindow("Position: "   + objekt.Position.ToString())
+        writeToOutputWindow("Center  : "   + objekt.Center.ToString())
+        writeToOutputWindow("Bounds  : "   + objekt.Boundaries.ToString())
+        newLineOutputWindow()
+
+    let writeReportObjects(displayables:Displayable list) =
+        clearOutputWindow()
+        for disp in displayables do
+            writeObjectReport(disp)
 
     let DISPLAYABLE_XMIN = 0.0f
     let DISPLAYABLE_XMAX = 20.0f
@@ -269,7 +287,9 @@ module Scenario =
                 position=Vector3( 4.0f, 0.0f, 0.0f)
             ) 
        
-        MySystem.Instance.InitObjects([cube3:>Displayable; cube22:>Displayable; cube2:>Displayable; cube1:>Displayable]|> List.append AXES)
+        let displayables = [cube3:>Displayable; cube22:>Displayable; cube2:>Displayable; cube1:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary> 
     /// Kugel
@@ -335,7 +355,9 @@ module Scenario =
                 position=Vector3(4.0f, 0.0f, 0.0f)
             )
 
-        MySystem.Instance.InitObjects([sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable] |> List.append AXES)
+        let displayables = [sphere1:>Displayable; sphere2:>Displayable; sphere3:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary> 
     /// Pyramide
@@ -427,7 +449,9 @@ module Scenario =
              color=Color.Black,
              position=Vector3( 4.0f, 0.0f, 0.0f)
         ) 
-        MySystem.Instance.InitObjects([pyramid1:>Displayable; pyramid2:>Displayable; pyramid3:>Displayable]|> List.append AXES)
+        let displayables = [pyramid1:>Displayable; pyramid2:>Displayable; pyramid3:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary> 
     /// Quader
@@ -520,7 +544,9 @@ module Scenario =
                 position=Vector3(4.0f, 0.0f, 0.0f)
             )  
 
-        MySystem.Instance.InitObjects([adobe1:>Displayable; adobe2:>Displayable;adobe3:>Displayable]|> List.append AXES)
+        let displayables = [adobe1:>Displayable; adobe2:>Displayable;adobe3:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary> 
     /// Drei Cylinder
@@ -555,7 +581,10 @@ module Scenario =
                 color=Color.Transparent,
                 position=Vector3(4.0f,  0.0f,  0.0f)
             )    
-        MySystem.Instance.InitObjects([cylinder1:>Displayable; cylinder2:>Displayable;  cylinder3:>Displayable]|> List.append AXES)
+
+        let displayables = [cylinder1:>Displayable; cylinder2:>Displayable;  cylinder3:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Objekte definiert durch eine Menge von vertexes. Hier ein Schädel
@@ -600,7 +629,9 @@ module Scenario =
                  position=Vector3( 4.0f, -3.0f,  0.0f)             
             )
 
-        MySystem.Instance.InitObjects([skull1:>Displayable; skull2:>Displayable]|> List.append AXES)
+        let displayables = [skull1:>Displayable; skull2:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Objekte definiert durch eine Menge von Vertexes. Hier ein Auto
@@ -626,7 +657,9 @@ module Scenario =
                  position=Vector3(0.0f, 0.0f,  0.0f)             
              )   
  
-        MySystem.Instance.InitObjects([car1:>Displayable]|> List.append AXES)
+        let displayables = [car1:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// 4 Atome mit einem Bond
@@ -716,9 +749,8 @@ module Scenario =
 
         let displayables =  List.concat [disp2; disp1]
 
-
-        //let displayables = [atom1:>Displayable; atom2:>Displayable; atom3:>Displayable; atom4:>Displayable; bond12:>Displayable; bond21:>Displayable; bond13:>Displayable; bond34:>Displayable; bond43:>Displayable]
-        MySystem.Instance.InitObjects(displayables|> List.append AXES)
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// AtomBuilder Test
@@ -752,7 +784,9 @@ module Scenario =
         //repositionCameraOnMolecule(residuum, 10.0f)
         let hilite = createHilite (residuum, "1") 
         let displayables = residuum.getDisplayables() |> List.append([hilite]) |> List.rev
-        MySystem.Instance.InitObjects(displayables|> List.append AXES)
+
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Korpus test
@@ -786,7 +820,6 @@ module Scenario =
         let CORPUS = 
             Corpus(
                 name="CORPUS",
-                center= Vector3(1.5f, 0.0f, -3.0f),
                 contour=CONTOUR,
                 height=2.0f,
                 colorBottom=Color.White,
@@ -812,7 +845,7 @@ module Scenario =
                     Visibility.Transparent
                 ),
                 color=Color.Black,
-                position=Vector3(0.0f, 0.0f, 4.0f)
+                position=Vector3(0.0f, 4.0f, 4.0f)
             )  
 
         let adobe1 = 
@@ -837,8 +870,11 @@ module Scenario =
              ),
              color=Color.Green,
              position=Vector3(4.0f, 0.0f, 0.0f)
-        )  
-        MySystem.Instance.InitObjects([plate1:>Displayable; plate2:>Displayable; adobe1:>Displayable]|> List.append AXES)
+        ) 
+        
+        let displayables = [plate1:>Displayable; plate2:>Displayable; adobe1:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Tesselated objects test
@@ -868,7 +904,9 @@ module Scenario =
                 position=Vector3(DISPLAYABLE_XMIN, DISPLAYABLE_YMIN, - 0.3f ),
                 color=Color.Gray
             ) 
-        MySystem.Instance.InitObjects([ground:>Displayable] |> List.append AXES)
+        let displayables = [ground:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Tesselation Test. Zwei Ikosaeder, einer transparent, der andere opak.
@@ -905,16 +943,16 @@ module Scenario =
                 color=Color.Red,
                 position=Vector3(4.0f, 2.0f, 0.0f)
             ) 
-        MySystem.Instance.InitObjects([icosahedron1:>Displayable; icosahedron2:>Displayable]|> List.append AXES)
+        let displayables = [icosahedron1:>Displayable; icosahedron2:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// Many objects test
     /// </summary>   
     let ManyObjectsObjects() =
         MySystem.Instance.Reset()
-
         initCamera(Vector3( 0.0f, 5.0f, -15.0f), Vector3.Zero, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL)
-
         let START_POS = Vector3(-15.0f, 0.0f, 0.0f)
 
         let cube(i) = 
@@ -927,12 +965,11 @@ module Scenario =
                 color=Color.Green,
                 position=START_POS + Vector3.UnitX * 2.0f * (float32) i
             )
-            :>Displayable
-        
+            :>Displayable        
  
-        let result = seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
-
-        MySystem.Instance.InitObjects(result)
+        let displayables = seq { for i in 1 .. 20 ->  cube(i) } |> Seq.toList
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>  
     /// 2D - Objekte, z.B. Formen, Schrift (in Entwicklung)
@@ -954,7 +991,10 @@ module Scenario =
                 color=Color.White,
                 position=Vector3(2.0f, 0.0f, 0.0f)
             )  
-        MySystem.Instance.InitObjects([square:>Displayable; xAxis:>Displayable; yAxis:>Displayable] |> List.append AXES)
+
+        let displayables = [square:>Displayable; xAxis:>Displayable; yAxis:>Displayable]
+        writeReportObjects(displayables)
+        MySystem.Instance.InitObjects(displayables |> List.append AXES)
 
     /// <summary>
     /// Initialize

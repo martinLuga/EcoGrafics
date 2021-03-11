@@ -11,6 +11,7 @@ open System
 open SharpDX
 
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 module DisplayableObject = 
 

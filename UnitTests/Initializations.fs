@@ -13,13 +13,14 @@ open SharpDX.Direct3D
 open SharpDX.DXGI 
 
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 open ApplicationBase.MoveableObject
 open ApplicationBase.DisplayableObject
 
 module Initializations = 
 
-    type Texture = Geometry.GeometricModel.Texture
+    type Texture = Geometry.GeometricElements.Texture
 
     let logger = LogManager.GetLogger("Tests")
     

@@ -232,14 +232,16 @@ module VertexPatch =
     // ----------------------------------------------------------------------------------------------------
     let corpusContext (center: Vector3)(lowerContour: Vector3[]) height colorBasis colorTop colorBorder (topology:PrimitiveTopology) isTransparent =
         // Meshdata untere Fläche mit center und lowerContour
-        let lowerPolygon = polygonTriangleList center lowerContour colorBasis isTransparent 
+        
+        let lowerCenter =  center - Vector3.Up * (height / 2.0f)
+        let lowerPolygon = polygonTriangleList lowerCenter lowerContour colorBasis isTransparent 
         let (verticesLower, indicesLower) = lowerPolygon
         let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q)  |> Array.ofSeq 
         let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind)  |> Array.ofSeq  
         let meshLower = new MeshData(verticesL, indicesL, topology) 
 
         let upperContour = shiftPoints lowerContour height
-        let upperCenter =  center + Vector3.Up * height
+        let upperCenter =  center + Vector3.Up * (height / 2.0f)
 
         // Meshdata obere Fläche mit upperCenter und upperContour
         let upperPolygon = polygonTriangleList upperCenter upperContour colorTop isTransparent  

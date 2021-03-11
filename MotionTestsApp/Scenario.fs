@@ -15,11 +15,14 @@ open Base.Logging
 open ApplicationBase.DisplayableObject
 open ApplicationBase.MoveableObject
 open ApplicationBase.WindowLayout
+open ApplicationBase.WindowControl
 open ApplicationBase.ScenarioSupport 
 open ApplicationBase.TestScenariosCommon
 
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 open Geometry.ObjectConvenience
+open Geometry.GeometricModel2D
 
 open Simulation.SimulationSystem
 
@@ -31,6 +34,22 @@ open Simulation.SimulationSystem
 // ----------------------------------------------------------------------------------------------------
 module Scenario =
 
+    /// <summary> 
+    /// Text-Nachrichten Ausgabe
+    /// </summary> 
+    let writeObjectReport(objekt:Displayable) =
+        writeToOutputWindow("Objekt  : "   + objekt.Name) 
+        writeToOutputWindow("Geometry: "   + objekt.Geometry.ToString())
+        writeToOutputWindow("Position: "   + objekt.Position.ToString())
+        writeToOutputWindow("Center  : "   + objekt.Center.ToString())
+        writeToOutputWindow("Bounds  : "   + objekt.Boundaries.ToString())
+        newLineOutputWindow()
+
+    let writeReportObjects(displayables:Displayable list) =
+        clearOutputWindow()
+        for disp in displayables do
+            writeObjectReport(disp)
+
     let printScenario(scenarioName) =
         logInfo("Start Scenario: " + scenarioName) 
         mainWindow.Text <- "Scenario:" + scenarioName
@@ -38,10 +57,59 @@ module Scenario =
     let hilited (displayable:Displayable) =
         displayable.createHilite()  
 
-    type Texture = Geometry.GeometricModel.Texture
+    type Texture = Geometry.GeometricElements.Texture
 
     let logger = LogManager.GetLogger("Scenarios.Motion")
     let logInfo  = Info(logger)
+
+    let xAxis = 
+        Immoveable(
+            name="xAxis",
+            geometry= Line(
+                name="XAxis", 
+                von=Vector3(-10.0f, 0.0f, 0.0f),
+                bis=Vector3( 10.0f, 0.0f, 0.0f),
+                color=Color.White
+            ),
+            surface=Surface(
+                MAT_WHITE
+            ),
+            color=Color.White,
+            position=Vector3(0.0f, 0.0f, 0.0f)
+        ) 
+    
+    let yAxis = 
+        Immoveable(
+            name="yAxis",
+            geometry= Line(
+                name="YAxis", 
+                von=Vector3(0.0f, -10.0f, 0.0f),
+                bis=Vector3(0.0f,  10.0f, 0.0f),
+                color=Color.White
+            ),
+            surface=Surface(
+                MAT_WHITE
+            ),
+            color=Color.White,
+            position=Vector3(0.0f, 0.0f, 0.0f)
+        ) 
+    let zAxis = 
+        Immoveable(
+            name="zAxis",
+            geometry= Line(
+                name="ZAxis", 
+                von=Vector3(0.0f, 0.0f, -10.0f),
+                bis=Vector3(0.0f, 0.0f,  10.0f),
+                color=Color.White
+            ),
+            surface=Surface(
+                MAT_WHITE 
+            ),
+            color=Color.White,
+            position=Vector3(0.0f, 0.0f, 0.0f)
+        ) 
+    let AXES =
+        [xAxis:>Displayable;yAxis:>Displayable;zAxis:>Displayable]
 
     // ----------------------------------------------------------------------------------------------------
     // Kollisionstest mit unbeweglichem Objekt
@@ -157,7 +225,9 @@ module Scenario =
                 moveRandom=false
             )
 
-        MySimulation.Instance.AddObjects([wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable])
+        let displayables = [wallRechts:>Displayable; wallLinks:>Displayable; wallVorne:>Displayable; wallHinten:>Displayable; wallUnten:>Displayable;sphere1:>Displayable;sphere2:>Displayable;sphere3:>Displayable]
+        writeReportObjects(displayables)
+        MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Einfallswinkel = Ausfallswinkel
@@ -204,13 +274,15 @@ module Scenario =
         let wall = 
             new Immoveable(
                 name="Wall",
-                geometry=new Quader("Wall", 1.0f, MySimulation.Instance.WeltDecke - MySimulation.Instance.WeltBoden, 20.0f, Color.Transparent),       
+                geometry=new Quader("Wall", 1.0f, MySimulation.Instance.WeltDecke - MySimulation.Instance.GroundLevel, 20.0f, Color.Transparent),       
                 surface=SURFACE_WALL(Color.Orange),
-                position=Vector3(0.0f, MySimulation.Instance.WeltBoden+0.5f, -10.0f),
+                position=Vector3(0.0f, MySimulation.Instance.GroundLevel+0.5f, -10.0f),
                 color=Color.Transparent
             ) 
              
-        MySimulation.Instance.AddObjects([wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable])
+        let displayables = [wall:>Displayable; sphere1:>Displayable; sphere2:>Displayable] 
+        writeReportObjects(displayables)
+        MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Kollision Kugel an einem Korpus
@@ -236,7 +308,7 @@ module Scenario =
                 geometry=new Kugel("Sphere", radius, Color.Transparent),   
                 surface=SURFACE_KUGEL(Color.OrangeRed),
                 color=Color.Yellow, 
-                position=Vector3(-8.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f),
+                position=Vector3(-8.0f, MySimulation.Instance.GroundLevel + 0.1f, 0.0f),
                 direction=Vector3(1.0f, 0.0f, 1.0f ),   
                 velocity=OBJECT_VELOCITY,     
                 moveRandom=false
@@ -251,7 +323,24 @@ module Scenario =
                 position=Vector3(2.0f, 0.0f, 2.0f)
             ) 
 
-        MySimulation.Instance.AddObjects([sphere:>Displayable; plate1:>Displayable])
+        // Ein Polyeder
+        let polyeder = 
+            new Immoveable(
+                name="polyeder",
+                geometry=new Polyeder(
+                    name="Icosahedron2", 
+                    center= Vector3(0.0f, 0.0f, -2.0f),
+                    radius=3.0f,
+                    color=Color.DarkBlue,
+                    tessFactor=4.0f                  
+                    ),
+                surface=new Surface(MAT_DARKGOLDENROD),
+                color=Color.Black,
+                position=Vector3(0.0f, MySimulation.Instance.GroundLevel + 0.1f, 0.0f)
+            ) 
+        let displayables = [sphere:>Displayable; polyeder:>Displayable] 
+        writeReportObjects(displayables)
+        MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// VerschiedeneGeometrien
@@ -296,7 +385,6 @@ module Scenario =
         let CORPUS = 
             new Corpus(
                 name="CORPUS",
-                center= Vector3(1.5f, 0.0f, -3.0f),
                 contour=CONTOUR,
                 height=2.0f,
                 colorBottom=Color.White,
@@ -309,10 +397,10 @@ module Scenario =
                 geometry=CORPUS,
                 surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
-                position=Vector3(-10.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f)
+                position=Vector3(-10.0f, MySimulation.Instance.GroundLevel + 0.1f, 0.0f)
             ) 
 
-       // Ein Polyeder
+        // Ein Polyeder
         let polyeder = 
             new Immoveable(
                 name="polyeder",
@@ -325,7 +413,7 @@ module Scenario =
                     ),
                 surface=new Surface(MAT_DARKGOLDENROD),
                 color=Color.Black,
-                position=Vector3(0.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f)
+                position=Vector3(0.0f, MySimulation.Instance.GroundLevel + 0.1f, 0.0f)
             ) 
 
         // Eine Fläche
@@ -348,11 +436,13 @@ module Scenario =
                         emissive=Color.DarkSlateGray.ToColor4()
                     ) 
                 ),
-                position=Vector3(10.0f, MySimulation.Instance.WeltBoden + 0.1f, 0.0f),
+                position=Vector3(10.0f, MySimulation.Instance.GroundLevel + 0.1f, 0.0f),
                 color=Color.Gray
             ) 
 
-        MySimulation.Instance.AddObjects([corpus:>Displayable; polyeder:>Displayable; plane:>Displayable])
+        let displayables = [corpus:>Displayable; polyeder:>Displayable; plane:>Displayable]
+        writeReportObjects(displayables)
+        MySimulation.Instance.AddObjects(displayables)
 
     /// <summary>
     /// Initialize

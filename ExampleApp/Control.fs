@@ -14,6 +14,7 @@ open ApplicationBase.WindowControl
 open ApplicationBase.WindowLayout
 open ApplicationBase.GraficSystem 
 open ApplicationBase.ScenarioSupport
+open ApplicationBase.DisplayableObject
 
 open DirectX.Assets
 

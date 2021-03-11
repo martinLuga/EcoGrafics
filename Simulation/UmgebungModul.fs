@@ -19,7 +19,8 @@ open ApplicationBase.WindowControl
 
 open Base.Logging
 
-open Geometry.GeometricModel 
+open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 /// <summary>
 /// Kollisionserkennung über Umgebungen

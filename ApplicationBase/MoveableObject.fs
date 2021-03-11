@@ -19,6 +19,7 @@ open Base.Logging
 open Geometry.GeometricModel
 open Geometry.GeometryUtils
 open Geometry.CollisionDetection
+open Geometry.GeometricElements
 
 open DisplayableObject
 

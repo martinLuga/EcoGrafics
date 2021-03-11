@@ -9,6 +9,7 @@
 open SharpDX
 
 open Geometry.GeometricModel
+open Geometry.GeometricElements
 
 // ----------------------------------------------------------------------------------------------------
 // Convenience
@@ -69,6 +70,9 @@ module ObjectConvenience =
 
     let MAT_BLACK = 
         MATERIAL("BLACK", Color.Black)
+
+    let MAT_WHITE = 
+        MATERIAL("WHITE", Color.White)
 
     // ----------------------------------------------------------------------------------------------------
     // SURFACE

@@ -107,7 +107,7 @@ module SimulationSystem =
         /// </summary>
         member this.initializeWorld(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int)  =
             Welt.Instance.Initialize(ursprung, laenge, malX, malY, malZ)        
-            this.InitObjects(Welt.Instance.GetDisplayables())
+            base.AddObjects(Welt.Instance.GetDisplayables())
 
         override this.AddObjects(simulationObjects) =
             base.AddObjects(simulationObjects)
@@ -116,7 +116,7 @@ module SimulationSystem =
         /// <summary>
         /// Accessor
         /// </summary>
-        member this.WeltBoden =
+        member this.GroundLevel =
             Welt.Instance.YMIN
 
         member this.WeltDecke=
@@ -124,6 +124,9 @@ module SimulationSystem =
 
         member this.WeltDaten() = 
             Welt.Instance.Daten()
+
+        member this.WeltGround = 
+            Welt.Instance.Ground.Force()
 
         /// <summary>
         /// Initializer
