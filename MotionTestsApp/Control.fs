@@ -58,7 +58,7 @@ module Control =
         addStandardMouseMovements(graficWindow)   
         OBJECT_VELOCITY <- 0.1f 
         adjustSpeedBar(OBJECT_VELOCITY)        
-        mainWindow.Load.Add(fun _ -> execScenarioNamed("CollisionMitWand"))
+        mainWindow.Load.Add(fun _ -> execScenarioNamed("CollisionKugelUndKorpus"))
 
     /// <summary>    
     /// Start the application
