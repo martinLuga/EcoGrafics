@@ -66,8 +66,7 @@ module Configuration =
             mainMenu
 
         mainWindow.MainMenuStrip <- mainMenue
-        mainWindow.Controls.Add(mainWindow.MainMenuStrip)         
-        mainWindow.Activated.Add(fun _ -> execScenarioNamed("CollisionMitWand")) 
+        mainWindow.Controls.Add(mainWindow.MainMenuStrip)      
 
     /// <summary>
     ///  SimulationSystem konfigurieren

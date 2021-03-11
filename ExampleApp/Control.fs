@@ -43,9 +43,9 @@ module Control =
         addStandardKeyMovements(graficWindow)
         addScenarioKeyMovements(graficWindow)
         addStandardMouseMovements(graficWindow)
+        mainWindow.Activated.Add(fun _ -> execScenarioNamed("Korpus"))
 
     let Start() = 
         logger.Info("\nStart")
-        iActiveScenario <- 1
         MySystem.Instance.Start()
         writeToMessageWindow("Application started")

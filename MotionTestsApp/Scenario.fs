@@ -23,8 +23,6 @@ open Geometry.ObjectConvenience
 
 open Simulation.SimulationSystem
 
-open Control
-
 // ----------------------------------------------------------------------------------------------------
 // TestsScenarios für die Bewegung
 // 1. Objekte prallen frontal von der Wand ab

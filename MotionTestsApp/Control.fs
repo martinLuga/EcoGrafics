@@ -7,13 +7,12 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System.Windows.Forms
-
 open log4net
 
 open ApplicationBase.WindowLayout
 open ApplicationBase.MoveableObject
 open ApplicationBase.ScenarioSupport 
+open ApplicationBase.WindowControl
 
 open Base.Logging
 
@@ -48,20 +47,18 @@ module Control =
         adjustSpeedBar(OBJECT_VELOCITY)
         logInfo("Change object speed to " + OBJECT_VELOCITY.ToString())
 
-    let addScenarioKeyMovements() =
-        graficWindow.KeyDown.Add(fun e -> if e.KeyCode = Keys.N  then execNextScenario())  
-
     objectSpeedTrackBar.Scroll.Add(fun args -> changeObjectSpeed objectSpeedTrackBar.Value)
 
     /// <summary>    
     /// Init  Menue, Key-Function, Scenario
     /// </summary> 
     let Init () = 
-        addScenarioKeyMovements()
+        addScenarioKeyMovements(graficWindow) 
         addStandardKeyMovements(graficWindow)   
         addStandardMouseMovements(graficWindow)   
         OBJECT_VELOCITY <- 0.1f 
-        adjustSpeedBar(OBJECT_VELOCITY)
+        adjustSpeedBar(OBJECT_VELOCITY)        
+        mainWindow.Load.Add(fun _ -> execScenarioNamed("CollisionMitWand"))
 
     /// <summary>    
     /// Start the application
@@ -69,6 +66,5 @@ module Control =
     let Start() = 
         logInfo("Start")
         clock.Start()
-        iActiveScenario <- 1
         MySimulation.Instance.Start()
         writeToMessageWindow("Application started") 

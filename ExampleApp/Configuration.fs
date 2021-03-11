@@ -100,8 +100,7 @@ module Configuration =
             mainMenu
 
         mainWindow.MainMenuStrip <- mainMenue
-        mainWindow.Controls.Add(mainWindow.MainMenuStrip) 
-        mainWindow.Activated.Add(fun _ -> execScenarioNamed("Sphere"))  
+        mainWindow.Controls.Add(mainWindow.MainMenuStrip)   
 
      /// <summary>
      ///  System konfigurieren

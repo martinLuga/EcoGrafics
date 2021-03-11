@@ -220,7 +220,7 @@ module WeltModul =
         /// Welt-Limits
         /// </summary>   
         member this.Ground =
-            new Landscape(
+            new Immoveable(
                 name="ground",
                 geometry=new Quader("WeltGround", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
                 surface=SURFACE_GROUND,
@@ -229,7 +229,7 @@ module WeltModul =
             )
 
         member this.leftLimit =
-            new Landscape(
+            new Immoveable(
                 name="leftLimit",
                 geometry=new Quader("leftLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
                 surface=SURFACE_LIMIT("Limit", Color.Transparent),
@@ -238,7 +238,7 @@ module WeltModul =
             )
                 
         member this.rightLimit =
-            new Landscape(
+            new Immoveable(
                 name="rightLimit",
                 geometry=new Quader("rightLimit", 2.0f, yMAX - yMIN, zMAX - zMIN, Color.Transparent),        
                 surface=SURFACE_LIMIT("Limit", Color.Transparent),
@@ -247,7 +247,7 @@ module WeltModul =
             )
 
         member this.topLimit =
-            new Landscape(
+            new Immoveable(
                 name="topLimit",
                 geometry=new Quader("topLimit", xMAX - xMIN, 2.0f, zMAX - zMIN, Color.Transparent),        
                 surface=SURFACE_LIMIT("Limit", Color.Transparent),
@@ -256,7 +256,7 @@ module WeltModul =
             )
 
         member this.backLimit =
-            new Landscape(
+            new Immoveable(
                 name="backLimit",
                 geometry=new Quader("backLimit", xMAX - xMIN,  yMAX - yMIN,  2.0f, Color.Transparent),        
                 surface=SURFACE_LIMIT("Limit", Color.Transparent),

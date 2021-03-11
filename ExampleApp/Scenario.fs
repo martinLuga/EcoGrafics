@@ -814,7 +814,31 @@ module Scenario =
                 color=Color.Black,
                 position=Vector3(0.0f, 0.0f, 4.0f)
             )  
-        MySystem.Instance.InitObjects([plate1:>Displayable; plate2:>Displayable]|> List.append AXES)
+
+        let adobe1 = 
+            new Immoveable(
+             name="adobe1",
+             geometry=new Quader("adobe1", 3.0f, 4.0f, 4.0f, Color.Brown),
+             surface=Surface(
+                 Texture(
+                    "texture_140",
+                    "ExampleApp",
+                    "textures",
+                    "texture_140.jpg"
+                 ),
+                 Material(
+                     name="mat1",
+                     ambient=Color4(0.2f),
+                     diffuse=Color4.White,
+                     specular=Color4.White,
+                     specularPower=20.0f,
+                     emissive=Color.Green.ToColor4()
+                  )
+             ),
+             color=Color.Green,
+             position=Vector3(4.0f, 0.0f, 0.0f)
+        )  
+        MySystem.Instance.InitObjects([plate1:>Displayable; plate2:>Displayable; adobe1:>Displayable]|> List.append AXES)
 
     /// <summary>  
     /// Tesselated objects test

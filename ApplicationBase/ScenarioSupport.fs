@@ -19,18 +19,19 @@ module ScenarioSupport =
 
     let mutable iActiveScenario = 0
 
-    let mutable scenarios:Map<int,(unit->unit)> = Map[]
-    let mutable scenariosForName = new Dictionary<string, unit->unit>()
+    let mutable scenarios:Dictionary<int,(unit->unit)> = new Dictionary<int,(unit->unit)>()
+    let mutable scenarioNames:Dictionary<string, int> = Dictionary<string, int>()
 
     let AddScenario(idx, name,  scenario:(unit->unit)) =
-        scenarios <- scenarios.Add(idx, scenario)  
-        scenariosForName.Add(name, scenario) 
+        scenarios.Add(idx, scenario)  
+        scenarioNames.Add(name, idx)  |> ignore
 
     let scenarioNamed(name) =
-        scenariosForName.Item(name) 
+        let success  = scenarioNames.TryGetValue(name, &iActiveScenario)
+        scenarios.Item(iActiveScenario) 
 
     let scenariosNames() =  
-        scenariosForName.Keys
+        scenarioNames.Keys
 
     let activeScenario() =
         scenarios.Item(iActiveScenario)
@@ -39,7 +40,7 @@ module ScenarioSupport =
         scenarios.Item(iActiveScenario) ()
 
     let execScenarioNamed (name:string) =
-        scenariosForName.Item(name)()        
+        scenarioNamed(name)()        
     
     let execScenario (nr:int) =
         iActiveScenario <- nr
