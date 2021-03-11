@@ -57,6 +57,9 @@ module ScenarioSupport =
     let startNextScenario() =
         execNextScenario()
 
+    let startActiveScenario() =      
+        execActiveScenario() 
+
 /// <summary>
 /// Common declares for scenarios
 /// </summary>

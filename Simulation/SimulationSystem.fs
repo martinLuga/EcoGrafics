@@ -122,6 +122,9 @@ module SimulationSystem =
         member this.WeltDecke=
             Welt.Instance.YMAX
 
+        member this.WeltDaten() = 
+            Welt.Instance.Daten()
+
         /// <summary>
         /// Initializer
         /// </summary>

@@ -132,6 +132,9 @@ module WeltModul =
             this.registriereWorldLimits()
             this.HideUmgebungen() 
 
+        member this.InitializeWelt(daten:WeltDaten) = 
+            this.Initialize(daten.ursprung, daten.laenge, daten.malX, daten.malY, daten.malZ)
+
         member this.InitFromPoints(xmin:float32, xmax:float32, ymin:float32, ymax:float32, zmin:float32, zmax:float32, laenge:float32) = 
             weltUrsprung <- Vector3(xmin, ymin, zmin)
             umgebungsLaenge <- laenge 
@@ -285,6 +288,9 @@ module WeltModul =
 
         member this.GetDisplayables() =
             List.concat [this.GetUmgebungenAsDisplayables(); this.WorldLimits ]
+
+        member this.Daten()= 
+            new WeltDaten(weltUrsprung ,umgebungsLaenge,einheitenX,einheitenY,einheitenZ)
 
         /// <summary>
         /// Umgebungen

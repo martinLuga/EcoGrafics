@@ -13,12 +13,11 @@ open log4net
 
 open ApplicationBase.WindowLayout
 open ApplicationBase.MoveableObject
-open ApplicationBase.DisplayableObject 
+open ApplicationBase.ScenarioSupport 
 
 open Base.Logging
 
 open Simulation.SimulationSystem
-open Simulation.ScenarioSupport
 
 open WindowLayout
 open WindowControl

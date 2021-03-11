@@ -10,7 +10,6 @@
     <Compile Include="UmgebungModul.fs" />
     <Compile Include="WeltModul.fs" />
     <Compile Include="SimulationSystem.fs" />
-    <Compile Include="ScenarioSupport.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.12" />

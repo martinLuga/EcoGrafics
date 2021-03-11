@@ -24,7 +24,7 @@ open Shader.ShaderSupport
 
 open WindowLayout 
 open GraficSystem
-
+open ScenarioSupport
  
 /// <summary>
 //  Window-Actions
@@ -173,6 +173,9 @@ module WindowControl =
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Right then rotateHorizontal(true))
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Left  then rotateHorizontal(false)) 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.End   then resetCamera())  
+
+    let addScenarioKeyMovements(form:MyWindow) =
+        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.N  then execNextScenario())  
     
     /// <summary>    
     /// Movements from mouse behaviour

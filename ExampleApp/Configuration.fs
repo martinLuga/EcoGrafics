@@ -53,8 +53,8 @@ module Configuration =
             let manyObjectsMenuItem = new ToolStripMenuItem("&Many Objects")
             let twoDMenuItem = new ToolStripMenuItem("&2D")
 
-            geometryMenuItem.DropDownItems.Add(cubeMenuItem)|>ignore
             geometryMenuItem.DropDownItems.Add(sphereMenuItem)|>ignore
+            geometryMenuItem.DropDownItems.Add(cubeMenuItem)|>ignore
             geometryMenuItem.DropDownItems.Add(pyramidMenuItem)|>ignore
             geometryMenuItem.DropDownItems.Add(adobeMenuItem)|>ignore
             geometryMenuItem.DropDownItems.Add(cylinderMenuItem)|>ignore
@@ -70,8 +70,8 @@ module Configuration =
 
             sphereMenuItem.Click.Add(fun _      -> execScenarioNamed("Sphere")) 
             cubeMenuItem.Click.Add(fun _        -> execScenarioNamed("Cube")) 
-            pyramidMenuItem.Click.Add(fun _     -> execScenarioNamed("Adobe")) 
-            adobeMenuItem.Click.Add(fun _       -> execScenarioNamed("Pyramid")) 
+            pyramidMenuItem.Click.Add(fun _     -> execScenarioNamed("Pyramid")) 
+            adobeMenuItem.Click.Add(fun _       -> execScenarioNamed("Adobe")) 
             cylinderMenuItem.Click.Add(fun _    -> execScenarioNamed("Cylinder")) 
             skullMenuItem.Click.Add(fun _       -> execScenarioNamed("SkullContour")) 
             carMenuItem.Click.Add(fun _         -> execScenarioNamed("CarContour")) 
@@ -101,7 +101,7 @@ module Configuration =
 
         mainWindow.MainMenuStrip <- mainMenue
         mainWindow.Controls.Add(mainWindow.MainMenuStrip) 
- 
+        mainWindow.Activated.Add(fun _ -> execScenarioNamed("Sphere"))  
 
      /// <summary>
      ///  System konfigurieren

@@ -15,14 +15,12 @@ open SharpDX
 open ApplicationBase.MoveableObject
 open ApplicationBase.ShaderConfiguration
 open ApplicationBase.WindowLayout
+open ApplicationBase.ScenarioSupport
 
 open Shader.ShaderSupport 
 
-open Simulation.SimulationObject
 open Simulation.SimulationSystem
-open Simulation.ScenarioSupport
 
-open WindowLayout
 open WindowControl
 
 /// <summary>
@@ -68,7 +66,8 @@ module Configuration =
             mainMenu
 
         mainWindow.MainMenuStrip <- mainMenue
-        mainWindow.Controls.Add(mainWindow.MainMenuStrip) 
+        mainWindow.Controls.Add(mainWindow.MainMenuStrip)         
+        mainWindow.Activated.Add(fun _ -> execScenarioNamed("CollisionMitWand")) 
 
     /// <summary>
     ///  SimulationSystem konfigurieren

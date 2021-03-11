@@ -35,9 +35,6 @@ module Control =
 
     let logger = LogManager.GetLogger("Control")
 
-    let addScenarioKeyMovements(form:MyWindow) =
-        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.N  then execNextScenario())  
-
     // ----------------------------------------------------------------------------------------------------    
     // Inits GUI, GraficSystem
     // ---------------------------------------------------------------------------------------------------- 
