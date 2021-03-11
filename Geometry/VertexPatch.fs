@@ -26,14 +26,17 @@ module VertexPatch =
 
     // Quadrat: 4 Ecken  
     type QuadType = {QV1: Vertex ; QV2: Vertex ; QV3: Vertex; QV4: Vertex}
-    type QuadIndexType   = {IV1: int ; IV2: int ; IV3: int; IV4: int}
+    type QuadIndexType   = {QI1: int ; QI2: int ; QI3: int; QI4: int}
     type QuadTextureType   = {UV1: Vector2 ; UV2: Vector2 ; UV3: Vector2; UV4: Vector2}
+
     let deconstructQuad (sq:QuadType) = 
         let {QV1 = sq1; QV2 = sq2; QV3 = sq3; QV4 = sq4 } = sq
         [sq1; sq2; sq3; sq4]
+
     let deconstructQuadIndex (si:QuadIndexType) = 
-        let {IV1=si1; IV2=si2; IV3=si3; IV4=si4} = si
+        let {QI1=si1; QI2=si2; QI3=si3; QI4=si4} = si
         [si1; si2; si3; si4]
+
     let deconstructQuadTexture (uvi:QuadTextureType) = 
         let {UV1=uvi1; UV2=uvi2; UV3=uvi3; UV4=uvi4 } = uvi
         [uvi1; uvi2; uvi3; uvi4]
