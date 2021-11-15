@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework> 
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile> 
+
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="FrameworkTests.fs" />
+    <Compile Include="Initializations.fs" />
+    <Compile Include="ArchitectureTests.fs" />
+    <Compile Include="Hardware.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="GraficTests.fs" />
+    <Compile Include="GeometryTests.fs" />
+    <Compile Include="ShaderTests.fs" />
+    <Compile Include="RecordTests.fs" />
+    <Content Include="textures\bricks.dds" />
+    <Content Include="textures\bricks2.dds" />
+    <Content Include="textures\bricks2_nmap.dds" />
+    <Content Include="textures\bricks3.dds" />
+    <Content Include="textures\bricks_nmap.dds" />
+    <Content Include="textures\checkboard.dds" />
+    <Content Include="textures\default_nmap.dds" />
+    <Content Include="textures\desertcube1024.dds" />
+    <Content Include="textures\grass.dds" />
+    <Content Include="textures\grasscube1024.dds" />
+    <Content Include="textures\head_diff.dds" />
+    <Content Include="textures\head_norm.dds" />
+    <Content Include="textures\ice.dds" />
+    <Content Include="textures\jacket_diff.dds" />
+    <Content Include="textures\jacket_norm.dds" />
+    <Content Include="textures\pants_diff.dds" />
+    <Content Include="textures\pants_norm.dds" />
+    <Content Include="textures\snowcube1024.dds" />
+    <Content Include="textures\stone.dds" />
+    <Content Include="textures\sunsetcube1024.dds" />
+    <Content Include="textures\tile.dds" />
+    <Content Include="textures\tile_nmap.dds" />
+    <Content Include="textures\tree0.bmp" />
+    <Content Include="textures\tree01S.dds" />
+    <Content Include="textures\tree02S.dds" />
+    <Content Include="textures\tree1.bmp" />
+    <Content Include="textures\tree2.bmp" />
+    <Content Include="textures\tree35S.dds" />
+    <Content Include="textures\treearray.dds" />
+    <Content Include="textures\treeArray2.dds" />
+    <Content Include="textures\upBody_diff.dds" />
+    <Content Include="textures\upbody_norm.dds" />
+    <Content Include="textures\water1.dds" />
+    <Content Include="textures\white1x1.dds" />
+    <Content Include="textures\WireFence.dds" />
+    <Content Include="textures\WoodCrate01.dds" />
+    <Content Include="textures\WoodCrate02.dds" />
+    <None Include="resource\log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
+    <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj" />
+    <ProjectReference Include="..\Base\Base.fsproj" />
+    <ProjectReference Include="..\Builder\Builder.fsproj" />
+    <ProjectReference Include="..\Geometry\Geometry.fsproj" />
+    <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.2" />
+  </ItemGroup>
+</Project>

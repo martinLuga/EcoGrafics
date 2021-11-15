@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework> 
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile> 
+
+    <UserSecretsId>5e5b4826-0045-4a42-b2cb-c144e7c998a6</UserSecretsId> 
+
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="FileSupport.fs" />
+    <Compile Include="LoggingSupport.fs" />
+    <Compile Include="Framework.fs" />
+    <Compile Include="GlobalDefs.fs" />
+    <Compile Include="VertexDefs.fs" />
+    <Compile Include="MathSupport.fs" />
+    <Compile Include="MeshObject.fs" />
+    <None Include="ModelSupport.md" />
+    <Compile Include="QuaderSupport.fs" />
+    <Compile Include="ModelSupport.fs" />
+    <Compile Include="MaterialsAndTextures.fs" />
+    <Compile Include="StringSupport.fs" />
+    <Compile Include="RecordSupport.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="GeometryUtils.fs" />
+    <Compile Include="BaseObject.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="5.0.2" />
+  </ItemGroup>
+</Project>
