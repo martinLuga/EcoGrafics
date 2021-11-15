@@ -180,5 +180,6 @@ module MaterialsAndTextures =
             MAT_CYAN   ;
             MAT_DARKGOLDENROD  ;
             MAT_DARKSLATEGRAY  ;
-            MAT_BLACK   
+            MAT_BLACK;
+            MAT_WHITE      
         ]

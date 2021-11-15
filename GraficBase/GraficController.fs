@@ -159,7 +159,8 @@ module GraficController =
 
         member this.AddMaterials(materials:Material list) =
             for material in materials do                   
-                this.addMaterialCPU(material)
+                this.addMaterialCPU(material)                
+                myGpu.UpdateMaterial(this.getMaterialGPU (material.Name, false))
 
         member this.addMaterialCPU(material:Material) =
             if not (materialIndices.ContainsKey(material.Name)) then
@@ -172,10 +173,12 @@ module GraficController =
             let success = materialIndices.TryGetValue(name, &tempMatNr)
             if success then 
                 materials.Item(tempMatNr) 
-            else  raise (ObjectNotFoundException("Invalid Materialname ")) 
+            else null
 
         member this.getMaterialGPU(name:string, hasTexture:bool) = 
             let material = this.getMaterialCPU(name)
+            if material = null then
+                raise (ObjectNotFoundException("Invalid Materialname ")) 
             let mutable newMaterial = 
                 new MaterialConstants( 
                     Ambient = material.Ambient,
@@ -235,8 +238,6 @@ module GraficController =
             myGpu.StartInstall()
             myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList))
 
-            this.AddMaterials(DefaultMaterials())
-
             for object in objects.Values do  
                 for part in object.Display.Parts do                  
                     this.InstallPart(part)
@@ -257,10 +258,10 @@ module GraficController =
             )
             logDebug("Install Mesh for " + part.Shape.Name)
             
-            this.addMaterialCPU(part.Material)
-            logDebug("Install Material " + part.Material.Name)
-            
-            myGpu.UpdateMaterial(this.getMaterialGPU (part.Material.Name, part.hasTexture ()))
+            if this.getMaterialCPU(part.Material.Name) = null then
+                this.addMaterialCPU(part.Material)
+                logDebug("Install Material " + part.Material.Name)            
+                myGpu.UpdateMaterial(this.getMaterialGPU (part.Material.Name, part.hasTexture ()))
 
             myGpu.InstallTexture(part.Texture.Name, part.Texture.Path)
 
