@@ -3,11 +3,10 @@
 //  Displayable.fs
 //
 //  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
 open SharpDX
-
 open GeometryUtils
 open ModelSupport
 
@@ -18,7 +17,7 @@ module ObjectBase =
     // ----------------------------------------------------------------------------------------------------
     // Oberklasse für alle graphisch anzeigbaren Objekte
     // Subklassen: 
-    //  Moveable, Immoveable 
+    // Moveable, Immoveable 
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>] 
     type BaseObject(name: string, display: Display, position:Vector3) =  

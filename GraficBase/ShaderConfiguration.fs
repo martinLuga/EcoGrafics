@@ -3,7 +3,7 @@
 //  ShaderConfiguration.fs
 //
 //  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
 open SharpDX.DXGI

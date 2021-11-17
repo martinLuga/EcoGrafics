@@ -242,20 +242,24 @@ module CorpusPatch =
     //  Alle Punkte um height in Y-Richtung verschieben
     // ----------------------------------------------------------------------------------------------------
     let shiftPoints(contour:Vector3[]) (height:float32) = 
-        contour |> Array.map (fun (vec:Vector3) -> Vector3.Add(vec, Vector3.Up )) 
+        contour |> Array.map (fun (vec:Vector3) -> Vector3.Add(vec, height * Vector3.Up )) 
 
     let corpusContext (center: Vector3, lowerContour: Vector3[], height, colorBasis, colorTop, colorBorder, topology, topologyType, isTransparent) =
-        // Meshdata untere Fläche mit center und lowerContour
+
+        let upperContour = shiftPoints lowerContour height
+
+        let halfHeight = height / 2.0f
+        let halfUp = Vector3.Up * halfHeight
+        let halfDown = Vector3.Down * halfHeight
+        let lowerCenter =  center - halfUp 
+        let upperCenter =  center - halfDown 
         
-        let lowerCenter =  center - Vector3.Up * (height / 2.0f)
+        // Meshdata untere Fläche mit center und lowerContour 
         let lowerPolygon = polygonTriangleList lowerCenter lowerContour colorBasis isTransparent 
         let (verticesLower, indicesLower) = lowerPolygon
         let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q) |> ResizeArray<Vertex> 
         let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind) |> ResizeArray<int> 
         let meshLower = MeshData.Create(verticesL, indicesL) 
-
-        let upperContour = shiftPoints lowerContour height
-        let upperCenter =  Vector3.Add(center, (Vector3.Up * (height / 2.0f)))
 
         // Meshdata obere Fläche mit upperCenter und upperContour
         let upperPolygon = polygonTriangleList upperCenter upperContour colorTop isTransparent  

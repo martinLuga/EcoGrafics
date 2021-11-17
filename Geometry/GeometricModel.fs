@@ -44,7 +44,7 @@ module GeometricModel =
 
     let mutable instanceCount = 1
 
-    let setCylinderRaster (newRaster:Raster) = 
+    let setRaster (newRaster:Raster) = 
         DEFAULT_RASTER  <- (int newRaster) 
         //tessellation <- (int newRaster)
 
@@ -607,7 +607,14 @@ module GeometricModel =
         member   this.Width  = this.Maximum.Z - this.Minimum.Z
         member   this.Length = this.Maximum.X - this.Minimum.X
 
-        override this.ToString() = this.Name 
+        override this.ToString() =
+            "Corpus " +  name  
+            + " L:"  
+            + sprintf "%4.2f" this.Length
+            + " B:"
+            + sprintf "%4.2f" this.Width
+            + " H:"
+            + sprintf "%4.2f" this.Height
 
         override this.TopologyType = PrimitiveTopologyType.Patch
 

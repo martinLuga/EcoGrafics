@@ -3,7 +3,7 @@
 //  ExampleApp.fs
 //
 //  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
 open System
@@ -218,9 +218,12 @@ module GraficController =
             objects.Clear() 
 
         member this.AnzahlParts(displayables:BaseObject list) =
-             displayables
-             |> List.map (fun disp -> disp.Display.Parts.Length)
-             |> List.reduce (fun len1 len2 -> len1 + len2)
+            if displayables.IsEmpty then
+                0
+            else
+                displayables
+                |> List.map (fun disp -> disp.Display.Parts.Length)
+                |> List.reduce (fun len1 len2 -> len1 + len2)
 
         // ----------------------------------------------------------------------------------------------------
         // Controller verwalten
@@ -251,27 +254,31 @@ module GraficController =
             this.Prepare()
         
         member this.InstallPart(part: Part) =
-            myGpu.InstallMesh(
-                part.Shape.Name,
-                part.Shape.CreateVertexData(part.Visibility),
-                part.Shape.Topology
-            )
-            logDebug("Install Mesh for " + part.Shape.Name)
+            if  myGpu.hasMesh(part.Shape.Name)  then
+                logDebug("Mesh present for " + part.Shape.Name)
+            else
+                logDebug("Install Mesh for " + part.Shape.Name)
+                myGpu.InstallMesh(
+                    part.Shape.Name,
+                    part.Shape.CreateVertexData(part.Visibility),
+                    part.Shape.Topology
+                )
             
             if this.getMaterialCPU(part.Material.Name) = null then
                 this.addMaterialCPU(part.Material)
                 logDebug("Install Material " + part.Material.Name)            
                 myGpu.UpdateMaterial(this.getMaterialGPU (part.Material.Name, part.hasTexture ()))
 
-            myGpu.InstallTexture(part.Texture.Name, part.Texture.Path)
+            if part.Texture <> null then
+                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path)
 
         // ---------------------------------------------------------------------------------------------------- 
         // Alle Meshes erneut schreiben
         // ---------------------------------------------------------------------------------------------------- 
-        member this.RefreshShapes(objects: BaseObject list) = 
+        member this.RefreshShapes() = 
             myGpu.StartInstall()
             myGpu.resetMeshCache()
-            for object in objects do 
+            for object in objects.Values do  
                 for part in object.Display.Parts do 
                     myGpu.InstallMesh(part.Shape.Name, part.Shape.CreateVertexData(part.Visibility), part.Shape.Topology) 
                     logDebug("Refresh Mesh for " + part.Shape.Name)
@@ -359,8 +366,6 @@ module GraficController =
         default this.Run() =
             logInfo("Run") 
             myGpu.Begin()
-            if status = ControllerStatus.New then
-                this.Prepare()
             status <- ControllerStatus.Running
             // Windows Render-Loop
             let loop = new RenderLoop(graficWindow)

@@ -3,7 +3,7 @@
 //  ScenarioSupport.fs
 //
 //  Created by Martin Luga on 10.09.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
 open Base.LoggingSupport

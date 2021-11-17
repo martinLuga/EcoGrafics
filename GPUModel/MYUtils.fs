@@ -191,6 +191,13 @@ module MYUtils =
             vertexBufferGPU <- null
             indexBufferGPU  <- null
 
+        member this.Reset() =
+            this.ResetBuffers()
+            ocbs.Clear()
+
+        member this.Contains(geometryName) =
+            ocbs.ContainsKey(geometryName)
+
         member this.Append(geometryName, vertices, indices, topology)=
             let mutable ocb = 
                 ObjectControlblock(

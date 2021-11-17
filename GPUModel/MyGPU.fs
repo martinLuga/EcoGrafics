@@ -293,10 +293,10 @@ module MyGPU =
             directRecorder.Play()
 
         // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
-        // MehData
-        // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
+        // MeshData
+        // ----------------------------------------------------------------------------------------------------        
+        member this.hasMesh(name) =
+            meshCache.Contains(name) 
 
         member this.InstallMesh(name, meshData: MeshData, topology) =
             meshCache.Append(name, meshData.Vertices, meshData.Indices, topology) 
@@ -311,7 +311,7 @@ module MyGPU =
             meshCache <- new MeshCache(device)
 
         member this.resetMeshCache() =
-            meshCache.ResetBuffers()
+            meshCache.Reset()
 
         member this.FinalizeMeshCache(commandList) =
             meshCache.createBuffers(commandList)

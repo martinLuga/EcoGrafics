@@ -3,7 +3,7 @@
 //  WindowControl.fs
 //
 //  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
 open GraficBase.CameraControl  
@@ -40,7 +40,7 @@ module WindowControl =
     let mutable zoomFactor = 0.5f 
 
     let DEFAULT_TESSELATION_AMOUNT = 1.0f
-    let DEFAULT_RASTERIZATION_AMOUNT = 1.0f
+    let DEFAULT_RASTERIZATION_AMOUNT = 8.0f
    
     let clock = new System.Diagnostics.Stopwatch()
 
@@ -87,7 +87,6 @@ module WindowControl =
         writeToMessageWindow("Rasterization Factor: " + MyController.Instance.RasterizationFactor.ToString())
 
     let setPixelShader (pstype: ShaderClass) = 
-        writeToOutputWindow("PixelShader is now: " + pstype.ToString())
         MyController.Instance.SetPixelShader(pstype)
 
     let ToggleRasterizerState() =
