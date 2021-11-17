@@ -9,10 +9,12 @@
 open Base.LoggingSupport
 open Base.MaterialsAndTextures
 open Base.ModelSupport
+open Base.ObjectBase
 open Geometry.GeometricModel
 open log4net
 open SharpDX
 open System.Collections.Generic
+open GraficBase.GraficController
 
 // ----------------------------------------------------------------------------------------------------
 // Ein Scenario stellt eine graphische Ausgangssituation her
@@ -76,10 +78,61 @@ module ScenarioSupport =
     let startActiveScenario() =      
         execActiveScenario() 
 
+// ----------------------------------------------------------------------------------------------------  
+//  Tesselated objects test
+// ----------------------------------------------------------------------------------------------------   
+module GroundPlaneSurfaces = 
+
+    let PART_FRONT =
+        new Part(
+            name = "FRONT",
+            shape =
+                Fläche.InXYPlane(
+                    name = "FRONT",
+                    p1 = Vector3.Zero,
+                    seitenlaenge = 10.0f,
+                    normal = Vector3.BackwardLH,
+                    color = Color.Transparent
+                ),
+            material = MAT_DARKSLATEGRAY,
+            visibility = Visibility.Transparent
+        )
+
+    let PART_GROUND (origin, extent) =
+        new Part(
+            name = "GROUND",
+            shape =
+                  Fläche.InXZPlane(
+                      name = "GROUND",
+                      p1 = origin,
+                      seitenlaenge = extent,
+                      normal = Vector3.Up,
+                      color = Color.Transparent
+                  ) ,
+            material = MAT_GROUND,
+            texture = TEXT_GROUND
+        )
+
+    let PART_RIGHT =
+        new Part(
+            name = "RIGHT",
+            shape =
+                  Fläche.InYZPlane(
+                      name = "RIGHT",
+                      p1 = Vector3.Zero,
+                      seitenlaenge = 10.0f,
+                      normal = Vector3.Right,
+                      color = Color.Transparent
+                  ) ,
+            material = MAT_BLUE
+        ) 
+
 // ----------------------------------------------------------------------------------------------------
 //  Einige grafische Definitionen, die in Scenarios benötigt werden
 // ----------------------------------------------------------------------------------------------------
 module TestScenariosCommon = 
+
+    open GroundPlaneSurfaces
 
     let WITH_AXES = true
     let WITHOUT_AXES = false
@@ -151,3 +204,39 @@ module TestScenariosCommon =
             fileName=texturName,
             pathName=""
         )
+
+    let createAXES(from, too) =
+        new BaseObject(
+            name = "Achsen",
+            display = new Display(parts = [ xAxis(from, too); yAxis(from, too); zAxis(from, too) ]),
+            position = Vector3.Zero
+        )
+    
+    let GROUND_HEIGHT = 0.0f
+
+    let createGround(center:Vector3, extent) =
+        let origin = 
+            Vector3(
+                center.X - extent/2.0f,
+                center.Y - GROUND_HEIGHT,
+                center.Z - extent/2.0f
+            )
+        new BaseObject(
+            name = "GROUND",
+            display =  
+                new Display(
+                    parts = [PART_GROUND (Vector3.Zero, extent)]
+                ),
+            position = origin
+        )
+
+    // Aufruf aus dem Scenario
+    let configureScenario(origin, extent, hasAxes, hasGround) =
+        if hasAxes then
+            let axes = createAXES(-extent/2.0f, extent/2.0f) 
+            MyController.Instance.AddObject (axes)
+
+        if hasGround then
+            let ground = createGround(origin, extent)
+            if ground <> null then
+                MyController.Instance.AddObject(ground) 
