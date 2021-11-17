@@ -23,11 +23,9 @@ open Base.MeshObjects
 open Base.VertexDefs
 
 // ----------------------------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
 // Kugel
 // Quader ...
-// ----------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 module GeometricModel = 
 
@@ -43,10 +41,14 @@ module GeometricModel =
     exception GeometryException of string
 
     let mutable instanceCount = 1
+    let mutable raster = 8 
+    let mutable tesselation = 8 
 
     let setRaster (newRaster:Raster) = 
-        DEFAULT_RASTER  <- (int newRaster) 
-        //tessellation <- (int newRaster)
+        raster  <- (int newRaster) 
+
+    let setTesselation (newTesselation:Raster) = 
+        tesselation <- (int newTesselation)
 
     let nextInstanceCountString =
         let next = instanceCount + 1
@@ -88,7 +90,7 @@ module GeometricModel =
         override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " U= " + this.Origin.ToString()
         
         override this.CreateVertexData(visibility:Visibility) =
-            VertexSphere.CreateMeshData(origin, color, radius, visibility)
+            VertexSphere.CreateMeshData(origin, color, radius, Shape.Raster, visibility)
 
     // ----------------------------------------------------------------------------------------------------
     //  Quader
@@ -277,7 +279,7 @@ module GeometricModel =
             with get () = Vector3( this.Origin.X +  radius,  this.Origin.Y + hoehe,  this.Origin.Z + radius)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, visibility)  
+            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, Shape.Raster, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     // Pyramid

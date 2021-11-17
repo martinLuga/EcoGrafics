@@ -15,12 +15,8 @@ open Base.ModelSupport
 
 module VertexSphere  = 
 
-    let mutable raster:int32 = 32
-    let mutable delta = IIpi / float32 raster 
-
-    let setSphereRaster (newRaster:Raster) = 
-        raster <- (int newRaster)
-        delta  <- IIpi / float32 raster
+    let mutable tessellation:int32 = 32
+    let mutable delta = IIpi / float32 tessellation 
 
     // ----------------------------------------------------------------------------------------------------
     // Vertices 
@@ -31,8 +27,8 @@ module VertexSphere  =
     let sphereVertices (ursprung:Vector3) (color:Color) (radius:float32) isTransparent =
 
         let center = ursprung + Vector3(radius, radius, radius)
-        let verticalSegments = raster
-        let horizontalSegments = raster * 2
+        let verticalSegments = tessellation
+        let horizontalSegments = tessellation * 2
         let vertices = Array.create ((verticalSegments + 1) * (horizontalSegments + 1)) (new Vertex())
         let mutable vertexCount = 0
 
@@ -70,8 +66,8 @@ module VertexSphere  =
 
     let sphereIndices (clockWiseWinding:bool) =
         // Fill the index buffer with triangles joining each pair of latitude rings.
-        let verticalSegments = raster
-        let horizontalSegments = raster * 2
+        let verticalSegments = tessellation
+        let horizontalSegments = tessellation * 2
 
         let indices = Array.create ((verticalSegments) * (horizontalSegments + 1) * 6) (int32 0)
         let stride = horizontalSegments + 1
@@ -113,8 +109,9 @@ module VertexSphere  =
                     indexCount <- indexCount + 1
         indices
 
-    let CreateMeshData(ursprung:Vector3, color:Color, radius:float32, visibility:Visibility) =
+    let CreateMeshData(ursprung:Vector3, color:Color, radius:float32, raster:int, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
         let vertices = sphereVertices ursprung color radius isTransparent   
         let indices = sphereIndices CLOCKWISE
+        tessellation <- raster
         new MeshData(vertices, indices)

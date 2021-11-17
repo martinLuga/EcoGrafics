@@ -11,6 +11,7 @@ open DirectX.Camera
 open Base.ObjectBase
 open Base.Framework
 open Base.LoggingSupport
+open Base.ModelSupport
 open GraficBase.GraficController
 open GraficBase.GraficWindow
 open log4net
@@ -40,7 +41,7 @@ module WindowControl =
     let mutable zoomFactor = 0.5f 
 
     let DEFAULT_TESSELATION_AMOUNT = 1.0f
-    let DEFAULT_RASTERIZATION_AMOUNT = 8.0f
+    let DEFAULT_RASTERIZATION_AMOUNT = 8 
    
     let clock = new System.Diagnostics.Stopwatch()
 
@@ -79,12 +80,14 @@ module WindowControl =
         writeToMessageWindow("Tesselation Factor: " + MyController.Instance.TessellationFactor.ToString())
     
     let IncreaseRasterizationFactor() =
-        MyController.Instance.RasterizationFactor <- MyController.Instance.RasterizationFactor + DEFAULT_RASTERIZATION_AMOUNT 
-        writeToMessageWindow("Rasterization Factor: " + MyController.Instance.RasterizationFactor.ToString())
+        Shape.Raster <- Shape.Raster + DEFAULT_RASTERIZATION_AMOUNT     
+        MyController.Instance.RefreshShapes()
+        writeToMessageWindow("Rasterization Factor: " + Shape.Raster.ToString())
 
     let DecreaseRasterizationFactor() =
-        MyController.Instance.RasterizationFactor <- MyController.Instance.RasterizationFactor - DEFAULT_RASTERIZATION_AMOUNT 
-        writeToMessageWindow("Rasterization Factor: " + MyController.Instance.RasterizationFactor.ToString())
+        Shape.Raster <- Shape.Raster - DEFAULT_RASTERIZATION_AMOUNT 
+        MyController.Instance.RefreshShapes()
+        writeToMessageWindow("Rasterization Factor: " + Shape.Raster.ToString())
 
     let setPixelShader (pstype: ShaderClass) = 
         MyController.Instance.SetPixelShader(pstype)

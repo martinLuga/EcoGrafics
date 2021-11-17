@@ -173,6 +173,6 @@ module VertexCylinder =
 
         if withCap then complete else cone
 
-    let CreateMeshData(origin:Vector3, colorCone:Color, colorCap:Color, height:float32, radius:float32, withCap:bool, visibility:Visibility) =
+    let CreateMeshData(origin:Vector3, colorCone:Color, colorCap:Color, height:float32, radius:float32, withCap:bool, raster:int, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        cylinderVertices (origin, colorCone, colorCap, height, radius, tessellation, withCap, isTransparent ) 
+        cylinderVertices (origin, colorCone, colorCap, height, radius, raster, withCap, isTransparent ) 

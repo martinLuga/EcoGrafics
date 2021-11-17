@@ -25,9 +25,6 @@ open VertexDefs
 // ----------------------------------------------------------------------------------------------------
 module ModelSupport =
 
-    let mutable DEFAULT_RASTER = 8
-    let DEFAULT_TESSELATION = 1.0f
-
     type Quality =
         | Low
         | Medium
@@ -170,11 +167,17 @@ module ModelSupport =
         let mutable size = size
         let mutable primitiveTopology : PrimitiveTopology = PrimitiveTopology.TriangleList
         let mutable primitiveTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Triangle
-        let mutable raster = raster
+        let mutable rasterFactor = raster
+        let mutable tessFactor = tessFactor
         let mutable quality = quality
         let mutable meshData = new MeshData()
         let mutable vertices = vertices
         let mutable indices = indices
+        
+        static let mutable raster = 8 
+        static let mutable tesselation = 8.0f 
+        static member Raster with get() = raster and set(value) = raster <- value
+        static member Tesselation with get() = tesselation and set(value) = tesselation <- value
 
         member this.Vertices
             with get () = vertices
@@ -220,9 +223,13 @@ module ModelSupport =
             with get () = color
             and set (value) = color <- value
 
-        member this.Raster
-            with get () = raster
-            and set (value) = raster <- value
+        member this.RasterFactor
+            with get () = rasterFactor
+            and set (value) = rasterFactor <- value
+
+        member this.TessFactor
+            with get () = tessFactor
+            and set (value) = tessFactor <- value
 
         member this.MeshData
             with get () = meshData
@@ -290,7 +297,7 @@ module ModelSupport =
     [<AbstractClass>]
     [<AllowNullLiteral>]
     type Geometry(name: string, origin: Vector3, color: Color, tessFactor: float32, raster: int, size: float32) =
-        inherit Shape(name, origin, List<Vertex>(), List<int>(), color, DEFAULT_TESSELATION, DEFAULT_RASTER, size, Quality.Original)
+        inherit Shape(name, origin, List<Vertex>(), List<int>(), color, Shape.Tesselation, Shape.Raster, size, Quality.Original)
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero
 
@@ -314,7 +321,7 @@ module ModelSupport =
     [<AllowNullLiteral>]
     [<AbstractClass>]
     type FileBased(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
-        inherit Shape(name, origin, vertices, indices, Color.Transparent, DEFAULT_TESSELATION, DEFAULT_RASTER, size, quality)        
+        inherit Shape(name, origin, vertices, indices, Color.Transparent, Shape.Tesselation, Shape.Raster, size, quality)        
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero
 
@@ -489,3 +496,6 @@ module ModelSupport =
             this.BoundingBox(this.Position)
 
         override this.ToString() = " " + this.Parts.Length.ToString() + " Part(s)" 
+
+    let mutable DEFAULT_RASTER = Shape.Raster
+    let DEFAULT_TESSELATION = Shape.Tesselation
