@@ -4,7 +4,11 @@
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile> 
 
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>AnyCPU;x64</Platforms> 
+
+    <Version></Version> 
+
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="ScenarioSupport.fs" />
@@ -19,7 +23,6 @@
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\DirectX\DirectX.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
-    <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
     <ProjectReference Include="..\GraficBase\GraficBase.fsproj" />
     <ProjectReference Include="..\Shader\Shader.fsproj" />
   </ItemGroup>

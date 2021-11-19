@@ -304,19 +304,45 @@ module Framework =
         // Wait for delay end and continue main task
         delayTask.Join()
 
+    // Alle gleich i
     let ForAll seq i =
        if Seq.forall(fun num -> num = i) seq then true
-       else false    
+       else false 
+       
+    // Alle ungleich i
+    let ForAllNot seq i =
+       if Seq.forall(fun num -> num <> i) seq then true
+       else false
+
+    // Alle den ersten = i
+    // Gib den Index zurück
+    let First (seq:int[]) i =
+        let ind = seq |> Seq.findIndex(fun num -> num = i)
+        seq.Length - 1  - ind 
+
+    // Alle ungleich i
+    let FirstNot (seq:int[]) i =
+       seq.Length  - 1 -
+           (seq |> Seq.findIndex(fun num -> num <> i))
+
+    let ErsterFreie(spalte:int[]) =
+        let mutable ind = 0
+        try 
+            ind <- spalte |> Seq.findIndexBack(fun num -> num = 0)
+            ind
+        with :? KeyNotFoundException -> - 1
 
     // Scan eine row
     // wenn 4 hintereinander gefunden werden
     // gib index des ersten zurück
     let findeVierHintereinander(rowOrColumn:int[], nr:int) =
         assert (rowOrColumn.Length >= 4 )
+        let mutable found = false
         let mutable worker = Array.create 4 0 
         let mutable result = Array.create 4 0  
         for i in 0 .. (rowOrColumn.Length - 4) do
             worker <- rowOrColumn.[i..i+3]
             if (ForAll worker nr) then
+                found <- true
                 result <- [|i;i+1;i+2;i+3|]
-        result
+        found

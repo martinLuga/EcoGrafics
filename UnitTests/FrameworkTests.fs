@@ -11,6 +11,7 @@ open log4net
 open NUnit.Framework
 open Base.MathSupport
 open Base.LoggingSupport
+open Base.BracketObject
 open System.Collections.Generic
 
 module SlicingTests = 
@@ -215,3 +216,62 @@ module SlicingTests =
             let (diagonale, index) = sliceGegenDiagonale(this.matrix,  2, -1)
             dline(diagonale) 
             dindex(index)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Test des Matrix Slicings 
+    // ----------------------------------------------------------------------------------------------------
+    [<TestFixture>]
+    type BracketTests() = 
+
+        [<DefaultValue>] val mutable bracket:Bracket
+
+        [<SetUp>]
+        member this.setUp() =            
+            let matrix = 
+                array2D [
+                    [1;1;1;1;1;1;1];
+                    [2;2;2;2;2;2;2];
+                    [3;3;3;3;3;3;3];
+                    [4;4;4;4;4;4;4];
+                    [5;5;5;5;5;5;5];
+                    [6;6;6;6;6;6;6];
+                    ]
+            this.bracket <- new Bracket(6,7)
+            this.bracket.Initialize(matrix)
+            dmatrix(matrix)
+
+        [<Test>]
+        member this.ObereHauptDiagonale_Alle() =
+            for j = 0 to 5 do 
+                let diagonale1 = this.bracket.GetDiagonale(0, j, Richtung.Haupt)
+                dline(diagonale1)
+
+        [<Test>]
+        member this.UntereHauptDiagonale_Alle() =
+            for i = 0 to 4 do 
+                let diagonale1 = this.bracket.GetDiagonale(i, 0, Richtung.Haupt)
+                dline(diagonale1)
+
+        [<Test>]
+        member this.ObereGegenDiagonale_Alle() =
+            for i in 5 .. -1 .. 0 do 
+                let diagonale1 = this.bracket.GetDiagonale(i, 6, Richtung.Gegen)
+                dline(diagonale1)
+
+        [<Test>]
+        member this.UntereGegenDiagonale_Alle() =
+            for j in 6 .. -1 .. 0  do 
+                let diagonale1 = this.bracket.GetDiagonale(5, j, Richtung.Gegen)
+                dline(diagonale1)
+
+        [<Test>]
+        member this.getHauptDiagonalen() =
+            let diagonalen = this.bracket.GetHauptDiagonalen()
+            for i in 0 .. diagonalen.Length-1 do 
+                dline(diagonalen.[i])
+
+        [<Test>]
+        member this.getGegenDiagonalen() =
+            let diagonalen = this.bracket.GetGegenDiagonalen()
+            for i in 0 .. diagonalen.Length-1 do 
+                dline(diagonalen.[i])
