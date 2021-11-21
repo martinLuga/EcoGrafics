@@ -338,11 +338,9 @@ module Framework =
     let findeVierHintereinander(rowOrColumn:int[], nr:int) =
         assert (rowOrColumn.Length >= 4 )
         let mutable found = false
-        let mutable worker = Array.create 4 0 
-        let mutable result = Array.create 4 0  
+        let mutable worker = Array.create 4 0  
         for i in 0 .. (rowOrColumn.Length - 4) do
             worker <- rowOrColumn.[i..i+3]
             if (ForAll worker nr) then
-                found <- true
-                result <- [|i;i+1;i+2;i+3|]
-        found
+                found <- true 
+        found 

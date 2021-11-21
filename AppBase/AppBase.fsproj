@@ -8,7 +8,7 @@
 
     <Version></Version> 
 
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="ScenarioSupport.fs" />

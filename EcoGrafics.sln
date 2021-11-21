@@ -15,13 +15,13 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GPUModel", "GPUModel\GPUMod
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Shader", "Shader\Shader.fsproj", "{F97F5C98-4395-4465-A67B-DB330248CAB9}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ApplicationBase", "ApplicationBase\ApplicationBase.fsproj", "{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GraficBase", "GraficBase\GraficBase.fsproj", "{A679AABD-A0A0-4C18-9149-950F8356F4E8}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Builder", "Builder\Builder.fsproj", "{92FA820F-40C2-4C27-95E4-56318B92103F}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "EcoGraficsPKG", "EcoGraficsPKG\EcoGraficsPKG.fsproj", "{B1650F5D-41F9-4309-8CF4-3175B431E9DC}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AppBase", "AppBase\AppBase.fsproj", "{0FA4ACF9-E7E3-4767-A470-467FC20058C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,14 +79,6 @@ Global
 		{F97F5C98-4395-4465-A67B-DB330248CAB9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F97F5C98-4395-4465-A67B-DB330248CAB9}.Release|x64.ActiveCfg = Release|x64
 		{F97F5C98-4395-4465-A67B-DB330248CAB9}.Release|x64.Build.0 = Release|x64
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Debug|x64.ActiveCfg = Debug|x64
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Debug|x64.Build.0 = Debug|x64
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Release|x64.ActiveCfg = Release|x64
-		{5F784B45-9F7C-4BF6-84EC-FDE78F6D613C}.Release|x64.Build.0 = Release|x64
 		{A679AABD-A0A0-4C18-9149-950F8356F4E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A679AABD-A0A0-4C18-9149-950F8356F4E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A679AABD-A0A0-4C18-9149-950F8356F4E8}.Debug|x64.ActiveCfg = Debug|x64
@@ -111,6 +103,14 @@ Global
 		{B1650F5D-41F9-4309-8CF4-3175B431E9DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1650F5D-41F9-4309-8CF4-3175B431E9DC}.Release|x64.ActiveCfg = Release|x64
 		{B1650F5D-41F9-4309-8CF4-3175B431E9DC}.Release|x64.Build.0 = Release|x64
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Debug|x64.ActiveCfg = Debug|x64
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Debug|x64.Build.0 = Debug|x64
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Release|x64.ActiveCfg = Release|x64
+		{0FA4ACF9-E7E3-4767-A470-467FC20058C1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -158,15 +158,23 @@ module MathSupport =
         (result, resultIndex)
 
     // Ermitteln der Diagonalen parallel zur Hauptdiagonalen
-    // Start bei spaltenindex
+    // Parameter zeile: wenn > 0 dann wird mit den Zeilen gestartet (Obere)
+    // Parameter spalte: wenn > 0 dann wird mit der Spalte gestartet (Untere)
     // return: die elemente der Diagonalen, die Indixe in der Matrix
     let sliceHauptDiagonale(matrix:int[,], zeile, spalte) =
-        logger.Debug("Zeile=" + zeile.ToString() + " Spalte=" + spalte.ToString())
+        if zeile > 0 then
+            logger.Debug("Obere ab Zeile " + zeile.ToString())
+        else 
+            if spalte > 0 then
+                logger.Debug("Untere ab Spalte " + spalte.ToString())
+
         let rowDim = matrix.GetLength(0) 
         let colDim = matrix.GetLength(1)
         let resultDim = min rowDim colDim
-        let resultIndex:List<int[]> = new List<int[]>()
+
+        let mutable resultIndex: int[,]  = Array2D.create resultDim 2 0
         let mutable result:int[] =  Array.create resultDim 0
+        let mutable ii = 0
 
         assert(rowDim > 1)
         assert(colDim > 1)
@@ -174,20 +182,26 @@ module MathSupport =
 
         if spalte >= 0 then
             result <- Array.create resultDim 0
+            ii <- 0
             let mutable i = 0
-            for j in spalte-1 .. colDim - 1 do 
+            for j in spalte .. colDim - 1 do 
                 if i <= rowDim - 1 then
-                    result.[i] <- matrix.[i, j]
-                    resultIndex.Add([|i; j|])
+                    result.[ii] <- matrix.[i, j]
+                    resultIndex.[ii ,0]  <- i 
+                    resultIndex.[ii ,1]  <- j 
+                    ii <- ii + 1
                     i <- i + 1
         else
             if zeile >= 0 then
                 result <- Array.create resultDim 0
+                ii <- 0
                 let mutable j = 0
-                for i in zeile-1 .. rowDim - 1 do 
+                for i in zeile .. rowDim - 1 do 
                     if j <= colDim - 1 then
-                        result.[j] <- matrix.[i, j]
-                        resultIndex.Add([|i; j|])
+                        result.[ii] <- matrix.[i, j]
+                        resultIndex.[ii ,0]  <- i 
+                        resultIndex.[ii ,1]  <- j 
+                        ii <- ii + 1
                         j <- j + 1
             else 
                 Array.create resultDim 0|> ignore
@@ -195,39 +209,47 @@ module MathSupport =
 
     // Ermitteln der Diagonalen parallel zur Gegendiagonalen
     // Start bei Zeilenindex
+    // Parameter zeile: wenn > 0 dann wird mit den Zeilen gestartet (Obere)
+    // Parameter spalte: wenn > 0 dann wird mit der Spalte gestartet (Untere)
     // return: die elemente der Diagonalen, die Indixe in der Matrix
     let sliceGegenDiagonale(matrix:int[,], zeile, spalte) =
-        logger.Debug("Zeile=" + zeile.ToString() + " Spalte=" + spalte.ToString())
+        if zeile > 0 then
+            logger.Debug("Obere ab Zeile " + zeile.ToString())
+        else 
+            if spalte > 0 then
+                logger.Debug("Untere ab Spalte " + spalte.ToString())
         let rowDim = matrix.GetLength(0) 
         let colDim = matrix.GetLength(1)
         let resultDim = min rowDim colDim
         assert(rowDim > 1)
         assert(colDim > 1)
         assert(not((zeile > 1) && (spalte > 1)))
-        let mutable iresult = 0        
-        let resultIndex:List<int[]> = new List<int[]>()
+        let mutable resultIndex: int[,]  = Array2D.create resultDim 2 0
         let mutable result:int[] =  Array.create resultDim 0
+        let mutable ii = 0
 
         if spalte >= 0 then
             result <-  Array.create resultDim 0
-            iresult <- 0
+            ii <- 0
             let mutable i = rowDim - 1
             for j in spalte-1 .. colDim - 1 do 
                 if i >= 0 then
-                    result.[iresult] <- matrix.[i, j]
-                    resultIndex.Add([|i; j|])
-                    iresult <- iresult + 1
+                    result.[ii] <- matrix.[i, j]
+                    resultIndex.[ii ,0]  <- i 
+                    resultIndex.[ii ,1]  <- j 
+                    ii <- ii + 1
                     i <- i - 1 
         else
             if zeile >= 0 then
                 result <-  Array.create resultDim 0
-                iresult <- 0
+                ii <- 0
                 let mutable j = 0
                 for i in zeile-1 .. -1 .. 0 do 
                     if j >= 0 then
-                        result.[iresult] <- matrix.[i, j]
-                        resultIndex.Add([|i; j|])
-                        iresult <- iresult + 1
+                        result.[ii] <- matrix.[i, j]
+                        resultIndex.[ii ,0]  <- i 
+                        resultIndex.[ii ,1]  <- j 
+                        ii <- ii + 1
                         j <- j + 1 
             else 
                 Array.create resultDim 0|> ignore
