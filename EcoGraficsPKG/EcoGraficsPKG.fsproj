@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppBase\AppBase.fsproj" />
+    <ProjectReference Include="..\ApplicationBase\ApplicationBase.fsproj" />
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Builder\Builder.fsproj" />
     <ProjectReference Include="..\DirectX\DirectX.fsproj" />

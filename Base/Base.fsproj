@@ -27,7 +27,6 @@
     <Compile Include="Framework.fs" />
     <Compile Include="GlobalDefs.fs" />
     <Compile Include="VertexDefs.fs" />
-    <Compile Include="BracketObject.fs" />
     <Compile Include="MathSupport.fs" />
     <Compile Include="MeshObject.fs" />
     <None Include="ModelSupport.md" />
