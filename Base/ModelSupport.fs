@@ -13,6 +13,7 @@ open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
 open Base.Framework
+open Base.ShaderSupport
 
 open MathSupport
 open MeshObjects
@@ -358,26 +359,33 @@ module ModelSupport =
         override this.ToString() = "FileBased " + this.Name 
  
     [<AllowNullLiteral>]
-    type Part(name: string, shape: Shape, material: Material, texture: Texture, visibility: Visibility) =
+    type Part(name: string, shape: Shape, material: Material, texture: Texture, visibility: Visibility, shaders:ShaderConfiguration) =
         let mutable name = name
         let mutable shape = shape
         let mutable material = material
         let mutable texture = texture
         let mutable visibility = visibility
+        let mutable shaders = shaders
 
-        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility)
-        new(name, material, texture, visibility) = Part(name, null, material, texture, visibility)
-        new(name, shape, material, texture) = Part(name, shape,  material, texture, Visibility.Opaque)
-        new(shape, material, texture) = Part("", shape,  material, texture, Visibility.Opaque)
-        new(name, shape, material) = Part(name, shape, material, new Texture(), Visibility.Opaque)
-        new(name, shape, texture) = Part(name, shape, new Material(), texture, Visibility.Opaque)
-        new(name, shape) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque)
-        new(material) = Part("", null, material, new Texture(), Visibility.Opaque)
-        new(name, material, texture) = Part(name, null, material, texture, Visibility.Opaque)
-        new() = Part("", null, new Material(), new Texture(), Visibility.Opaque)
+        new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, new ShaderConfiguration())
+        new(name, shape, material, visibility, shaders) = Part(name, shape, material, new Texture(), visibility, shaders)
+        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility, new ShaderConfiguration())
+        new(name, material, texture, visibility, shaders) = Part(name, null, material, texture, visibility, shaders)
+        new(name, material, texture, visibility) = Part(name, null, material, texture, visibility, new ShaderConfiguration())
+        new(name, shape, material, texture, shaders) = Part(name, shape,  material, texture, Visibility.Opaque, shaders)
+        new(name, shape, material, texture) = Part(name, shape,  material, texture, Visibility.Opaque, new ShaderConfiguration())
+        new(shape, material, texture, shaders) = Part("", shape,  material, texture, Visibility.Opaque, shaders)
+        new(shape, material, texture) = Part("", shape,  material, texture, Visibility.Opaque,  new ShaderConfiguration())
+        new(name, shape, material, shaders) = Part(name, shape, material, new Texture(), Visibility.Opaque, shaders)
+        new(name, shape, material ) = Part(name, shape, material, new Texture(), Visibility.Opaque, new ShaderConfiguration())
+        new(name, shape, texture, shaders) = Part(name, shape, new Material(), texture, Visibility.Opaque, shaders)
+        new(name, shape, shaders) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, shaders)
+        new(material, shaders) = Part("", null, material, new Texture(), Visibility.Opaque, shaders)
+        new(name, material, texture, shaders) = Part(name, null, material, texture, Visibility.Opaque, shaders)
+        new() = Part("", null, new Material(), new Texture(), Visibility.Opaque, new ShaderConfiguration()) 
 
         member this.Copy() =
-            new Part(name, shape, material, texture, visibility) 
+            new Part(name, shape, material, texture, visibility, shaders) 
         
         member this.Name
             with get() = name
@@ -385,7 +393,11 @@ module ModelSupport =
 
         member this.Shape  
             with get() = shape
-            and set(value) = shape <- value 
+            and set(value) = shape <- value
+        
+        member this.Shaders  
+            with get() = shaders 
+            and set(value) = shaders  <- value 
 
         member this.Texture
             with get() = texture

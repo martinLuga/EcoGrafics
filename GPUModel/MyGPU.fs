@@ -28,7 +28,7 @@ open DirectX.TextureSupport
 open DirectX.Assets
 
 open GPUModel.MyPipelineConfiguration
-open Shader.ShaderSupport
+open Base.ShaderSupport
 
 open MyFrame
 open MyPipelineSupport
@@ -316,9 +316,9 @@ module MyGPU =
         member this.FinalizeMeshCache(commandList) =
             meshCache.createBuffers(commandList)
 
-        // 
+        // ----------------------------------------------------------------------------------------------------
         // Texture
-        //  
+        // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(textureName:string, textureFilename:string) =
             if textureName <> null then
                 if not (textures.ContainsKey(textureName)) && not (textureName = "") then
@@ -331,16 +331,12 @@ module MyGPU =
         // Den PipelineProvider mit allen Konfigurationen füllen 
         // Alle benötigten Shader (Konfigurationen) 
         // Dazu die Kombinationen für 
-        // Und eine erste aktve Konfiguration setzen
+        // Und eine erste aktive Konfiguration setzen
         // ----------------------------------------------------------------------------------------------------
         member this.InstallPipelineProvider(configs:MyPipelineConfiguration list) = 
             for conn in configs do  
                 pipelineConfigurations.Add(conn.ConfigName, conn) 
-                for raster in AllRasterDescriptions do 
-                    for blend in AllBlendDescriptions do 
-                            conn.RasterizerStateDesc <- raster  // RasterState
-                            conn.BlendStateDesc <- blend        // BlendState
-                            pipelineProvider.AddConfig(conn)    // Ein PSO anlegen
+                pipelineProvider.AddConfig(conn)  
 
             pipelineProvider.ActivateConfig(configs.Head)
             pipelineProvider.SetInitialConfig(configs.Head)

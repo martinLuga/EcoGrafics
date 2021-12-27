@@ -12,12 +12,12 @@ open Base.ObjectBase
 open Base.Framework
 open Base.LoggingSupport
 open Base.ModelSupport
+open Base.ShaderSupport
 open GraficBase.GraficController
 open GraficBase.GraficWindow
 open log4net
 open ScenarioSupport
 open Shader.FrameResources
-open Shader.ShaderSupport
 open SharpDX
 open System 
 open System.Windows.Forms
@@ -88,9 +88,6 @@ module WindowControl =
         Shape.Raster <- Shape.Raster - DEFAULT_RASTERIZATION_AMOUNT 
         MyController.Instance.RefreshShapes()
         writeToMessageWindow("Rasterization Factor: " + Shape.Raster.ToString())
-
-    let setPixelShader (pstype: ShaderClass) = 
-        MyController.Instance.SetPixelShader(pstype)
 
     let ToggleRasterizerState() =
         MyController.Instance.ToggleRasterizerState()
@@ -209,22 +206,6 @@ module WindowControl =
         zoomOutMenuItem.Click.Add(fun _ -> Camera.Instance.Zoom zoomFactor)
         zoomMenuItem
 
-    let shaderSubmenue = 
-        let shaderMenuItem      = new ToolStripMenuItem("&Shaders")
-        let simpleMenuItem      = new ToolStripMenuItem("&Simple")
-        let lambertMenuItem     = new ToolStripMenuItem("&Lambert")
-        let phongMenuItem       = new ToolStripMenuItem("&Phong")
-        let blinnPhongMenuItem  = new ToolStripMenuItem("&BlinnPhong")
-        shaderMenuItem.DropDownItems.Add(simpleMenuItem)|>ignore
-        shaderMenuItem.DropDownItems.Add(lambertMenuItem)|>ignore
-        shaderMenuItem.DropDownItems.Add(phongMenuItem)|>ignore
-        shaderMenuItem.DropDownItems.Add(blinnPhongMenuItem)|>ignore
-        simpleMenuItem.Click.Add(fun _ -> setPixelShader  ShaderClass.SimplePSType)
-        lambertMenuItem.Click.Add(fun _ -> setPixelShader  ShaderClass.LambertPSType)
-        phongMenuItem.Click.Add(fun _ -> setPixelShader  ShaderClass.PhongPSType)
-        blinnPhongMenuItem.Click.Add(fun _ -> setPixelShader  ShaderClass.BlinnPhongPSType)
-        shaderMenuItem
-        
     let viewSubmenueStandard =
         let viewMenuItem = new ToolStripMenuItem("&View")
         let toggleStateMenuItem = new ToolStripMenuItem("&Toggle Rasterization")
@@ -232,13 +213,11 @@ module WindowControl =
         viewMenuItem.DropDownItems.Add(tesselationSubmenue)|>ignore
         viewMenuItem.DropDownItems.Add(rasterizationSubmenue)|>ignore
         viewMenuItem.DropDownItems.Add(toggleStateMenuItem)|>ignore
-        viewMenuItem.DropDownItems.Add(shaderSubmenue)|>ignore
         toggleStateMenuItem.Click.Add(fun _ -> ToggleRasterizerState())
         viewMenuItem
 
     let settingMenueStandard =
         let settMenuItem = new ToolStripMenuItem("&Settings")
-        settMenuItem.DropDownItems.Add(shaderSubmenue)|>ignore
         settMenuItem
 
     let mainMenueStandard () = 

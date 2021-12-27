@@ -16,10 +16,10 @@ open SharpDX.Direct3D12
 
 open Base.Framework
 open Base.LoggingSupport
+open Base.ShaderSupport
 
 open DirectX.Assets
 
-open Shader.ShaderSupport
 open GPUModel.MyPipelineConfiguration
   
 // ----------------------------------------------------------------------------------------------------
@@ -285,6 +285,14 @@ module MyPipelineSupport =
         // 
         //  MEMBER
         // 
+
+        member this.VertexShaderDesc
+            with get() = vertexShaderDesc
+            and set(value) = 
+                if vertexShaderDesc <> value then
+                    isDirty <- true
+                vertexShaderDesc <- value 
+
         member this.PixelShaderDesc
             with get() = pixelShaderDesc
             and set(value) = 

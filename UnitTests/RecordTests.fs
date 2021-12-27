@@ -239,7 +239,6 @@ module RecordTests =
 
 
         [<TestCase("Handgun_obj.mtl")>]
-        [<TestCase("formica rufa.mtl")>]
         [<TestCase("Lowpoly_tree_sample.mtl")>]
         member this.ReadMaterials(fileName) =
             let pathName = "C:\\temp\\obj\\" + fileName

@@ -11,7 +11,7 @@ open log4net
 open SharpDX.DXGI
 open SharpDX.Direct3D12
 
-open Shader.ShaderSupport
+open Base.ShaderSupport
 open Shader.ShaderCompile
 
 open DirectX.Assets

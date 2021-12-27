@@ -15,7 +15,6 @@
   <ItemGroup>
     <Compile Include="FrameResources.fs" />
     <Compile Include="ShaderCompile.fs" />
-    <Compile Include="ShaderSupport.fs" />
     <None Include="shaders\BlinnPhongPS.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

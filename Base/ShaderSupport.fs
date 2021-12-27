@@ -1,4 +1,4 @@
-﻿namespace Shader
+﻿namespace Base
 //
 //  ShaderSupport.fs
 //
@@ -6,7 +6,6 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open SharpDX.DXGI
 open SharpDX.Direct3D12
 
 // ----------------------------------------------------------------------------------------------------
@@ -71,3 +70,33 @@ module ShaderSupport =
         val Description:PrimitiveTopologyType
         new (typ, description) = {Type=typ; Description=description}
         override this.ToString() = this.Type.ToString()
+
+    // ----------------------------------------------------------------------------------------------------
+    // ShaderConfiguration  
+    // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>] 
+    type ShaderConfiguration(vertexShader:ShaderDescription, pixelShader: ShaderDescription, domainShader: ShaderDescription, hullShader: ShaderDescription) =
+        let mutable vertexShader=vertexShader
+        let mutable pixelShader=pixelShader
+        let mutable domainShader=domainShader
+        let mutable hullShader=hullShader
+
+        member this.VertexShader
+            with get() = vertexShader
+            and set(value) = vertexShader <- value 
+
+        member this.PixelShader
+            with get() = pixelShader
+            and set(value) = pixelShader <- value 
+
+        member this.DomainShader
+            with get() = domainShader
+            and set(value) = domainShader <- value 
+
+        member this.HullShader
+            with get() = hullShader
+            and set(value) = hullShader <- value 
+
+        new(vertexShader:ShaderDescription, pixelShader:ShaderDescription) = ShaderConfiguration(vertexShader, pixelShader, ShaderDescription(), ShaderDescription())        
+        new() = ShaderConfiguration(ShaderDescription(), ShaderDescription(), ShaderDescription(), ShaderDescription())
+        member self.IsEmpty() = self.VertexShader.IsEmpty() && self.PixelShader.IsEmpty() && self.DomainShader.IsEmpty() && self.HullShader.IsEmpty() 

@@ -20,7 +20,7 @@ open SharpDX.Mathematics.Interop
 open Base.ModelSupport
 open Base.LoggingSupport
 open Base.ObjectBase 
-open Base.MaterialsAndTextures
+open Base.ShaderSupport
 
 open DirectX
 open DirectX.D3DUtilities
@@ -30,11 +30,9 @@ open GPUModel.MyGPU
 open GPUModel.MyPipelineConfiguration
 
 open Shader.FrameResources.CookBook
-open Shader.ShaderSupport
 
 open GraficWindow
-open CameraControl
-open ShaderConfiguration
+open CameraControl 
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
@@ -69,11 +67,15 @@ module GraficController =
         static let mutable instance:MyController = null
         let mutable application = application
         let mutable aspectRatio = 1.0f
+        
+        let mutable defaultVertexShaderDesc  : ShaderDescription = null
+        let mutable defaultPixelShaderDesc : ShaderDescription = null
+        let mutable defaultDomainShaderDesc : ShaderDescription = null
+        let mutable defaultHullShaderDesc : ShaderDescription = null
         let mutable blendType = BlendType.Opaque
-        let mutable currentPixelShaderDesc : ShaderDescription = null
         let mutable defaultBlendType = BlendType.Undefinded
-        let mutable defaultPixelShader = ShaderClass.NotSet
         let mutable defaultRasterType : RasterType = RasterType.Undefinded
+
         let mutable objects = Dictionary<string, BaseObject>()
         let mutable frameLight : DirectionalLight = DirectionalLight(Color4.White)
         let mutable graficWindow = graficWindow
@@ -94,14 +96,17 @@ module GraficController =
             with get() = instance
             and set(value) = instance <- value
 
-        static member CreateInstance(application:string, graficWindow: MyWindow, defaultConfigurations: MyPipelineConfiguration list, defaultPixelShader, defaultRaster, defaultBlend) =
-            MyController.Instance <- MyController.newForConfiguration(application, graficWindow, defaultConfigurations, defaultPixelShader, defaultRaster, defaultBlend) 
+        // ----------------------------------------------------------------------------------------------------
+        // Construct
+        // ----------------------------------------------------------------------------------------------------
+        static member CreateInstance(application:string, graficWindow: MyWindow, configurations: MyPipelineConfiguration list, defaultConfiguration:MyPipelineConfiguration) =
+            MyController.Instance <- MyController.newForConfiguration(application, graficWindow, configurations, defaultConfiguration) 
 
-        static member newForConfiguration(application:string, graficWindow: MyWindow, defaultConfigurations: MyPipelineConfiguration list, defaultPixelShader, defaultRaster, defaultBlend) =
+        static member newForConfiguration(application:string, graficWindow: MyWindow, defaultConfigurations: MyPipelineConfiguration list, defaultConfiguration:MyPipelineConfiguration) =
             let instance = MyController(application, graficWindow)
             graficWindow.Renderer <- instance.GPU
             instance.ConfigureGPU(defaultConfigurations)            
-            instance.ConfigurePipeline(defaultPixelShader, defaultRaster, defaultBlend)
+            instance.ConfigurePipeline(defaultConfiguration)
             instance
 
         member this.GPU
@@ -117,10 +122,13 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Initialize
         // ----------------------------------------------------------------------------------------------------
-        member this.ConfigurePipeline(pixelShader, rasterType, blendType) =
-            defaultPixelShader <- pixelShader 
-            defaultRasterType  <- rasterType
-            defaultBlendType   <- blendType 
+        member this.ConfigurePipeline(defaultConfiguration:MyPipelineConfiguration) =
+            defaultVertexShaderDesc <- defaultConfiguration.VertexShaderDesc
+            defaultPixelShaderDesc <- defaultConfiguration.PixelShaderDesc
+            defaultDomainShaderDesc <- defaultConfiguration.DomainShaderDesc
+            defaultHullShaderDesc <- defaultConfiguration.HullShaderDesc
+            defaultRasterType  <- defaultConfiguration.RasterizerStateDesc.Type
+            defaultBlendType   <- defaultConfiguration. BlendStateDesc.Type
 
         member this.ConfigureGPU(defaultConfigurations) =
             myGpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
@@ -231,8 +239,7 @@ module GraficController =
         member this.Reset() = 
             this.ClearObjects()
             this.ClearMaterials()
-            myGpu.ResetAllMeshes() 
-            this.SetPixelShader(defaultPixelShader) 
+            myGpu.ResetAllMeshes()  
             this.SetRasterizerState(defaultRasterType)
             this.SetBlendType(defaultBlendType) 
 
@@ -433,15 +440,19 @@ module GraficController =
             
             let matIdx = materialIndices.Item(part.Material.Name)
 
-            let textureName         =  part.TextureName()
-
             let blendType           = this.blendTypeFromVisibility(part.Visibility)
                
             let pipelineConfigName  = this.configForMesh(part.Shape.TopologyType, part.Shape.Topology)
-            
-            myGpu.UpdatePipeline(pipelineConfigName, currentPixelShaderDesc, blendDescFromType(blendType), toplogyDescFromDirectX(part.Shape.TopologyType)) 
 
-            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, textureName)
+            let pShader = 
+                if part.Shaders.PixelShader.IsEmpty() then
+                    defaultPixelShaderDesc
+                else
+                    part.Shaders.PixelShader
+            
+            myGpu.UpdatePipeline(pipelineConfigName, pShader, blendDescFromType(blendType), toplogyDescFromDirectX(part.Shape.TopologyType)) 
+
+            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, part.TextureName())
 
         // Im Rahmen der Überarbeitung des Konzepts
         // zu erneuern
@@ -459,9 +470,6 @@ module GraficController =
                 | _ -> raise (new Exception("PrimitiveTopologyType not implemented"))
 
             | _ -> raise (new Exception("PrimitiveTopologyType not implemented"))
-
-        member this.SetPixelShader(shader: ShaderClass) =
-            currentPixelShaderDesc <- ShaderDescForType(shader)
 
         member this.blendTypeFromVisibility(visibility:Visibility) =
             match visibility with 

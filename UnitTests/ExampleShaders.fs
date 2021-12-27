@@ -1,25 +1,21 @@
-﻿namespace GraficBase
+﻿namespace ecografics
 //
-//  ShaderConfiguration.fs
+//  ExampleShaders.fs
 //
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
+open Base.ShaderSupport
+open DirectX.Assets
+open GPUModel.MyPipelineConfiguration
+open Shader.ShaderCompile
 open SharpDX.DXGI
 
-open DirectX.Assets
-
-open Shader.ShaderSupport
-open Shader.ShaderCompile
-open GPUModel
-
-open  MyPipelineConfiguration
-
 // ----------------------------------------------------------------------------------------------------
-// Shader
+// Example Shader
 // ----------------------------------------------------------------------------------------------------
-module ShaderConfiguration =
+module ExampleShaders =
 
     let vertexShaderDesc = 
         ShaderDescription(ShaderClass.SimpleVSType, "Shader","shaders","VS","VSMain","vs_5_0")
@@ -51,6 +47,9 @@ module ShaderConfiguration =
     let pixelShaderBlinnPhongDesc = 
         ShaderDescription(ShaderClass.BlinnPhongPSType, "Shader","shaders","BlinnPhongPS","PSMain","ps_5_0")
 
+    // ----------------------------------------------------------------------------------------------------
+    // Access Shaders
+    // ----------------------------------------------------------------------------------------------------
     let AllShaderDescriptions =
         [vertexShaderDesc; vertexShaderTesselateDesc; pixelShaderSimpleDesc;   domainShaderQuadDesc;  hullShaderQuadDesc; 
         domainShaderTriDesc;  hullShaderTriDesc; pixelShaderPhongDesc; pixelShaderLambertDesc; pixelShaderBlinnPhongDesc]
@@ -62,7 +61,7 @@ module ShaderConfiguration =
         AllShaderDescriptions |> List.map(fun desc ->  (desc.Klass, shaderFromFile(desc.asFileInfo)))
 
     let ShaderWithClass(klasse:ShaderClass) =
-        let (klasse, shader) = AllShaders |> List.find (fun shader -> (fst shader) = klasse)
+        let shader = AllShaders |> List.find (fun shader -> (fst shader) = klasse)
         shader
 
     let pipelineConfigBasic = 
@@ -109,3 +108,4 @@ module ShaderConfiguration =
             blendStateDesc=blendOpaqueDescription,
             rasterizerStateDesc=rasterSolidDescription
         )
+

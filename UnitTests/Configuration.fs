@@ -13,11 +13,11 @@ open log4net
 
 open GraficBase.GraficWindow
 open GraficBase.GraficController 
-open GraficBase.ShaderConfiguration
+open ExampleShaders
 
 open GPUModel.MyPipelineConfiguration
 
-open Shader.ShaderSupport
+open Base.ShaderSupport
 
 open DirectX.Assets
 
@@ -51,9 +51,7 @@ module Configuration =
             "UnitTests",
             myWindow,
             [ pipelineConfigTest ],
-            ShaderClass.PhongPSType,
-            RasterType.Solid,
-            BlendType.Opaque
+            defaultConfiguration=pipelineConfigBasic
         ) 
         
         MyController.Instance.initLight (new Vector3( -15.0f,  -15.0f,  10.0f), Color.White)  

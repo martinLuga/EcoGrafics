@@ -22,6 +22,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ShaderSupport.fs" />
     <Compile Include="FileSupport.fs" />
     <Compile Include="LoggingSupport.fs" />
     <Compile Include="Framework.fs" />

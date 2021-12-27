@@ -6,21 +6,17 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System
+open Base.LoggingSupport
+open Base.ShaderSupport
+open ExampleShaders
+open GPUModel.MyPipelineSupport
 open log4net
 open NUnit.Framework
 
 open SharpDX.DXGI
 open SharpDX.Direct3D 
 open SharpDX.Direct3D12
-
-open Base.LoggingSupport
-
-open GraficBase.ShaderConfiguration
-
-open GPUModel.MyPipelineSupport
-
-open Shader.ShaderSupport
+open System
 
 module Shader =    
 

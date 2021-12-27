@@ -6,33 +6,21 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System
-
-open SharpDX
-
-open log4net
-
-open NUnit.Framework
-
-open Base.LoggingSupport
+open ApplicationBase 
 open Base.FileSupport
 open Base.Framework
+open Base.LoggingSupport
 open Base.VertexDefs
-
-open ApplicationBase
-open ApplicationBase.WindowLayout
-
+open DirectX.TextureSupport
 open GPUModel.MyGPU
-open GraficBase.ShaderConfiguration
-
 open GraficBase.GraficController
 open GraficBase.GraficWindow
-
-open DirectX.TextureSupport
-
-open Shader.ShaderSupport 
-
+open ExampleShaders
 open Initializations
+open log4net
+open NUnit.Framework
+open SharpDX
+open System
 
 module Architecture =
 
@@ -59,9 +47,7 @@ module Architecture =
                 [ pipelineConfigBasic
                   pipelineConfigTesselateQuad
                   pipelineConfigTesselateTri ],
-                ShaderClass.PhongPSType,
-                RasterType.Solid,
-                BlendType.Opaque
+                  defaultConfiguration=pipelineConfigBasic
             )             
             MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
