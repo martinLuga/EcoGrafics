@@ -380,6 +380,7 @@ module ModelSupport =
         new(name, shape, material ) = Part(name, shape, material, new Texture(), Visibility.Opaque, new ShaderConfiguration())
         new(name, shape, texture, shaders) = Part(name, shape, new Material(), texture, Visibility.Opaque, shaders)
         new(name, shape, shaders) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, shaders)
+        new(name, shape) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, new ShaderConfiguration())
         new(material, shaders) = Part("", null, material, new Texture(), Visibility.Opaque, shaders)
         new(name, material, texture, shaders) = Part(name, null, material, texture, Visibility.Opaque, shaders)
         new() = Part("", null, new Material(), new Texture(), Visibility.Opaque, new ShaderConfiguration()) 

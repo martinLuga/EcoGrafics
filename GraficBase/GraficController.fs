@@ -102,10 +102,10 @@ module GraficController =
         static member CreateInstance(application:string, graficWindow: MyWindow, configurations: MyPipelineConfiguration list, defaultConfiguration:MyPipelineConfiguration) =
             MyController.Instance <- MyController.newForConfiguration(application, graficWindow, configurations, defaultConfiguration) 
 
-        static member newForConfiguration(application:string, graficWindow: MyWindow, defaultConfigurations: MyPipelineConfiguration list, defaultConfiguration:MyPipelineConfiguration) =
+        static member newForConfiguration(application:string, graficWindow: MyWindow, configurations: MyPipelineConfiguration list, defaultConfiguration:MyPipelineConfiguration) =
             let instance = MyController(application, graficWindow)
             graficWindow.Renderer <- instance.GPU
-            instance.ConfigureGPU(defaultConfigurations)            
+            instance.ConfigureGPU(configurations)            
             instance.ConfigurePipeline(defaultConfiguration)
             instance
 
