@@ -18,6 +18,7 @@ open log4net
 open SharpDX
 open SharpDX.Direct3D
 open SharpDX.DXGI 
+open System.IO
 
 module Initializations = 
 

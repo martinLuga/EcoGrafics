@@ -23,13 +23,23 @@ open Initializations
 open log4net
 open NUnit.Framework
 open SharpDX
-open SharpDX.DXGI
 open System
+open System.IO
 
 module Architecture =
 
     configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
     let getLogger(name:string) = LogManager.GetLogger(name)
+
+    [<SetUpFixture>]
+    type MySetUpClass() =
+        [<OneTimeSetUp>]
+        member this.RunBeforeAnyTests() =
+            let dir = Path.GetDirectoryName(typeof<MySetUpClass>.Assembly.Location) 
+            Environment.CurrentDirectory <- dir
+    
+            // or
+            Directory.SetCurrentDirectory(dir);
 
     [<TestFixture>]
     type GPUTests() = 
