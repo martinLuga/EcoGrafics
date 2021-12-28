@@ -38,17 +38,15 @@ module ShaderSupport =
     [<AllowNullLiteral>] 
     type ShaderDescription =
         val Klass:ShaderClass
-        val Application:string
         val Directory:string 
         val File:string
         val Entry:string
         val Mode:string
-        new (klass, application, directory, file, entry, mode) = {Klass=klass; Application=application; Directory=directory; File=file; Entry=entry; Mode=mode}
-        new () = {Klass=ShaderClass.NotSet; Application=""; Directory=""; File=""; Entry=""; Mode=""}
+        new (klass, directory, file, entry, mode) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode}
+        new () = {Klass=ShaderClass.NotSet; Directory=""; File=""; Entry=""; Mode=""}
         override this.ToString() = this.Klass.ToString()
         member self.IsEmpty() = self.Klass=ShaderClass.NotSet
-        member self.asFileInfo = (self.Application, self.Directory, self.File, self.Entry, self.Mode)
-        member self.fromFilePath(filePath:string) = (filePath, self.Entry, self.Mode)
+        member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
 
     [<AllowNullLiteral>] 
     type BlendDescription=

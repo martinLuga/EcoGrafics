@@ -16,6 +16,7 @@ open System
 open System.IO
 
 open Base.FileSupport
+open Base.ShaderSupport
 
 // ----------------------------------------------------------------------------------------------------
 // SHADER  lesen und compilieren
@@ -54,13 +55,10 @@ module ShaderCompile =
             member this.Open (typ, fileName, parentStream)  =
                 new FileStream(includeDirectory +  "\\" + fileName, FileMode.Open) :> Stream
 
-    let loadCompiled(fileInfo: string*string*string*string*string) =  
+    let loadCompiled(desc: ShaderDescription) =  
         if not PRECOMPILED then
             raise (ShaderError("Not using precompiled shaders " ))
-        let (app, dir, file, entry, profile) = fileInfo 
-
-        let fileName = fileNameInProject app dir file + "_" + entry + ".cso"
-
+        let fileName = fileNameHere desc.Directory desc.File + "_" + desc.Entry + ".cso"
         let mutable str:FileStream = null 
         let mutable result:D3DCompiler.ShaderBytecode = null
         try   
@@ -74,9 +72,8 @@ module ShaderCompile =
             raise (ShaderError("No precompiled shader named: " + fileName))
         result
 
-    let storeCompiled(bytecode:D3DCompiler.ShaderBytecode, fileInfo: string*string*string*string*string) =  
-        let (app, dir, file, entry, profile) = fileInfo 
-        let fileName = fileNameInProject app dir file + "_" + entry + ".cso"
+    let storeCompiled(bytecode:D3DCompiler.ShaderBytecode, desc: ShaderDescription) = 
+        let fileName = fileNameHere desc.Directory desc.File + "_" + desc.Entry + ".cso"
         let mutable str:FileStream = null
         try   
             str <- new FileStream(fileName, FileMode.Create)
@@ -86,19 +83,18 @@ module ShaderCompile =
             logger.Debug("Stored shader bytecode to : " + fileName)
         with :? IOException -> logger.Warn("Cannot store precomiled shader named: " + fileName)
 
-    let shaderFromFile (fileInfo: string*string*string*string*string) =
+    let shaderFromFile (desc: ShaderDescription) =
         try   
-            byteCode <- loadCompiled(fileInfo)
+            byteCode <- loadCompiled(desc)
         with :? ShaderError  -> 
-            let (proj, dir, file, entry, profile) = fileInfo
-            let fileName = fileNameInProject proj dir file + ".hlsl" 
-            logger.Warn("Compiling shader named: " + fileName + "_" + entry)
-            let dirName = dirNameInMap proj dir  
+            let fileName = fileNameHere desc.Directory desc.File + ".hlsl" 
+            logger.Warn("Compiling shader named: " + fileName + "_" + desc.Entry)
+            let dirName = dirNameHere desc.Directory  
             let includeHandler = new IncludeFX(dirName)
-            let compResult = ShaderBytecode.CompileFromFile(fileName, entry, profile, ShaderFlags.OptimizationLevel3, EffectFlags.None, null, includeHandler) 
+            let compResult = ShaderBytecode.CompileFromFile(fileName, desc.Entry, desc.Mode, ShaderFlags.OptimizationLevel3, EffectFlags.None, null, includeHandler) 
             if compResult.Bytecode <> null then
                 byteCode <- compResult.Bytecode
-                storeCompiled(byteCode, fileInfo)
+                storeCompiled(byteCode, desc)
             else
                 logger.Error("Compile-Error : " + compResult.Message)
                 raise (ShaderError(compResult.Message))

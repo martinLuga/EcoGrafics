@@ -13,6 +13,16 @@ open System.IO
 // ----------------------------------------------------------------------------
 module FileSupport = 
 
+    let fileNameHere path name = 
+        let basePath = "."
+        let sep = "\\" 
+        Path.Combine(basePath, path + sep + name)
+
+    let dirNameHere path = 
+        let basePath = "."
+        let sep = "\\" 
+        Path.Combine(basePath, path)
+
     // ----------------------------------------------------------------------------
     // File im eigenen Projekt richtig adressieren
     // ----------------------------------------------------------------------------

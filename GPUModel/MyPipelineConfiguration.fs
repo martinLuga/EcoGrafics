@@ -37,7 +37,7 @@ module MyPipelineConfiguration =
         result
 
     let shaderName(shaderDesc: ShaderDescription) =
-        if shaderDesc.Application = "" then
+        if shaderDesc.File = "" then
             ""
         else
             shaderDesc.File + "-" + shaderDesc.Entry
@@ -78,20 +78,20 @@ module MyPipelineConfiguration =
         let mutable blendStateDesc=blendStateDesc
 
         do  
-            vertexShader <- shaderFromFile(vertexShaderDesc.asFileInfo)
+            vertexShader <- shaderFromFile(vertexShaderDesc)
             
             if  pixelShaderDesc.IsEmpty() then
                 raise (ShaderError("PixelShader is missing"))
             else
-                pixelShader <- shaderFromFile(pixelShaderDesc.asFileInfo)
+                pixelShader <- shaderFromFile(pixelShaderDesc)
             
             if domainShaderDesc.IsEmpty() then
                 logger.Debug("Config without domain shader")
             else
-                domainShader <- shaderFromFile(domainShaderDesc.asFileInfo)
+                domainShader <- shaderFromFile(domainShaderDesc)
             
             if not (hullShaderDesc.IsEmpty())then
-                hullShader <- shaderFromFile(hullShaderDesc.asFileInfo)
+                hullShader <- shaderFromFile(hullShaderDesc)
 
         override this.ToString() =
             "Config: " + configName +  ":" + vertexShaderDesc.Klass.ToString() + ":" + pixelShaderDesc.Klass.ToString()
@@ -116,19 +116,19 @@ module MyPipelineConfiguration =
             with get() = pixelShaderDesc
             and set(value) = 
                 pixelShaderDesc <- value 
-                pixelShader <- shaderFromFile(pixelShaderDesc.asFileInfo)
+                pixelShader <- shaderFromFile(pixelShaderDesc)
 
         member this.DomainShaderDesc
             with get() = domainShaderDesc
             and set(value) = 
                 domainShaderDesc <- value
-                domainShader <- shaderFromFile(domainShaderDesc.asFileInfo) 
+                domainShader <- shaderFromFile(domainShaderDesc) 
 
         member this.HullShaderDesc
             with get() = hullShaderDesc
             and set(value) = 
                 hullShaderDesc <- value 
-                hullShader <- shaderFromFile(hullShaderDesc.asFileInfo)
+                hullShader <- shaderFromFile(hullShaderDesc)
 
         member this.DomainShader
             with get() = domainShader
