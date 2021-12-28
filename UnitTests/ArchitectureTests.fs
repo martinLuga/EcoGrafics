@@ -10,16 +10,20 @@ open ApplicationBase
 open Base.FileSupport
 open Base.Framework
 open Base.LoggingSupport
+open Base.ShaderSupport
 open Base.VertexDefs
+open DirectX.Assets
 open DirectX.TextureSupport
+open ExampleShaders
 open GPUModel.MyGPU
+open GPUModel.MyPipelineConfiguration
 open GraficBase.GraficController
 open GraficBase.GraficWindow
-open ExampleShaders
 open Initializations
 open log4net
 open NUnit.Framework
 open SharpDX
+open SharpDX.DXGI
 open System
 
 module Architecture =

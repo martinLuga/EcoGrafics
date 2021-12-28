@@ -8,7 +8,7 @@
 
 open Base.LoggingSupport
 open Base.ShaderSupport
-open ExampleShaders
+open Initializations
 open GPUModel.MyPipelineSupport
 open log4net
 open NUnit.Framework

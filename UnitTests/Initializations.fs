@@ -6,17 +6,18 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 // 
 
+open Base.MaterialsAndTextures
+open Base.ModelSupport
+open Base.ObjectBase
+open Base.ShaderSupport
+open DirectX.Assets
+open ExampleShaders
+open Geometry.GeometricModel
+open GPUModel.MyPipelineConfiguration
 open log4net
-
 open SharpDX
 open SharpDX.Direct3D
 open SharpDX.DXGI 
-
-open Base.ObjectBase
-open Base.ModelSupport
-open Base.MaterialsAndTextures
-
-open Geometry.GeometricModel
 
 module Initializations = 
 
@@ -71,3 +72,48 @@ module Initializations =
             )    
 
         [sphere1; sphere2] 
+
+    let pipelineConfigBasic = 
+        new MyPipelineConfiguration(
+            configName="Basic",
+            inputLayoutDesc=layoutCookBook,
+            rootSignatureDescription=rootSignatureDescCookBook,
+            vertexShaderDesc=vertexShaderDesc,
+            pixelShaderDesc=pixelShaderPhongDesc,
+            domainShaderDesc=ShaderDescription(),
+            hullShaderDesc=ShaderDescription(),
+            sampleDesc = new SampleDescription(1, 0),
+            topologyTypeDesc=topologyTriangleDescription, 
+            blendStateDesc=blendOpaqueDescription,
+            rasterizerStateDesc=rasterSolidDescription
+        )
+
+    let pipelineConfigTesselateQuad  = 
+        new MyPipelineConfiguration(
+            configName="TesselatedQuad",
+            inputLayoutDesc=layoutCookBook,
+            rootSignatureDescription=rootSignatureDescCookBook,
+            vertexShaderDesc=vertexShaderTesselateDesc,
+            pixelShaderDesc=pixelShaderSimpleDesc,
+            domainShaderDesc=domainShaderQuadDesc,
+            hullShaderDesc=hullShaderQuadDesc,
+            sampleDesc = new SampleDescription(1, 0),
+            topologyTypeDesc=topologyPatchDescription, 
+            blendStateDesc=blendOpaqueDescription,
+            rasterizerStateDesc=rasterSolidDescription
+        )
+
+    let pipelineConfigTesselateTri = 
+        new MyPipelineConfiguration(
+            "TesselatedTri",
+            inputLayoutDesc=layoutCookBook,
+            rootSignatureDescription=rootSignatureDescCookBook,
+            vertexShaderDesc=vertexShaderTesselateDesc,
+            pixelShaderDesc=pixelShaderSimpleDesc,
+            domainShaderDesc=domainShaderTriDesc,
+            hullShaderDesc=hullShaderTriDesc,
+            sampleDesc=new SampleDescription(1, 0),
+            topologyTypeDesc=topologyPatchDescription, 
+            blendStateDesc=blendOpaqueDescription,
+            rasterizerStateDesc=rasterSolidDescription
+        )

@@ -51,7 +51,7 @@ module Configuration =
             "UnitTests",
             myWindow,
             [ pipelineConfigTest ],
-            defaultConfiguration=pipelineConfigBasic
+            defaultConfiguration=pipelineConfigTest
         ) 
         
         MyController.Instance.initLight (new Vector3( -15.0f,  -15.0f,  10.0f), Color.White)  
