@@ -15,13 +15,13 @@ open System
 
 module MathHelper =
 
-    type MathHelper() =
-    
-        static member _random = new Random() 
+    let _random = new Random()
 
-        static member Rand( minValue:int, maxValue:int) = MathHelper._random.Next(minValue, maxValue)
-        static member Randf() = MathHelper._random.NextFloat(0.0f, 1.0f)
-        static member Randf( minValue:float32, maxValue:float32) = MathHelper._random.NextFloat(minValue, maxValue)
+    type MathHelper() =
+
+        static member Rand( minValue:int, maxValue:int) = _random.Next(minValue, maxValue)
+        static member Randf() = _random.NextFloat(0.0f, 1.0f)
+        static member Randf( minValue:float32, maxValue:float32) = _random.NextFloat(minValue, maxValue)
 
         static member Sinf  (a:float)  = float32 (Math.Sin(a))
         static member Cosf  (d:double) = float32 (Math.Cos(d))
