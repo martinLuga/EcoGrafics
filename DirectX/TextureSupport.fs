@@ -670,8 +670,7 @@ module TextureSupport =
     let CreateTextureFromDDS_2(device:Device, filename:string) =
         let isCube = false 
         let texture = CreateTextureFromDDS_1(device, System.IO.File.ReadAllBytes(filename))
-        (fst texture, isCube)
-        
+        (fst texture, isCube)        
 
     //--------------------------------------------------------------------------------------
     //  Create texture from bmp

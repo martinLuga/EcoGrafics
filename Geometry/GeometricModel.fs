@@ -16,11 +16,15 @@ open SharpDX.Direct3D12
 
 open Base.GlobalDefs
 open Base.LoggingSupport
-open Base.MathSupport
+open Base.GameTimer
 open Base.QuaderSupport
 open Base.ModelSupport 
 open Base.MeshObjects
 open Base.VertexDefs
+open Base.MathHelper
+open Base.Framework
+
+open VertexWaves
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
@@ -361,6 +365,7 @@ module GeometricModel =
             let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
             let p4 = p1 + (Vector3.Up * seitenlaenge)
             let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f)
+            q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y + seitenlaenge / 2.0f , p1.Z))
             q.setNormal(normal)
             q
@@ -370,6 +375,7 @@ module GeometricModel =
             let p3 = p1 + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
             let p4 = p1 + (Vector3.Up * seitenlaenge)
             let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f)
+            q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(p1.X, p1.Y  + seitenlaenge / 2.0f , p1.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
@@ -379,6 +385,7 @@ module GeometricModel =
             let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
             let p4 = p1 + (Vector3.ForwardLH * seitenlaenge)
             let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f) 
+            q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y , p1.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
@@ -401,6 +408,9 @@ module GeometricModel =
 
         member this.setNormal(aNormal)=
             normal <- aNormal
+
+        member this.setSeitenlaenge(laenge)=
+            seitenlaenge <- laenge
             
         override this.Center  
             with get() = center
@@ -524,6 +534,66 @@ module GeometricModel =
 
         override this.CreateVertexData(visibility: Visibility) =
             QuadPlanePatch.CreateMeshData(seitenLaenge, patchLaenge, color, visibility)  
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Fläche mit Wellen
+    // ----------------------------------------------------------------------------------------------------
+    type WaveSurface(name: string, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3, color:Color, tessFactor:float32, dx:float32, dt:float32, speed:float32, damping:float32) =
+        inherit Fläche(name, p1, p2, p3, p4, color, tessFactor)
+
+        let mutable _tBase = 0.0f
+
+        let mutable waves = null
+
+        static member InXZPlane (name:string, p1:Vector3, seitenlaenge:float32, normal:Vector3, color:Color, dx:float32, dt:float32, speed:float32, damping:float32) =
+            let p2 = p1 + (Vector3.Right * seitenlaenge)
+            let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = p1 + (Vector3.ForwardLH * seitenlaenge)
+            let q = new WaveSurface(name, p1, p2, p3, p4, color, 1.0f, dx , dt , speed , damping ) 
+            q.setSeitenlaenge(seitenlaenge)
+            q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y , p1.Z + seitenlaenge / 2.0f))
+            q.setNormal(normal)
+            q.Flexible <- true
+            q
+
+        member this.Waves = 
+            if waves = null then
+                waves <- new Waves(int this.Seitenlaenge, int this.Seitenlaenge, dx, dt, speed, damping) 
+            waves
+
+        override this.Minimum
+            with get () = Vector3(0.0f, -999.0f , 0.0f)
+
+        override this.Maximum 
+            with get () = Vector3(this.Seitenlaenge, 0.0f, this.Seitenlaenge) 
+        
+        override this.Center   
+            with get() = Vector3(base.Origin.X + this.Seitenlaenge / 2.0f, base.Origin.Y + this.Seitenlaenge / 2.0f, base.Origin. Z + this.Seitenlaenge / 2.0f)
+            and set (value) = base.Origin <- new Vector3(value.X - this.Seitenlaenge , value.Y - this.Seitenlaenge, value.Z - this.Seitenlaenge)
+
+        override this.Update(gt:GameTimer)  = 
+           if ((gt.TotalTime - _tBase) >= 0.25f) then
+    
+               Increment(&_tBase, 0.25f)
+
+               let i = MathHelper.Rand(4, this.Waves.RowCount - 5)
+               let j = MathHelper.Rand(4, this.Waves.ColumnCount - 5)
+
+               let r = MathHelper.Randf(0.2f, 0.5f)
+
+               this.Waves.Disturb(i, j, r)    
+
+           // Update the wave simulation.
+           this.Waves.Update(gt.DeltaTime) 
+
+        override this.ToString() = "Waves " + name + ":P1=" + p1.ToString()  + ":P2=" + p2.ToString() +  ":P3=" + p3.ToString() +  ":P4=" + p4.ToString()
+
+        override this.TopologyType = PrimitiveTopologyType.Triangle
+
+        override this.Topology = PrimitiveTopology.TriangleList
+
+        override this.CreateVertexData(visibility: Visibility) =
+            VertexWaves.CreateMeshData(this.Waves, color, visibility)   
 
     // ----------------------------------------------------------------------------------------------------
     //  Polyeder

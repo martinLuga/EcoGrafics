@@ -21,6 +21,7 @@ open Base.ModelSupport
 open Base.LoggingSupport
 open Base.ObjectBase 
 open Base.ShaderSupport
+open Base.GameTimer
 
 open DirectX
 open DirectX.D3DUtilities
@@ -65,7 +66,7 @@ module GraficController =
     [<AllowNullLiteral>]
     type MyController(application:string, graficWindow: MyWindow) =
         static let mutable instance:MyController = null
-        let mutable application = application
+        
         let mutable aspectRatio = 1.0f
         
         let mutable defaultVertexShaderDesc  : ShaderDescription = null
@@ -91,6 +92,8 @@ module GraficController =
         let mutable matNr = 0
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
         let mutable materialIndices = new Dictionary<string, int>()
+        
+        let mutable timer = new GameTimer()
 
         static member Instance  
             with get() = instance
@@ -108,6 +111,9 @@ module GraficController =
             instance.ConfigureGPU(configurations)            
             instance.ConfigurePipeline(defaultConfiguration)
             instance
+
+        member this.Timer
+            with get() = timer
 
         member this.GPU
             with get() = myGpu
@@ -374,14 +380,16 @@ module GraficController =
             logInfo("Run") 
             myGpu.Begin()
             status <- ControllerStatus.Running
+            this.Timer.Reset()
             // Windows Render-Loop
             let loop = new RenderLoop(graficWindow)
             let sorted = objects.Values|> Seq.sortBy(fun disp -> disp.Transparent) 
             while loop.NextFrame() && this.isRunning() do
                 if this.notIdle() then
                     logInfo("Step")
+                    this.Timer.Tick()
                     myGpu.StartUpdate()
-                    this.updatePerFrame() 
+                    this.updatePerFrame()
                     myGpu.StartDraw()    
                     let mutable PartIdx = 0    
                     for object in sorted do 
@@ -449,6 +457,13 @@ module GraficController =
                     defaultPixelShaderDesc
                 else
                     part.Shaders.PixelShader
+
+            if part.Shape.Flexible then
+                part.Shape.Update(timer)
+                myGpu.ReplaceMesh( 
+                    part.Shape.Name,
+                    part.Shape.CreateVertexData(part.Visibility)
+                ) 
             
             myGpu.UpdatePipeline(pipelineConfigName, pShader, blendDescFromType(blendType), toplogyDescFromDirectX(part.Shape.TopologyType)) 
 

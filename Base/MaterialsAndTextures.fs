@@ -80,6 +80,15 @@ module MaterialsAndTextures =
             emissive=Color4(0.1f)
         )
 
+    let MAT_WATER = 
+        new Material( 
+            name="WATER",
+            diffuseAlbedo = new Vector4(1.0f),
+            fresnelR0 = new Vector3(0.2f),
+            roughness = 0.0f
+        )
+ 
+
     let MAT_FRONT = MATERIAL("FRONT", Color.DarkSlateGray)
     let MAT_NONE = MATERIAL("NONE", Color.Transparent)
     let MAT_BLUE = MATERIAL("BLUE", Color.Blue)
@@ -161,6 +170,7 @@ module MaterialsAndTextures =
     let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg")
     let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg")
     let TEXT_GRASS = TEXTURE("GROUND", "grass.jpg")
+    let TEXT_WATER = TEXTURE("WATER", "water1.dds")
     let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg")
     let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg")
     let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg")

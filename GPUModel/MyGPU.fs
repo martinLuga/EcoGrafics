@@ -301,6 +301,12 @@ module MyGPU =
         member this.InstallMesh(name, meshData: MeshData, topology) =
             meshCache.Append(name, meshData.Vertices, meshData.Indices, topology) 
 
+        member this.ReplaceMesh(name, meshData: MeshData) =
+            this.StartInstall()
+            meshCache.Replace(name, meshData.Vertices)  
+            this.FinalizeInstall()
+            this.FinishInstall()
+
         member this.ResetAllMeshes() =
             directRecorder.StartRecording()
             this.resetMeshCache()
@@ -322,10 +328,17 @@ module MyGPU =
         member this.InstallTexture(textureName:string, textureFilename:string) =
             if textureName <> null then
                 if not (textures.ContainsKey(textureName)) && not (textureName = "") then
-                    let  resource = CreateTextureFromBitmap(device, textureFilename)
-                    textureHeapWrapper.AddResource(resource)
-                    textures.Add(textureName, textureIdx)
-                    textureIdx <- textureIdx + 1
+                    if textureFilename.EndsWith("jpg") then
+                        let  resource = CreateTextureFromBitmap(device, textureFilename)
+                        textureHeapWrapper.AddResource(resource)
+                        textures.Add(textureName, textureIdx)
+                        textureIdx <- textureIdx + 1
+                    else
+                        if textureFilename.EndsWith("dds") then 
+                            let  resource, bool = CreateTextureFromDDS_2(device, textureFilename)
+                            textureHeapWrapper.AddResource(resource)
+                            textures.Add(textureName, textureIdx)
+                            textureIdx <- textureIdx + 1
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit allen Konfigurationen füllen 

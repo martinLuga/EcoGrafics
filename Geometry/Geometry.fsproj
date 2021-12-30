@@ -20,6 +20,7 @@
     <Compile Include="VertexPatch.fs" />
     <Compile Include="VertexPyramid.fs" />
     <Compile Include="VertexSphere.fs" />
+    <Compile Include="VertexWaves.fs" />
     <Compile Include="GeometricModel.fs" />
   </ItemGroup>
   <ItemGroup>

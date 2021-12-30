@@ -218,6 +218,14 @@ module MYUtils =
                 
             ocbs.Replace(geometryName, ocb)
 
+        member this.Replace(geometryName:string, vertices:List<Vertex>)=
+            let found, ocb = ocbs.TryGetValue(geometryName) 
+            let mutable idx = 0
+            if found then
+                for i in ocb.StartVertices .. ocb.EndVertices - 1 do 
+                    vertexBufferCPU.[i] <- vertices.[idx]
+                    idx <- idx + 1
+
         member this.createBuffers(commandList:GraphicsCommandList) =
             let vertexArray = vertexBufferCPU |> Seq.toArray 
             let totalVertexBufferByteSize = Utilities.SizeOf(vertexArray) 

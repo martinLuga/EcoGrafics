@@ -11,6 +11,7 @@ open System.Collections.Generic
 open System.Windows.Forms
 open System.Diagnostics
 open System.Threading
+open System.Runtime.CompilerServices
 open log4net
 open LoggingSupport
 
@@ -344,3 +345,6 @@ module Framework =
             if (ForAll worker nr) then
                 found <- true 
         found 
+
+    let Increment(summe: byref<float32>, amount:float32) =
+        summe <- summe + amount

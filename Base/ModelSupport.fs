@@ -18,6 +18,7 @@ open Base.ShaderSupport
 open MathSupport
 open MeshObjects
 open VertexDefs
+open GameTimer
 
 // ----------------------------------------------------------------------------------------------------
 // 
@@ -166,6 +167,7 @@ module ModelSupport =
         let mutable name = name
         let mutable origin = origin
         let mutable size = size
+        let mutable flexible = false
         let mutable primitiveTopology : PrimitiveTopology = PrimitiveTopology.TriangleList
         let mutable primitiveTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Triangle
         let mutable rasterFactor = raster
@@ -207,6 +209,10 @@ module ModelSupport =
             with get () = name
             and set (value) = name <- value
 
+        member this.Flexible
+            with get () = flexible
+            and set (value) = flexible <- value
+
         member this.Origin
             with get () = origin
             and set (value) = origin <- value
@@ -219,6 +225,9 @@ module ModelSupport =
         default this.Center 
             with get () = raise (System.Exception("Nicht implementiert"))
             and set(value) = raise (System.Exception("Nicht implementiert"))
+
+        abstract member Update: GameTimer -> Unit
+        default this.Update(gt: GameTimer) = raise (System.Exception("Nicht implementiert"))
 
         member this.Color
             with get () = color
