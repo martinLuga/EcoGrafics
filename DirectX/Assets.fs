@@ -307,6 +307,18 @@ module Assets =
             |]
         ) 
 
+    let layoutLunaBook =
+        new InputLayoutDescription(
+            [| 
+                new InputElement("SV_POSITION",     0, Format.R32G32B32_Float,       0, 0);
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);
+                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   24, 0);    
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         40, 0);
+                new InputElement("BLENDINDICES",    0, Format.R32G32B32A32_UInt,    48, 0); 
+                new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
+            |]
+        ) 
+
     let layoutTesselated =
         new InputLayoutDescription(
             [| 

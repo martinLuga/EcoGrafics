@@ -106,6 +106,69 @@ module MeshObjects =
                 debugFun("v(" + indices.[i].ToString() + ") "+ vertices.[i].ToString())
             debugFun("-------------------------------------")
 
+        member this.Subdivide() =         
+            // Save a copy of the input geometry.
+            let verticesCopy = this.Vertices.ToArray() 
+            let indicesCopy = this.Indices.ToArray() 
+            
+            this.Vertices.Clear()
+            this.Indices.Clear()
+            
+            //       v1
+            //       *
+            //      / \
+            //     /   \
+            //  m0*-----*m1
+            //   / \   / \
+            //  /   \ /   \
+            // *-----*-----*
+            // v0    m2     v2
+            
+            let numTriangles = indicesCopy.Length / 3
+            for   i in 0 .. numTriangles-1 do
+         
+                let v0 = verticesCopy[indicesCopy[i * 3 + 0]]
+                let v1 = verticesCopy[indicesCopy[i * 3 + 1]]
+                let v2 = verticesCopy[indicesCopy[i * 3 + 2]]
+            
+                //
+                // Generate the midpoints.
+                //
+            
+                let m0 = MidPoint(v0, v1)
+                let m1 = MidPoint(v1, v2)
+                let m2 = MidPoint(v0, v2)
+            
+                //
+                // Add new geometry.
+                //            
+                this.Vertices.Add(v0) // 0
+                this.Vertices.Add(v1) // 1
+                this.Vertices.Add(v2) // 2
+                this.Vertices.Add(m0) // 3
+                this.Vertices.Add(m1) // 4
+                this.Vertices.Add(m2) // 5
+            
+                this.Indices.Add(i * 6 + 0)
+                this.Indices.Add(i * 6 + 3)
+                this.Indices.Add(i * 6 + 5)
+            
+                this.Indices.Add(i * 6 + 3)
+                this.Indices.Add(i * 6 + 4)
+                this.Indices.Add(i * 6 + 5)
+            
+                this.Indices.Add(i * 6 + 5)
+                this.Indices.Add(i * 6 + 4)
+                this.Indices.Add(i * 6 + 2)
+            
+                this.Indices.Add(i * 6 + 3)
+                this.Indices.Add(i * 6 + 1)
+                this.Indices.Add(i * 6 + 4) 
+
+        member this.Subdivide(numSubdivisions) =
+            for  i in 0 .. numSubdivisions-1 do
+                this.Subdivide()
+
     let fromMeshData(meshData: MeshData) =
         (meshData.Vertices, meshData.Indices)
 

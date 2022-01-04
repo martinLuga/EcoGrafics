@@ -51,6 +51,17 @@ module VertexDefs =
             new (position, normal, color) = {Position=position; Normal=normal; Color=color; Texture=Vector2.Zero; Skinning=SkinningVertex(0u, 0.0f) }
             new (position, color) = Vertex(position, Vector3.Normalize(position), color)
             new (position) = Vertex(position, Color4.White) 
+            new (
+                px:float32, py:float32, pz:float32,
+                nx:float32, ny:float32, nz:float32,
+                tx:float32, ty:float32, tz:float32,
+                u:float32 , v:float32) = new Vertex(
+                        new Vector3(px, py, pz),
+                        new Vector3(nx, ny, nz),
+                        Color.Transparent,
+                        new Vector2(u, v)
+                        )
+
             override this.ToString() = "Vertex P(" + formatVector(this.Position) + ")" + " N(" + formatVector(this.Normal) + ") T(" + formatVector2(this.Texture) + ")"
         end
 
@@ -179,3 +190,14 @@ module VertexDefs =
                 z <- z + deltaz                
             x <- x + deltax
         result |> Seq.toList
+
+    let MidPoint(v0:Vertex, v1:Vertex) =
+ 
+        // Compute the midpoints of all the attributes. Vectors need to be normalized
+        // since linear interpolating can make them not unit length.
+        let pos = 0.5f * (v0.Position + v1.Position) 
+        let normal = Vector3.Normalize(0.5f * (v0.Normal + v1.Normal)) 
+        //let tangent = Vector3.Normalize(0.5f * (v0.TangentU + v1.TangentU)) 
+        let tex = 0.5f * (v0.Texture + v1.Texture) 
+
+        new Vertex(pos, normal, Color.Transparent, tex)

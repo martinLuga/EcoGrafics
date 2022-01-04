@@ -34,38 +34,6 @@ module ModelExtension =
         member this.FileName
             with get() = fileName
 
-    type DisplaySimple(name, fileName: string, material: Material, texture: Texture, size:float32, visibility: Visibility, augmentation:Augmentation, quality:Quality) =
-        inherit DisplayFile(name, fileName, [], material, texture, size, visibility, augmentation, quality)  
-
-        let mutable myParts: Part list = []
-
-        do
-            myParts <- SimpleBuild.Build(name, fileName, material, texture, size, visibility, augmentation, quality)  
-            
-        new(name, fileName, material, texture, size, visibility, augmentation) = new DisplaySimple(name, fileName, material, texture, size, visibility, augmentation, Quality.Original)
-
-        override this.Parts 
-            with get() = myParts
-
-        override this.ToString() =
-            "DisplaySimple-" + base.ToString()
-
-    type DisplayWavefront(name:string, fileName: string, material: Material, texture: Texture, size:float32, visibility: Visibility, augmentation:Augmentation, quality:Quality) =
-        inherit DisplayFile(name, fileName, [], material, texture, size, visibility, augmentation, quality) 
-
-        let mutable myParts: Part list = []
-
-        do
-            myParts <- WavefrontBuild.Build(name, fileName, material, texture, size, visibility, augmentation, quality)  
-
-        new(name, fileName, material, texture, size, visibility, augmentation) = new DisplayWavefront(name, fileName, material, texture, size, visibility, augmentation, Quality.Original)
-
-        override this.Parts 
-            with get() = myParts
-
-        override this.ToString() =
-            "DisplayWavefront " + base.ToString()
-
     type Geometry(name: string, parts:Part list, visibility: Visibility, size:float32, augmentation) =
         inherit Display(parts, visibility, size, augmentation)
         

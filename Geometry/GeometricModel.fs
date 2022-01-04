@@ -94,7 +94,7 @@ module GeometricModel =
         override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " U= " + this.Origin.ToString()
         
         override this.CreateVertexData(visibility:Visibility) =
-            VertexSphere.CreateMeshData(origin, color, radius, Shape.Raster, visibility)
+            VertexSphere.CreateMeshData(origin, color, radius, raster, visibility)
 
     // ----------------------------------------------------------------------------------------------------
     //  Quader
@@ -225,6 +225,34 @@ module GeometricModel =
             VertexCube.CreateMeshData(ursprung, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
+    //  Box
+    // ----------------------------------------------------------------------------------------------------
+    type Box (name: string, width:float32,  height:float32,  depth:float32,  numSubdivisions:int) =
+        inherit Geometry(name, Vector3.Zero, Color.Transparent, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        let mutable laenge = width
+        let mutable hoehe = height
+        let mutable breite = depth 
+
+        member this.Laenge
+            with get () = laenge
+            and set (value) = laenge <- value
+
+        member this.Hoehe
+            with get () = hoehe
+            and set (value) = hoehe <- value
+
+        member this.Breite
+            with get () = breite
+            and set (value) = breite <- value
+
+        override this.Center  
+            with get() = Vector3(base.Origin.X + this.Laenge / 2.0f, base.Origin.Y+ this.Hoehe / 2.0f, base.Origin.Z + this.Breite / 2.0f)
+            and set (value) = base.Origin <- new Vector3(value.X - this.Laenge / 2.0f, value.Y - this.Hoehe / 2.0f, value.Z - this.Breite / 2.0f)
+
+        override this.CreateVertexData(visibility:Visibility) =
+            VertexBox.CreateMeshData(laenge, hoehe, breite, numSubdivisions) 
+
+    // ----------------------------------------------------------------------------------------------------
     //  Cylinder
     //  Die Punkte werden um das Zentrum 0,0,0 berechnet
     // ----------------------------------------------------------------------------------------------------
@@ -283,7 +311,7 @@ module GeometricModel =
             with get () = Vector3( this.Origin.X +  radius,  this.Origin.Y + hoehe,  this.Origin.Z + radius)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, Shape.Raster, visibility)  
+            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, raster, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     // Pyramid

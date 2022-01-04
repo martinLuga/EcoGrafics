@@ -8,8 +8,7 @@
 
 open System
 open System.Collections.Generic
-open System.Globalization
-open System.Diagnostics
+open System.Globalization 
 
 open log4net
 
@@ -23,6 +22,7 @@ open Base.ModelSupport
 open Base.Framework
 open Base.FileSupport
 open Base.LoggingSupport 
+open Base.ShaderSupport 
 open Base.StringConvert
 
 open Base.MaterialsAndTextures
@@ -249,7 +249,7 @@ module Wavefront =
         // Build the Displayable deep 
         // Also the MeshData
         // ----------------------------------------------------------------------------------------------------
-        member this.Build (material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality) =
+        member this.Build (material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality) = 
 
             augmentation <- augment 
 
@@ -337,7 +337,7 @@ module Wavefront =
                     // Gruppenwechsel: es folgen faces mit einer anderen Vertex-Anzahl
                     if (actualTopology <> (lastTopology)) || (groupName <> "") then
                         faceCount <- faceCount + 1
-                        let faceName = if groupName <> "" then groupName else shapeName()                        
+                        let faceName = if groupName <> "" then groupName else shapeName()  
                         part <- new Part(faceName, actualMaterial, actualTexture, visibility)
                         
                         let mutable shape:Shape = null

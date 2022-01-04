@@ -8,13 +8,11 @@
 
 open log4net
 
-open SharpDX
-
 open Base.LoggingSupport
 open Base.ModelSupport
+open Base.ShaderSupport
  
 open Wavefront
-
 open SimpleFormat
 
 // ----------------------------------------------------------------------------------------------------
@@ -24,7 +22,7 @@ open SimpleFormat
 // ----------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 
-module SimpleBuild = 
+module SimpleBuilder = 
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // Builder für das einfache Format
@@ -36,7 +34,7 @@ module SimpleBuild =
     // ----------------------------------------------------------------------------------------------------
     //  MeshData für eine vorgegebene Menge an Vertex/Index erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality) =
+    let Build (name, fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new SimpleBuilder(name, fileName)  
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality)  
@@ -46,7 +44,7 @@ module SimpleBuild =
 // Client-Funktionen
 // Für die Wavefront-Schnittstelle
 // ----------------------------------------------------------------------------------------------------
-module WavefrontBuild =
+module WavefrontBuilder =
 
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------

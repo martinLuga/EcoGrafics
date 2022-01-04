@@ -170,6 +170,7 @@ module MaterialsAndTextures =
     let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg")
     let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg")
     let TEXT_GRASS = TEXTURE("GROUND", "grass.jpg")
+    let TEXT_GRASSCUBE = TEXTURE("GROUND", "grasscube1024.dds")
     let TEXT_WATER = TEXTURE("WATER", "water1.dds")
     let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg")
     let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg")

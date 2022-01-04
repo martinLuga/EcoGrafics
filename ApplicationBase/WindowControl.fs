@@ -92,12 +92,6 @@ module WindowControl =
     let ToggleRasterizerState() =
         MyController.Instance.ToggleRasterizerState()
 
-    let SetRasterizerState(irasterizerState:RasterType) =
-        MyController.Instance.SetRasterizerState(irasterizerState)
-
-    let SetBlendState(blendType:BlendType) =
-        MyController.Instance.SetBlendType(blendType)
-
     // ----------------------------------------------------------------------------------------------------    
     //  Drehungen zurücksetzen
     // ----------------------------------------------------------------------------------------------------

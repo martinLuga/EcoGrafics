@@ -27,7 +27,6 @@ open DirectX.TextureSupport
 
 open DirectX.Assets
 
-open GPUModel.MyPipelineConfiguration
 open Base.ShaderSupport
 
 open MyFrame
@@ -96,7 +95,7 @@ module MyGPU =
         let mutable clearColor:RawColor4 = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f) 
 
         // Shaders
-        let mutable pipelineConfigurations=new Dictionary<string, MyPipelineConfiguration>() 
+        let mutable pipelineConfigurations=new Dictionary<string, ShaderConfiguration>() 
         let mutable currentPipelineConfigurationName="Basic"
         let mutable lastPipelineConfigName=""
         let mutable pixelShaderDesc:ShaderDescription=null
@@ -121,8 +120,8 @@ module MyGPU =
         let mutable frameLength = 0 
 
         // Display
-        let mutable rasterizerDesc=RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
-        let mutable blendDesc=BlendDescription(BlendType.Opaque, blendStateOpaque)  
+        let mutable rasterizerStateDesc=rasterizerStateSolid
+        let mutable blendStateDesc=blendStateOpaque
 
         // Synchronization objects.
         let mutable coordinator:ProcessorCoordinator = null
@@ -174,16 +173,16 @@ module MyGPU =
                 pixelShaderDesc <- value
                 pipelineProvider.PixelShaderDesc <- pixelShaderDesc
         
-        member this.BlendDesc
-            with get() = blendDesc
+        member this.BlendStateDesc
+            with get() = blendStateDesc
             and set(value) = 
-                blendDesc <- value                
-                pipelineProvider.BlendDesc <- blendDesc
+                blendStateDesc <- value                
+                pipelineProvider.BlendDesc <- blendStateDesc
             
-        member this.RasterizerDesc
-            with get() = rasterizerDesc
+        member this.RasterizerStateDesc
+            with get() = rasterizerStateDesc
             and set(value) =
-                rasterizerDesc <- value
+                rasterizerStateDesc <- value
                 pipelineProvider.RasterizerDesc <- value 
 
         member this.CurrFrameResource = frameResources.[currentFrameResourceIndex]
@@ -346,35 +345,59 @@ module MyGPU =
         // Dazu die Kombinationen für 
         // Und eine erste aktive Konfiguration setzen
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallPipelineProvider(configs:MyPipelineConfiguration list) = 
-            for conn in configs do  
-                pipelineConfigurations.Add(conn.ConfigName, conn) 
-                pipelineProvider.AddConfig(conn)  
-
-            pipelineProvider.ActivateConfig(configs.Head)
-            pipelineProvider.SetInitialConfig(configs.Head)
+        member this.InstallPipelineProvider(
+            _InputLayoutDesc,
+            _RootSignatureDesc, 
+            _VertexShaderDesc,
+            _PixelShaderDesc,
+            _DomainShaderDesc,
+            _HullShaderDesc,
+            _SampleDesc,
+            _BlendStateDesc,
+            _RasterizerStateDesc,
+            _TopologyType
+            ) =
+            pipelineProvider.Initialize(
+                _InputLayoutDesc,
+                _RootSignatureDesc,
+                _VertexShaderDesc,
+                _PixelShaderDesc,
+                _DomainShaderDesc,
+                _HullShaderDesc, 
+                _SampleDesc,
+                _BlendStateDesc,
+                _RasterizerStateDesc,
+                _TopologyType
+            )
 
         // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
         // Update und Draw
         // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
-
-        //
-        // Rootsignature und Pipelinestate entsprechend Displayable gesetzt
-        //       
-        member this.UpdatePipeline(pipelineConfigName:string, objectPixelShaderDesc:ShaderDescription, objectBlendDesc:BlendDescription, objectTopologyTypeDesc:TopologyTypeDescription) =             
-            debugUPDT("Pipeline " + pipelineConfigName + objectPixelShaderDesc.Klass.ToString()  + objectBlendDesc.Type.ToString() + rasterizerDesc.Type.ToString())
-            
-            if pipelineProvider.ConfigName <> pipelineConfigName then
-               let tmpConfig = pipelineConfigurations.Item(pipelineConfigName)
-               pipelineProvider.ActivateConfig(tmpConfig)
-            pipelineProvider.ConfigName         <- pipelineConfigName 
-            pipelineProvider.PixelShaderDesc    <- objectPixelShaderDesc 
-            pipelineProvider.BlendDesc          <- objectBlendDesc 
-            pipelineProvider.RasterizerDesc     <- this.RasterizerDesc 
-            pipelineProvider.TopologyTypeDesc   <- objectTopologyTypeDesc
-            pipelineProvider.GetCurrentPipelineState()|> ignore             // Refresh
+        member this.UpdatePipeline(
+                inputLayoutDesc:InputLayoutDescription,
+                rootSignatureDefaulDesct:RootSignatureDescription,
+                vertexShaderDesc:ShaderDescription,
+                pixelShaderDesc:ShaderDescription,
+                domainShaderDesc:ShaderDescription,
+                hullShaderDesc:ShaderDescription,
+                sampleDescription:SampleDescription,
+                topologyType:PrimitiveTopologyType,
+                topology:PrimitiveTopology,
+                blendStateDesc:BlendStateDescription,
+                rasterizerStateDesc:RasterizerStateDescription
+            ) =            
+            pipelineProvider.InputLayoutDesc    <- inputLayoutDesc
+            pipelineProvider.RootSignatureDesc  <- rootSignatureDefaulDesct
+            pipelineProvider.VertexShaderDesc   <- vertexShaderDesc
+            pipelineProvider.PixelShaderDesc    <- pixelShaderDesc 
+            pipelineProvider.DomainShaderDesc   <- domainShaderDesc
+            pipelineProvider.HullShaderDesc     <- hullShaderDesc
+            pipelineProvider.BlendDesc          <- blendStateDesc 
+            pipelineProvider.RasterizerDesc     <- rasterizerStateDesc 
+            pipelineProvider.TopologyType       <- topologyType
+            pipelineProvider.Topology           <- topology             
 
         // 
         // Update  

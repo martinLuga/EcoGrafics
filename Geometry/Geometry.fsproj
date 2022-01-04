@@ -16,6 +16,7 @@
     <Compile Include="GeometricTypes.fs" />
     <Compile Include="Vertex2D.fs" />
     <Compile Include="VertexCube.fs" />
+    <Compile Include="VertexBox.fs" />
     <Compile Include="VertexCylinder.fs" />
     <Compile Include="VertexPatch.fs" />
     <Compile Include="VertexPyramid.fs" />

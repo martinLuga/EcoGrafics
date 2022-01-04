@@ -13,8 +13,8 @@ open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
 open Base.Framework
-open Base.ShaderSupport
 
+open ShaderSupport 
 open MathSupport
 open MeshObjects
 open VertexDefs
@@ -61,6 +61,18 @@ module ModelSupport =
         | Opaque
         | Transparent
         | Invisible
+
+    let  blendTypeFromVisibility(visibility:Visibility) =
+        match visibility with 
+        | Visibility.Opaque       -> BlendType.Opaque
+        | Visibility.Transparent  -> BlendType.Transparent
+        | Visibility.Invisible    -> BlendType.Transparent
+
+    let blendStateFromVisibility(visibility:Visibility) =
+        match visibility with 
+        | Visibility.Opaque       -> blendStateOpaque
+        | Visibility.Transparent  -> blendStateOpaque
+        | Visibility.Invisible    -> blendStateOpaque
 
     let TransparenceFromVisibility(visibility:Visibility) =
         match visibility with 
@@ -378,7 +390,7 @@ module ModelSupport =
 
         new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, new ShaderConfiguration())
         new(name, shape, material, visibility, shaders) = Part(name, shape, material, new Texture(), visibility, shaders)
-        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility, new ShaderConfiguration())
+        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility, new ShaderConfiguration()) 
         new(name, material, texture, visibility, shaders) = Part(name, null, material, texture, visibility, shaders)
         new(name, material, texture, visibility) = Part(name, null, material, texture, visibility, new ShaderConfiguration())
         new(name, shape, material, texture, shaders) = Part(name, shape,  material, texture, Visibility.Opaque, shaders)

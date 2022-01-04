@@ -10,16 +10,14 @@ open System
 open System.IO
 open System.Globalization
 open System.Collections.Generic
-open System.Diagnostics
 
 open log4net
 
 open SharpDX
 
-open Base.Framework
+open Base.ShaderSupport
 open Base.LoggingSupport
 open Base.ModelSupport
-open Base.MeshObjects
 open Base.VertexDefs
 
 open Geometry.GeometricModel
