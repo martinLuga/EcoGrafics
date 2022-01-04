@@ -11,14 +11,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="ExampleShaders.fs" />
     <Compile Include="Initializations.fs" />
     <Compile Include="ArchitectureTests.fs" />
     <Compile Include="Hardware.fs" />
-    <Compile Include="Configuration.fs" />
     <Compile Include="GraficTests.fs" />
     <Compile Include="GeometryTests.fs" />
-    <Compile Include="ShaderTests.fs" />
     <Compile Include="RecordTests.fs" />
     <None Include="shaders\BlinnPhongPS.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -9,16 +9,11 @@
 open Base.MaterialsAndTextures
 open Base.ModelSupport
 open Base.ObjectBase
-open Base.ShaderSupport
-open DirectX.Assets
-open ExampleShaders
 open Geometry.GeometricModel
-open GPUModel.MyPipelineConfiguration
 open log4net
 open SharpDX
 open SharpDX.Direct3D
 open SharpDX.DXGI 
-open System.IO
 
 module Initializations = 
 
@@ -72,49 +67,4 @@ module Initializations =
                 position = Vector3(-4.0f, 0.0f, 0.0f)
             )    
 
-        [sphere1; sphere2] 
-
-    let pipelineConfigBasic = 
-        new MyPipelineConfiguration(
-            configName="Basic",
-            inputLayoutDesc=layoutCookBook,
-            rootSignatureDescription=rootSignatureDescCookBook,
-            vertexShaderDesc=vertexShaderDesc,
-            pixelShaderDesc=pixelShaderPhongDesc,
-            domainShaderDesc=ShaderDescription(),
-            hullShaderDesc=ShaderDescription(),
-            sampleDesc = new SampleDescription(1, 0),
-            topologyTypeDesc=topologyTriangleDescription, 
-            blendStateDesc=blendOpaqueDescription,
-            rasterizerStateDesc=rasterSolidDescription
-        )
-
-    let pipelineConfigTesselateQuad  = 
-        new MyPipelineConfiguration(
-            configName="TesselatedQuad",
-            inputLayoutDesc=layoutCookBook,
-            rootSignatureDescription=rootSignatureDescCookBook,
-            vertexShaderDesc=vertexShaderTesselateDesc,
-            pixelShaderDesc=pixelShaderSimpleDesc,
-            domainShaderDesc=domainShaderQuadDesc,
-            hullShaderDesc=hullShaderQuadDesc,
-            sampleDesc = new SampleDescription(1, 0),
-            topologyTypeDesc=topologyPatchDescription, 
-            blendStateDesc=blendOpaqueDescription,
-            rasterizerStateDesc=rasterSolidDescription
-        )
-
-    let pipelineConfigTesselateTri = 
-        new MyPipelineConfiguration(
-            "TesselatedTri",
-            inputLayoutDesc=layoutCookBook,
-            rootSignatureDescription=rootSignatureDescCookBook,
-            vertexShaderDesc=vertexShaderTesselateDesc,
-            pixelShaderDesc=pixelShaderSimpleDesc,
-            domainShaderDesc=domainShaderTriDesc,
-            hullShaderDesc=hullShaderTriDesc,
-            sampleDesc=new SampleDescription(1, 0),
-            topologyTypeDesc=topologyPatchDescription, 
-            blendStateDesc=blendOpaqueDescription,
-            rasterizerStateDesc=rasterSolidDescription
-        )
+        [sphere1; sphere2]

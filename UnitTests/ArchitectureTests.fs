@@ -10,13 +10,9 @@ open ApplicationBase
 open Base.FileSupport
 open Base.Framework
 open Base.LoggingSupport
-open Base.ShaderSupport
 open Base.VertexDefs
-open DirectX.Assets
 open DirectX.TextureSupport
-open ExampleShaders
 open GPUModel.MyGPU
-open GPUModel.MyPipelineConfiguration
 open GraficBase.GraficController
 open GraficBase.GraficWindow
 open Initializations
@@ -57,11 +53,7 @@ module Architecture =
 
             MyController.CreateInstance(
                 "UnitTests",
-                this.myWindow,
-                [ pipelineConfigBasic
-                  pipelineConfigTesselateQuad
-                  pipelineConfigTesselateTri ],
-                  defaultConfiguration=pipelineConfigBasic
+                this.myWindow
             )             
             MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
