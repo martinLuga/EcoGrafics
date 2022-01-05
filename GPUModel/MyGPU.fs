@@ -334,7 +334,7 @@ module MyGPU =
                         textureIdx <- textureIdx + 1
                     else
                         if textureFilename.EndsWith("dds") then 
-                            let  resource, bool = CreateTextureFromDDS_2(device, textureFilename)
+                            let  resource, isCube = CreateTextureFromDDS(device, textureFilename)
                             textureHeapWrapper.AddResource(resource)
                             textures.Add(textureName, textureIdx)
                             textureIdx <- textureIdx + 1

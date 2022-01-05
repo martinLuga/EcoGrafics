@@ -95,7 +95,7 @@ module MyPipelineStore =
         let mutable ndict = new NestedDict<string, BlendStateDescription, RasterizerStateDescription, PrimitiveTopologyType, PipelineState>()
         let logDebug = Debug(loggerPSO)
         
-        member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc,  rasterizerStateDesc, topologyType) =
+        member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc, rasterizerStateDesc, topologyType) =
             let psoDesc = psoDesc(device, inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc,  rasterizerStateDesc, topologyType, SampleDescription(1, 0))
             try                 
                 let pso = device.CreateGraphicsPipelineState(psoDesc)

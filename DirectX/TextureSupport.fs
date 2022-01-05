@@ -517,7 +517,7 @@ module TextureSupport =
     //--------------------------------------------------------------------------------------
     // Erzeuge Textur aus DDS
     //--------------------------------------------------------------------------------------
-    let CreateTextureFromDDS(d3dDevice:Device, header:DDS_HEADER, header10:DDS_HEADER_DXT10 Nullable , bitData:byte[] , offset:int, maxsize:int) =      
+    let CreateTextureFromDDS_2(d3dDevice:Device, header:DDS_HEADER, header10:DDS_HEADER_DXT10 Nullable , bitData:byte[] , offset:int, maxsize:int) =      
         let mutable isCubeMap = false
         let mutable width = header.width 
         let mutable height = header.height 
@@ -623,8 +623,6 @@ module TextureSupport =
     //--------------------------------------------------------------------------------------
     let CreateTextureFromDDS_1(device:Device, data:byte[]) =
 
-        let mutable isCubeMap = false
-       
         // Validate DDS file in memory
         let mutable header = new DDS_HEADER() 
 
@@ -658,7 +656,8 @@ module TextureSupport =
 
         let offset = 4 + ddsHeaderSize + (if dx10Header.HasValue then ddsHeader10Size else 0) 
 
-        CreateTextureFromDDS(device, header, dx10Header, data, offset, 0 ) 
+        CreateTextureFromDDS_2(device, header, dx10Header, data, offset, 0) 
+        
 
     //--------------------------------------------------------------------------------------
     // Load texture from DDS file
@@ -667,10 +666,9 @@ module TextureSupport =
     // <param name="filename">Filename</param>
     // <returns></returns>
     //--------------------------------------------------------------------------------------
-    let CreateTextureFromDDS_2(device:Device, filename:string) =
-        let isCube = false 
-        let texture = CreateTextureFromDDS_1(device, System.IO.File.ReadAllBytes(filename))
-        (fst texture, isCube)        
+    let CreateTextureFromDDS(device:Device, filename:string) =
+        CreateTextureFromDDS_1(device, System.IO.File.ReadAllBytes(filename))
+    
 
     //--------------------------------------------------------------------------------------
     //  Create texture from bmp

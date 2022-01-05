@@ -71,8 +71,8 @@ module ModelSupport =
     let blendStateFromVisibility(visibility:Visibility) =
         match visibility with 
         | Visibility.Opaque       -> blendStateOpaque
-        | Visibility.Transparent  -> blendStateOpaque
-        | Visibility.Invisible    -> blendStateOpaque
+        | Visibility.Transparent  -> blendStateTransparent
+        | Visibility.Invisible    -> blendStateTransparent
 
     let TransparenceFromVisibility(visibility:Visibility) =
         match visibility with 
