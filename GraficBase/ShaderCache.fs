@@ -21,22 +21,27 @@ module Cache =
     // Alle PipelineConfigurations werden im  NestedDict zu ihren Schlüsseln abgelegt
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteralAttribute>]
-    type NestedDict<'TOPOLTYPE, 'TOPOL, 'PSO when 'TOPOLTYPE:equality and 'TOPOL:equality> () =
-        let mutable topolTypeDict   = Dictionary<'TOPOLTYPE, Dictionary<'TOPOL, 'PSO>>()
+    type NestedDict<'SHADER_TYPE, 'TOPOLTYPE, 'TOPOL, 'PSO when 'SHADER_TYPE:equality and 'TOPOLTYPE:equality and 'TOPOL:equality and 'PSO:null>  () =
+        let mutable shaderTypeDict  = Dictionary<'SHADER_TYPE, Dictionary<'TOPOLTYPE, Dictionary<'TOPOL, 'PSO>>>()
+        let newTopolTypeDict()      = Dictionary<'TOPOLTYPE, Dictionary<'TOPOL, 'PSO>>()
         let newTopolDict()          = Dictionary<'TOPOL, 'PSO>()
 
-        member this.Add(topolType:'TOPOLTYPE, topol:'TOPOL, result:'PSO) =
-            topolTypeDict.
+        member this.Add(shaderType:'SHADER_TYPE, topolType:'TOPOLTYPE, topol:'TOPOL, result:'PSO) =
+            shaderTypeDict.
+                TryItem(shaderType, newTopolTypeDict()).
                 TryItem(topolType, newTopolDict()).
                 Replace(topol, result)
 
-        member this.Item(topolType:'TOPOLTYPE, topol:'TOPOL) =
-            topolTypeDict.Item(topolType).Item(topol) 
+        member this.Item(shaderType:'SHADER_TYPE, topolType:'TOPOLTYPE, topol:'TOPOL) =
+            try
+                shaderTypeDict.Item(shaderType).Item(topolType).Item(topol) 
+            with
+            | :? KeyNotFoundException -> null
 
     [<AllowNullLiteral>]
     type ShaderCache() = 
         static let mutable instance:ShaderCache = null   
-        let mutable ndict = new NestedDict<PrimitiveTopologyType, PrimitiveTopology, ShaderDescription>()
+        let mutable ndict = new NestedDict<ShaderType, PrimitiveTopologyType, PrimitiveTopology, ShaderDescription>()
         static member Instance
             with get() = 
                 if instance = null then
@@ -44,19 +49,23 @@ module Cache =
                 instance
             and set(value) = instance <- value
 
-        static member AddShader(_TopologyType:PrimitiveTopologyType, _Topology:PrimitiveTopology, _ShaderDesc:ShaderDescription) =
-            ShaderCache.Instance.Add(_TopologyType, _Topology , _ShaderDesc)
+        static member AddShader(_ShaderType:ShaderType, _TopologyType:PrimitiveTopologyType, _Topology:PrimitiveTopology, _ShaderDesc:ShaderDescription) =
+            ShaderCache.Instance.Add(_ShaderType, _TopologyType, _Topology , _ShaderDesc)
 
-        static member AddAllShaders(pConfs: (PrimitiveTopologyType * PrimitiveTopology * ShaderDescription) list) =
+        static member AddShaders(pConfs: (ShaderType * PrimitiveTopologyType * PrimitiveTopology * ShaderDescription) list) =
             for c in pConfs do
                 ShaderCache.Instance.Add(c)
 
-        static member GetConfig(topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
-            ShaderCache.Instance.Get(topoType, topo) 
-    
-        member this.Add(_TopologyType:PrimitiveTopologyType, _Topology:PrimitiveTopology, _ShaderDesc:ShaderDescription) =
-            ndict.Add(_TopologyType, _Topology, _ShaderDesc)
+        static member AddShaderFromDesc(topologyType:PrimitiveTopologyType, topology:PrimitiveTopology, desc: ShaderDescription) =
+            ShaderCache.AddShader(desc.Klass, topologyType , topology, desc)
+ 
 
-        member this.Get(topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
-            ndict.Item(topoType, topo)
+        static member GetShader(_ShaderType:ShaderType, topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
+            ShaderCache.Instance.Get(_ShaderType, topoType, topo) 
+    
+        member this.Add(_ShaderType:ShaderType, _TopologyType:PrimitiveTopologyType, _Topology:PrimitiveTopology, _ShaderDesc:ShaderDescription) =
+            ndict.Add(_ShaderType, _TopologyType, _Topology, _ShaderDesc)
+
+        member this.Get(_ShaderType:ShaderType, topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
+            ndict.Item(_ShaderType, topoType, topo)
 

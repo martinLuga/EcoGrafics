@@ -24,24 +24,77 @@ module ShaderSupport =
     type BlendType      = | Opaque      | Transparent   |  Undefinded
     type ShaderType     = | Vertex = 0  | Pixel = 1     |  Domain = 2   | Hull = 3  | Undefinded = 99
 
-    type ShaderClass  = 
-        | VertexType  = 1       
-        | PixelType   = 2     
-        | DomainType  = 3         
-        | HullType    = 4
-        | NotSet      = 99 
+    let GetStaticSamplers() =   
+        [|
+            // PointWrap
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=0,
+                registerSpace=0,
+                Filter=Filter.MinMagMipPoint,
+                AddressUVW = TextureAddressMode.Wrap
+            );        
+            // PointClamp
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=1,
+                registerSpace=0, 
+                Filter = Filter.MinMagMipPoint,
+                AddressUVW = TextureAddressMode.Clamp
+            ); 
+            // LinearWrap
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=2,
+                registerSpace=0, 
+                Filter = Filter.MinMagMipLinear,
+                AddressUVW = TextureAddressMode.Wrap
+            ); 
+            // LinearClamp
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=3,
+                registerSpace=0, 
+                Filter = Filter.MinMagMipLinear,
+                AddressUVW = TextureAddressMode.Clamp
+            ); 
+            // AnisotropicWrap
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=4,
+                registerSpace=0, 
+                Filter = Filter.Anisotropic,
+                AddressUVW = TextureAddressMode.Wrap,
+                MipLODBias = 0.0f,
+                MaxAnisotropy = 8
+            ); 
+            // AnisotropicClamp
+            new StaticSamplerDescription(
+                shaderVisibility=ShaderVisibility.All,
+                shaderRegister=5,
+                registerSpace=0, 
+                Filter = Filter.Anisotropic,
+                AddressUVW = TextureAddressMode.Clamp,
+                MipLODBias = 0.0f,
+                MaxAnisotropy = 8
+            )
+        |]
+
+    let rootSignatureDescEmpty =
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers())  
 
     [<AllowNullLiteral>] 
     type ShaderDescription =
-        val Klass:ShaderClass
+        val Klass:ShaderType
         val Directory:string 
         val File:string
         val Entry:string
         val Mode:string
-        new (klass, directory, file, entry, mode) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode}
-        new () = {Klass=ShaderClass.NotSet; Directory=""; File=""; Entry=""; Mode=""}
+        val RootSignature:RootSignatureDescription
+        new (klass, directory, file, entry, mode, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; RootSignature=rootSignature}
+        new () = {Klass=ShaderType.Undefinded; Directory=""; File=""; Entry=""; Mode=""; RootSignature=rootSignatureDescEmpty}
         override this.ToString() = this.File + this.Entry
-        member self.IsEmpty() = self.Klass=ShaderClass.NotSet
+        member self.IsEmpty() = self.Klass=ShaderType.Undefinded
         member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
 
     [<AllowNullLiteral>] 
@@ -153,62 +206,6 @@ module ShaderSupport =
                 new InputElement("NORMAL",          0, Format.R32G32B32_Float,      32, 0);
             |]
         ) 
-
-    let GetStaticSamplers() =   
-        [|
-            // PointWrap
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=0,
-                registerSpace=0,
-                Filter=Filter.MinMagMipPoint,
-                AddressUVW = TextureAddressMode.Wrap
-            );        
-            // PointClamp
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=1,
-                registerSpace=0, 
-                Filter = Filter.MinMagMipPoint,
-                AddressUVW = TextureAddressMode.Clamp
-            ); 
-            // LinearWrap
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=2,
-                registerSpace=0, 
-                Filter = Filter.MinMagMipLinear,
-                AddressUVW = TextureAddressMode.Wrap
-            ); 
-            // LinearClamp
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=3,
-                registerSpace=0, 
-                Filter = Filter.MinMagMipLinear,
-                AddressUVW = TextureAddressMode.Clamp
-            ); 
-            // AnisotropicWrap
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=4,
-                registerSpace=0, 
-                Filter = Filter.Anisotropic,
-                AddressUVW = TextureAddressMode.Wrap,
-                MipLODBias = 0.0f,
-                MaxAnisotropy = 8
-            ); 
-            // AnisotropicClamp
-            new StaticSamplerDescription(
-                shaderVisibility=ShaderVisibility.All,
-                shaderRegister=5,
-                registerSpace=0, 
-                Filter = Filter.Anisotropic,
-                AddressUVW = TextureAddressMode.Clamp,
-                MipLODBias = 0.0f,
-                MaxAnisotropy = 8
-            )
-        |]
 
     // ----------------------------------------------------------------------------------------------------
     // Root signature descriptions

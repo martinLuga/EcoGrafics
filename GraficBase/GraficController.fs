@@ -98,14 +98,51 @@ module GraficController =
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
         let mutable materialIndices = new Dictionary<string, int>()
 
+        let currentRootSignatureDesc(part:Part, defaultRootSignatureDesc:RootSignatureDescription) =
+            if part.Shaders.VertexShaderDesc.RootSignature = rootSignatureDescEmpty then
+                let fromCache = ShaderCache.GetShader(ShaderType.Vertex, part.Shape.TopologyType, part.Shape.Topology)
+                if fromCache = null || fromCache.IsEmpty() then
+                    defaultRootSignatureDesc
+                else
+                    fromCache.RootSignature
+            else 
+                part.Shaders.VertexShaderDesc.RootSignature
+
         let currentVertexShader(part:Part)  = 
-            let fromCache = ShaderCache.GetConfig(part.Shape.TopologyType, part.Shape.Topology)
-            if part.Shaders.VertexShaderDesc.IsEmpty() then      
-                defaultVertexShaderDesc 
+            if part.Shaders.VertexShaderDesc.IsEmpty() then                 
+                let fromCache = ShaderCache.GetShader(ShaderType.Vertex,part.Shape.TopologyType, part.Shape.Topology)
+                if fromCache = null || fromCache.IsEmpty() then
+                    defaultVertexShaderDesc 
+                else 
+                    fromCache
             else part.Shaders.VertexShaderDesc
-        let currentPixelShader(part:Part)   = if part.Shaders.PixelShaderDesc.IsEmpty()  then defaultPixelShaderDesc else part.Shaders.PixelShaderDesc 
-        let currentDomainShader(part:Part)  = if part.Shaders.DomainShaderDesc.IsEmpty()  then defaultDomainShaderDesc else part.Shaders.DomainShaderDesc
-        let currentHullShader(part:Part)    = if part.Shaders.HullShaderDesc.IsEmpty()  then defaultHullShaderDesc else part.Shaders.HullShaderDesc 
+
+        let currentPixelShader(part:Part)   =
+            if part.Shaders.PixelShaderDesc.IsEmpty()  then 
+                let fromCache = ShaderCache.GetShader(ShaderType.Pixel,part.Shape.TopologyType, part.Shape.Topology)
+                if fromCache = null || fromCache.IsEmpty() then
+                    defaultPixelShaderDesc 
+                else 
+                    fromCache 
+            else part.Shaders.PixelShaderDesc 
+
+        let currentDomainShader(part:Part)  = 
+            if part.Shaders.DomainShaderDesc.IsEmpty()  then 
+                let fromCache = ShaderCache.GetShader(ShaderType.Domain, part.Shape.TopologyType, part.Shape.Topology)
+                if fromCache = null || fromCache.IsEmpty() then
+                    defaultDomainShaderDesc 
+                else 
+                    fromCache 
+            else part.Shaders.DomainShaderDesc
+
+        let currentHullShader(part:Part)    =
+            if part.Shaders.HullShaderDesc.IsEmpty()  then                
+                let fromCache = ShaderCache.GetShader(ShaderType.Hull, part.Shape.TopologyType, part.Shape.Topology)
+                if fromCache = null || fromCache.IsEmpty() then
+                    defaultHullShaderDesc 
+                else 
+                    fromCache 
+            else part.Shaders.HullShaderDesc 
         
         let mutable timer = new GameTimer()
 
@@ -124,14 +161,15 @@ module GraficController =
             graficWindow.Renderer <- instance.GPU
             instance.Configure()
             instance
+
         // ----------------------------------------------------------------------------------------------------
-        // Initialize
+        // Initialize (Default Configuration)
         // ----------------------------------------------------------------------------------------------------
         member this.Configure() = 
             defaultInputLayoutDesc      <- layoutCookBook
             defaultRootSignatureDesc    <- rootSignatureDescCookBook
-            defaultVertexShaderDesc     <- ShaderDescription(ShaderClass.VertexType, "shaders","VS","VSMain","vs_5_0")
-            defaultPixelShaderDesc      <- ShaderDescription(ShaderClass.PixelType, "shaders", "PhongPS","PSMain","ps_5_0")
+            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_0", rootSignatureDescCookBook)
+            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_0", rootSignatureDescCookBook)
             defaultDomainShaderDesc     <- ShaderDescription()
             defaultHullShaderDesc       <- ShaderDescription()
             defaultSampleDesc           <- SampleDescription(1, 0)
@@ -464,7 +502,7 @@ module GraficController =
 
             myGpu.UpdatePipeline(
                 defaultInputLayoutDesc,
-                defaultRootSignatureDesc,
+                currentRootSignatureDesc(part, defaultRootSignatureDesc),
                 currentVertexShader(part),
                 currentPixelShader(part),
                 currentDomainShader(part),

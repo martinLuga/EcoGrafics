@@ -340,8 +340,8 @@ module MyGPU =
                             textureIdx <- textureIdx + 1
 
         // ---------------------------------------------------------------------------------------------------- 
-        // Den PipelineProvider mit allen Konfigurationen füllen 
-        // Alle benötigten Shader (Konfigurationen) 
+        // Den PipelineProvider mit einer Konfiguration füllen 
+        // Alle benötigten Shader dieser Konfiguration  
         // Dazu die Kombinationen für 
         // Und eine erste aktive Konfiguration setzen
         // ----------------------------------------------------------------------------------------------------
@@ -377,7 +377,7 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         member this.UpdatePipeline(
                 inputLayoutDesc:InputLayoutDescription,
-                rootSignatureDefaulDesct:RootSignatureDescription,
+                rootSignatureDefaultDesc:RootSignatureDescription,
                 vertexShaderDesc:ShaderDescription,
                 pixelShaderDesc:ShaderDescription,
                 domainShaderDesc:ShaderDescription,
@@ -389,7 +389,7 @@ module MyGPU =
                 rasterizerStateDesc:RasterizerStateDescription
             ) =            
             pipelineProvider.InputLayoutDesc    <- inputLayoutDesc
-            pipelineProvider.RootSignatureDesc  <- rootSignatureDefaulDesct
+            pipelineProvider.RootSignatureDesc  <- vertexShaderDesc.RootSignature
             pipelineProvider.VertexShaderDesc   <- vertexShaderDesc
             pipelineProvider.PixelShaderDesc    <- pixelShaderDesc 
             pipelineProvider.DomainShaderDesc   <- domainShaderDesc

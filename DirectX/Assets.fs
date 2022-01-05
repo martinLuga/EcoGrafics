@@ -264,13 +264,13 @@ module Assets =
 
     // LunaBook App
     let rootSignatureDescLunaBook =
-        let textureTable   = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
-        let rootParameter0 = new RootParameter(ShaderVisibility.Pixel, textureTable)                                                        // t0 : Texture 
-        let rootParameter1 = new RootParameter(ShaderVisibility.Vertex, new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : Per Object
-        let rootParameter2 = new RootParameter(ShaderVisibility.All,    new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : Per Frame
-        let rootParameter3 = new RootParameter(ShaderVisibility.All,    new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : Per Material
+        let rootParameter0 = new RootParameter(ShaderVisibility.All, new RootDescriptor(0, 0), RootParameterType.ConstantBufferView) 
+        let rootParameter1 = new RootParameter(ShaderVisibility.All, new RootDescriptor(1, 0), RootParameterType.ConstantBufferView) 
+        let rootParameter2 = new RootParameter(ShaderVisibility.All, new RootDescriptor(0, 1), RootParameterType.ShaderResourceView) 
+        let rootParameter3 = new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) 
+        let rootParameter4 = new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 1))
 
-        let slotRootParameters = [|rootParameter0; rootParameter1; rootParameter2; rootParameter3|] 
+        let slotRootParameters = [|rootParameter0; rootParameter1; rootParameter2; rootParameter3; rootParameter4|] 
         new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers())  
 
     let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =

@@ -79,7 +79,7 @@ module SimpleFormat =
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Meshdaten für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
-        member this. Build(material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality) =
+        member this. Build(material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
 
             augmentation <- augment 
 
@@ -156,7 +156,8 @@ module SimpleFormat =
                     new TriangularShape(name, Vector3.Zero, vertices, indices, generalSizeFactor, quality),
                     material,
                     texture,
-                    visibility
+                    visibility,
+                    shaders
                 )
             parts.Add(part)
 

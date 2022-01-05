@@ -37,7 +37,7 @@ module SimpleBuilder =
     let Build (name, fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new SimpleBuilder(name, fileName)  
-        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality)  
+        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
  
 // ----------------------------------------------------------------------------------------------------
