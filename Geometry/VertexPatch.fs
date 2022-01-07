@@ -51,8 +51,8 @@ module Generic =
         let texti = deconstructTriangleTexture text |> Array.ofSeq 
         let normal = (createNormal p1 p2 p3) 
         let v1 = createVertex  p1 normal color4 texti.[0]  
-        let v2 = createVertex  p2 normal color4 texti.[0]  
-        let v3 = createVertex  p3 normal color4 texti.[0]    
+        let v2 = createVertex  p2 normal color4 texti.[1]  
+        let v3 = createVertex  p3 normal color4 texti.[2]    
         let vert = {TV1 = v1; TV2 = v2; TV3 = v3}   
         let ind =  {ITV1 = idx + 0; ITV2 = idx + 1; ITV3 = idx + 2}
         (vert, ind)  

@@ -848,7 +848,8 @@ module GeometricModel =
             Square2D.CreateMeshData(p1, p2, p3, p4, color, visibility, Quality.Original)
 
     // ----------------------------------------------------------------------------------------------------
-    //  WavefrontShape
+    // TopologyType=Patch
+    // Beispiel: WavefrontShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
     type PatchShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
@@ -860,7 +861,8 @@ module GeometricModel =
         override this.ToString() = "WavefrontShape (x " + this.Size.ToString() + ") " + this.Name 
 
     // ----------------------------------------------------------------------------------------------------
-    //  SimpleShape
+    // TopologyType=Triangle
+    // Beispiel: SimpleShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
     type TriangularShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
