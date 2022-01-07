@@ -51,10 +51,7 @@ module Architecture =
 
             WindowLayout.Setup("TEST")
 
-            MyController.CreateInstance(
-                "UnitTests",
-                this.myWindow
-            )             
+            MyController.CreateInstance(this.myWindow)             
             MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
             // Camera  
@@ -89,11 +86,11 @@ module Architecture =
         [<Test>]
         member this.TestTextureSupport() =  
             let filename = fileNameInMap "EcoGrafics" "UnitTests" "Textures" "grass.dds"
-            let texRes = CreateTextureFromDDS_2(device, filename) 
+            let texRes = CreateTextureFromDDS(device, filename) 
             logger.Info("Textur gelesen")
 
         [<Test>]
         member this.TestEveryNthElement() =  
-            let elements = seq {for I in 1 .. 50 do createVertex Vector3.Zero Vector3.UnitZ  Color.Wheat  (new Vector2(0.0f, 0.0f)) true}
+            let elements = seq {for I in 1 .. 50 do createVertex Vector3.Zero Vector3.UnitZ  Color4.Black (new Vector2(0.0f, 0.0f))}
             let every2 = everyNth 10 elements 
             Assert.IsNotEmpty(every2)
