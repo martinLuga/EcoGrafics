@@ -26,6 +26,8 @@ module VertexSphere  =
     // ----------------------------------------------------------------------------------------------------
     let sphereVertices (ursprung:Vector3) (color:Color) (radius:float32) isTransparent =
 
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+
         let center = ursprung + Vector3(radius, radius, radius)
         let verticalSegments = tessellation
         let horizontalSegments = tessellation * 2
@@ -59,7 +61,7 @@ module VertexSphere  =
                 // To generate a UVW texture cube coordinate
                 // let textureCoordinate = normal 
 
-                vertices.[vertexCount] <- createVertex position normal color textureCoordinate isTransparent   
+                vertices.[vertexCount] <- createVertex position normal color4 textureCoordinate     
                 vertexCount <- vertexCount + 1 
 
         vertices

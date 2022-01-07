@@ -74,6 +74,8 @@ module VertexCylinder =
     // Cylinder Cap  
     // ----------------------------------------------------------------------------------------------------
     let CreateCylinderCap (origin:Vector3, tessellation:int, height:float32, radius:float32, color:Color, isTop:bool, isTransparent:bool) =
+    
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
         let mutable vertices = new List<Vertex>() 
         let indices =  new List<int>()
 
@@ -113,7 +115,7 @@ module VertexCylinder =
             let cv2 = Vector2(textureCoordinate.X, textureCoordinate.Y)
 
             vertices.Add(                
-                createVertex position normal color cv2 isTransparent 
+                createVertex position normal color4 cv2  
             )
 
         (vertices, indices)
@@ -121,7 +123,10 @@ module VertexCylinder =
     // ----------------------------------------------------------------------------------------------------
     // Cylinder Cone
     // ----------------------------------------------------------------------------------------------------
-    let ComputeCone (origin:Vector3, color:Color, theHeight, radius:float32,tessellation , isTransparent) =        
+    let ComputeCone (origin:Vector3, color:Color, theHeight, radius:float32,tessellation , isTransparent) =    
+    
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+
         
         let mutable vertices = new List<Vertex>() 
         let indices =  new List<int>()
@@ -140,9 +145,9 @@ module VertexCylinder =
             let textureCoordinate = new Vector2((float32) (i/tessellation), 0.0f) 
 
             vertices.Add(
-                createVertex (center + (sideOffset + 2.0f * topOffset))    normal color textureCoordinate                      isTransparent)
+                createVertex (center + (sideOffset + 2.0f * topOffset))    normal color4 textureCoordinate                      )
             vertices.Add(                
-                createVertex (center + sideOffset)                         normal color (textureCoordinate + Vector2.UnitY)    isTransparent )  
+                createVertex (center + sideOffset)                         normal color4 (textureCoordinate + Vector2.UnitY)    )  
 
             indices.Add(i*2)
             indices.Add((i*2 + 2)%(stride*2))

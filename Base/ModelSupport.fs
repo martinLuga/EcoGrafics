@@ -74,6 +74,12 @@ module ModelSupport =
         | Visibility.Transparent  -> blendStateTransparent
         | Visibility.Invisible    -> blendStateTransparent
 
+    let blendDescriptionFromVisibility(visibility:Visibility) =
+        match visibility with 
+        | Visibility.Opaque       -> BlendDescription(BlendType.Opaque, blendStateOpaque)
+        | Visibility.Transparent  -> BlendDescription(BlendType.Transparent, blendStateTransparent)
+        | Visibility.Invisible    -> BlendDescription(BlendType.Transparent, blendStateTransparent)
+
     let TransparenceFromVisibility(visibility:Visibility) =
         match visibility with 
         | Visibility.Opaque       -> false
@@ -446,6 +452,9 @@ module ModelSupport =
         member this.isEmpty() =
             this.Texture.isEmpty 
             && this.Material.isEmpty  
+
+        member this.Transparent =
+            this.Visibility = Visibility.Transparent 
 
         member this.resize(generalSizeFactor)=
             shape.resize(generalSizeFactor)

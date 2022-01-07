@@ -52,21 +52,22 @@ module VertexPyramid =
         normalLeft  <- createNormal p1 p4 p5
 
         // Basis
-        let basisv, basisi  = square   p1 p2 p3 p4 normalBasis colorBasis 0  isTransparent
-        let frontv,fronti   = triangle p1 p5 p2    normalFront colorFront 4  isTransparent
-        let rightv,righti   = triangle p2 p5 p3    normalRight colorRight 7  isTransparent
-        let backv,backi     = triangle p3 p5 p4    normalBack  colorBack  10 isTransparent
-        let leftv,lefti     = triangle p4 p5 p1    normalLeft  colorLeft  13 isTransparent
+        let basisv, basisi = square   p1 p2 p3 p4 normalBasis colorBasis 0  isTransparent
 
-        let vert = {BASE = basisv ; FRONT = frontv ; RIGHT = rightv ; BACK = backv ; LEFT = leftv}
-        let ind = {IBASE = basisi ; IFRONT = fronti ; IRIGHT = righti ; IBACK = backi ; ILEFT = lefti }
+        let frontv, fronti = triangle p1 p5 p2    normalFront colorFront 4  isTransparent
+        let rightv, righti = triangle p2 p5 p3    normalRight colorRight 7  isTransparent
+        let backv,  backi  = triangle p3 p5 p4    normalBack  colorBack  10 isTransparent
+        let leftv,  lefti  = triangle p4 p5 p1    normalLeft  colorLeft  13 isTransparent
+
+        let vert    = {BASE  = basisv; FRONT = frontv;  RIGHT = rightv;  BACK  = backv; LEFT  = leftv}
+        let ind     = {IBASE = basisi; IFRONT = fronti; IRIGHT = righti; IBACK = backi; ILEFT = lefti}
         (vert, ind)   
 
-    let pyramidVertices (ursprung:Vector3, laenge:float32, hoehe:float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color, isTransparent) =
-        let (pyramidVertexes, pyramidIndexes) = pyramid ursprung laenge hoehe colorBasis colorFront colorRight colorBack colorLeft isTransparent
+    let pyramidVerticesAndIndices (ursprung:Vector3, laenge:float32, hoehe:float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color, isTransparent) =
+        let (Pyramid, PyramidIndex) = pyramid ursprung laenge hoehe colorBasis colorFront colorRight colorBack colorLeft isTransparent
         
-        let vertexList = deconstructPyramid pyramidVertexes      
-        let indexList = deconstructPyramidIndex pyramidIndexes
+        let vertexList = deconstructPyramid Pyramid      
+        let indexList = deconstructPyramidIndex PyramidIndex
 
         let vertices = vertexList |> Array.ofSeq 
         let indices = indexList |> Array.ofSeq 
@@ -75,5 +76,5 @@ module VertexPyramid =
     let CreateMeshData(ursprung:Vector3, laenge:float32, hoehe, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
         new MeshData( 
-            pyramidVertices (ursprung, laenge, hoehe, colorFront, colorRight, colorBack, colorLeft, colorBasis, isTransparent)
+            pyramidVerticesAndIndices (ursprung, laenge, hoehe, colorFront, colorRight, colorBack, colorLeft, colorBasis, isTransparent)
         )

@@ -93,24 +93,10 @@ module ShaderSupport =
         val RootSignature:RootSignatureDescription
         new (klass, directory, file, entry, mode, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; RootSignature=rootSignature}
         new () = {Klass=ShaderType.Undefinded; Directory=""; File=""; Entry=""; Mode=""; RootSignature=rootSignatureDescEmpty}
-        override this.ToString() = this.File + this.Entry
+        override this.ToString() = this.Klass.ToString() + "->" + this.Entry
         member self.IsEmpty() = self.Klass=ShaderType.Undefinded
         member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
 
-    [<AllowNullLiteral>] 
-    type BlendDescription=
-        val Type:BlendType
-        val Description:BlendStateDescription
-        new (typ, description) = {Type=typ; Description=description}
-        override this.ToString() = this.Type.ToString()
-
-    [<AllowNullLiteral>] 
-    type RasterizerDescription=
-        val Type:RasterType
-        val Description:RasterizerStateDescription
-        new (typ, description) = {Type=typ; Description=description}
-        override this.ToString() = this.Type.ToString()
-    
     [<AllowNullLiteral>] 
     type TopologyTypeDescription=
         val Type:TopologyType
@@ -132,18 +118,6 @@ module ShaderSupport =
             IsFrontCounterClockwise = RawBool(false)
         ) 
 
-    let topologyTypeTriangle = 
-        PrimitiveTopologyType.Triangle
-
-    let topologyTypePatch = 
-        PrimitiveTopologyType.Patch
-
-    let topologyTypeLine = 
-        PrimitiveTopologyType.Line
-  
-    let blendStateOpaque =
-        BlendStateDescription.Default()
-    
     let transparencyBlendDesc =
         new RenderTargetBlendDescription(        
             IsBlendEnabled = RawBool(true),
@@ -158,10 +132,46 @@ module ShaderSupport =
             RenderTargetWriteMask = ColorWriteMaskFlags.All
         )
 
+    let blendStateOpaque =
+        BlendStateDescription.Default()
+
     let blendStateTransparent =
         let bs = BlendStateDescription.Default()
         bs.RenderTarget.[0] <- transparencyBlendDesc
         bs
+
+    [<AllowNullLiteral>] 
+    type RasterizerDescription=
+        val Type:RasterType
+        val Description:RasterizerStateDescription
+        new (typ, description) = {Type=typ; Description=description}
+        override this.ToString() =  "RASTR->" + this.Type.ToString()
+        static member Default() = 
+            new RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
+
+    [<AllowNullLiteral>] 
+    type BlendDescription=
+        val Type:BlendType
+        val Description:BlendStateDescription
+        new (typ, description) = {Type=typ; Description=description}
+        override this.ToString() = "BLD->" + this.Type.ToString()
+        static member Default() = 
+            new BlendDescription(BlendType.Opaque, blendStateTransparent)
+
+    let blendDescOpaque =
+        BlendDescription(BlendType.Opaque, blendStateOpaque)
+
+    let blendDescTransparent =
+        BlendDescription(BlendType.Transparent, blendStateTransparent)
+
+    let topologyTypeTriangle = 
+        PrimitiveTopologyType.Triangle
+
+    let topologyTypePatch = 
+        PrimitiveTopologyType.Patch
+
+    let topologyTypeLine = 
+        PrimitiveTopologyType.Line
 
     let defaultInputElementsDescriptionNew = 
         new InputLayoutDescription(
@@ -225,8 +235,8 @@ module ShaderSupport =
 
     // CookBook App with tesselation
     let rootSignatureDescCookBookTesselate  =
-        let textureTable = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
-        let rootParameter0 = new RootParameter(ShaderVisibility.Pixel, textureTable)                                                     // t0 : Texture
+        let textureTable   = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
+        let rootParameter0 = new RootParameter(ShaderVisibility.Pixel, textureTable)                                                  // t0 : Texture
         let rootParameter1 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(0, 0), RootParameterType.ConstantBufferView) // b0 : per Object
         let rootParameter2 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(1, 0), RootParameterType.ConstantBufferView) // b1 : per Frame
         let rootParameter3 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(2, 0), RootParameterType.ConstantBufferView) // b2 : per Material

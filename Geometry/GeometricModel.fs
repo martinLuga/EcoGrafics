@@ -140,7 +140,7 @@ module GeometricModel =
             Quader(name, Vector3.Zero, laenge, hoehe, breite, color, color, color, color, color, color)
 
         new(name, laenge, hoehe, breite) =
-            Quader(name, laenge, hoehe, breite, Color.Transparent)
+            Quader(name, laenge, hoehe, breite, Color.White)
 
         new(name, min: Vector3, max: Vector3, color) = Quader(name, (max.X - min.X), (max.Y - min.Y), (max.Z - min.Z), color)
 
@@ -388,33 +388,33 @@ module GeometricModel =
         let mutable seitenlaenge = 0.0f 
 
         // Konstruktoren zum Anlegen in einer Ebene
-        static member InXYPlane (name:string, p1:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = p1 + (Vector3.Right * seitenlaenge)
-            let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = p1 + (Vector3.Up * seitenlaenge)
-            let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f)
+        static member InXYPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = ursprung + (Vector3.Right * seitenlaenge)
+            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = ursprung + (Vector3.Up * seitenlaenge)
+            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f)
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y + seitenlaenge / 2.0f , p1.Z))
+            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y + seitenlaenge / 2.0f , ursprung.Z))
             q.setNormal(normal)
             q
 
-        static member InYZPlane (name:string, p1:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = p1 + (Vector3.ForwardLH * seitenlaenge)
-            let p3 = p1 + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = p1 + (Vector3.Up * seitenlaenge)
-            let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f)
+        static member InYZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = ursprung + (Vector3.ForwardLH * seitenlaenge)
+            let p3 = ursprung + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = ursprung + (Vector3.Up * seitenlaenge)
+            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f)
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(p1.X, p1.Y  + seitenlaenge / 2.0f , p1.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(ursprung.X, ursprung.Y  + seitenlaenge / 2.0f , ursprung.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
         
-        static member InXZPlane (name:string, p1:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = p1 + (Vector3.Right * seitenlaenge)
-            let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
-            let p4 = p1 + (Vector3.ForwardLH * seitenlaenge)
-            let q = new Fläche(name, p1, p2, p3, p4, color, 1.0f) 
+        static member InXZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = ursprung + (Vector3.Right * seitenlaenge)
+            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = ursprung + (Vector3.ForwardLH * seitenlaenge)
+            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f) 
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y , p1.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y , ursprung.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
 
@@ -573,13 +573,13 @@ module GeometricModel =
 
         let mutable waves = null
 
-        static member InXZPlane (name:string, p1:Vector3, seitenlaenge:float32, normal:Vector3, color:Color, dx:float32, dt:float32, speed:float32, damping:float32) =
-            let p2 = p1 + (Vector3.Right * seitenlaenge)
-            let p3 = p1 + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
-            let p4 = p1 + (Vector3.ForwardLH * seitenlaenge)
-            let q = new WaveSurface(name, p1, p2, p3, p4, color, 1.0f, dx , dt , speed , damping ) 
+        static member InXZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color, dx:float32, dt:float32, speed:float32, damping:float32) =
+            let p2 = ursprung + (Vector3.Right * seitenlaenge)
+            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = ursprung + (Vector3.ForwardLH * seitenlaenge)
+            let q = new WaveSurface(name, ursprung, p2, p3, p4, color, 1.0f, dx , dt , speed , damping ) 
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(p1.X + seitenlaenge / 2.0f, p1.Y , p1.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y , ursprung.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q.Flexible <- true
             q

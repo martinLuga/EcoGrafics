@@ -19,8 +19,8 @@ open GeometricTypes
 // ----------------------------------------------------------------------------------------------------
 module VertexCube =
 
-    let normalFront  = - Vector3.UnitZ      // Front  
-    let normalBack   =   Vector3.UnitZ      // Back     
+    let normalFront  =   Vector3.UnitZ      // Front  
+    let normalBack   = - Vector3.UnitZ      // Back     
     let normalTop    =   Vector3.UnitY      // Top       
     let normalBottom = - Vector3.UnitY      // Bottom  
     let normalLeft   = - Vector3.UnitX      // Left       

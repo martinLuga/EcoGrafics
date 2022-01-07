@@ -24,13 +24,9 @@ open DirectX.Assets
 open Shader.ShaderCompile
   
 // ----------------------------------------------------------------------------------------------------
-// GPU helper classes
+// Wrapper und Cache für Pipelinestates
 // ----------------------------------------------------------------------------------------------------
 module MyPipelineStore = 
-
-    let logger = LogManager.GetLogger("Pipeline")
-    let logDebug = Debug(logger)
-    let logInfo  = Info(logger)
 
     exception PipelineCreateError of string
     exception PipelineStateNotFoundException of string
@@ -57,8 +53,7 @@ module MyPipelineStore =
         psoDesc
     
     // ----------------------------------------------------------------------------------------------------
-    //  NestedDict 
-    //      Alle Psos werden zu ihren Schlüsseln abgelegt
+    //  NestedDict: Cache für Pipelinestates. Alle Psos werden zu ihren Schlüsseln abgelegt
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteralAttribute>]
     type NestedDict<'SHA, 'BLEND, 'RASTR, 'TOPOL, 'PSO when 'SHA:equality and 'BLEND:equality and 'RASTR:equality and 'TOPOL:equality> () =
@@ -84,32 +79,30 @@ module MyPipelineStore =
             vertexDict.Item(vtx).Item(pxl).Item(dom).Item(hull).Item(bld).Item(rastr).Item(topol)
 
     // ----------------------------------------------------------------------------------------------------
-    //  PSO storage
-    //  All psos built and kept in a nested dict
+    //  PSO storage: All psos built and kept in a nested dict
     // ----------------------------------------------------------------------------------------------------
     let loggerPSO = LogManager.GetLogger("Pipeline.Store")
 
     [<AllowNullLiteralAttribute>]
     type PipelineStore(device:Device) =
         let mutable device=device
-        let mutable ndict = new NestedDict<string, BlendStateDescription, RasterizerStateDescription, PrimitiveTopologyType, PipelineState>()
+        let mutable ndict = new NestedDict<string, string, string, PrimitiveTopologyType, PipelineState>()
         let logDebug = Debug(loggerPSO)
         
         member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc, rasterizerStateDesc, topologyType) =
             let psoDesc = psoDesc(device, inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc,  rasterizerStateDesc, topologyType, SampleDescription(1, 0))
             try                 
-                let pso = device.CreateGraphicsPipelineState(psoDesc)
-                //logger.Debug("Pso successfully built")
-                pso
+                let pipelineState = device.CreateGraphicsPipelineState(psoDesc)
+                pipelineState
             with :? SharpDXException as ex -> 
-                logger.Fatal("Pipeline createError "  + "\n"  + ex.Message + "\n")
-                raise (PipelineCreateError("Pipeline create error " + ex.Message))
+                logger.Fatal("Pipelinestate createError "  + "\n"  + ex.Message + "\n")
+                raise (PipelineCreateError("Pipelinestate create error " + ex.Message))
                 null
 
-        member this.Add(vtx:string, pxl:string, dom:string, hull:string, bld:BlendStateDescription, rastr:RasterizerStateDescription, topo:PrimitiveTopologyType, pso)=
+        member this.Add(vtx:string, pxl:string, dom:string, hull:string, bld:string, rastr:string, topo:PrimitiveTopologyType, pso)=
             ndict.Add(vtx, pxl, dom, hull, bld, rastr, topo, pso)
 
-        member this.Get(vtx:string, pxl:string, dom:string, hull:string, bld:BlendStateDescription, rastr:RasterizerStateDescription, topo:PrimitiveTopologyType) =
+        member this.Get(vtx:string, pxl:string, dom:string, hull:string, bld:string, rastr:string, topo:PrimitiveTopologyType) =
             try
                 let result = ndict.Item(vtx, pxl, dom, hull, bld, rastr, topo)
                 result

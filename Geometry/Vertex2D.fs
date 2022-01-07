@@ -25,10 +25,12 @@ module Square2D =
     // </summary>
     let squareVertices (p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color, isTransparent) = 
 
-        let v1 = createVertex p1 Vector3.UnitZ  color  (new Vector2(0.0f, 0.0f)) true
-        let v2 = createVertex p2 Vector3.UnitZ  color  (new Vector2(1.0f, 0.0f)) true
-        let v3 = createVertex p3 Vector3.UnitZ  color  (new Vector2(1.0f, 1.0f)) true
-        let v4 = createVertex p4 Vector3.UnitZ  color  (new Vector2(0.0f, 1.0f)) true
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+
+        let v1 = createVertex p1 Vector3.UnitZ  color4  (new Vector2(0.0f, 0.0f))  
+        let v2 = createVertex p2 Vector3.UnitZ  color4  (new Vector2(1.0f, 0.0f))  
+        let v3 = createVertex p3 Vector3.UnitZ  color4  (new Vector2(1.0f, 1.0f))  
+        let v4 = createVertex p4 Vector3.UnitZ  color4  (new Vector2(0.0f, 1.0f))  
 
         let vert = seq{v1;  v2; v3; v4; v1} |> Seq.toArray
         let ind = seq{0;1;2;3;0} |> Seq.toArray
@@ -44,8 +46,10 @@ module Line2D =
     // ----------------------------------------------------------------------------------------------------
     let lineVertices (ursprung:Vector3, target:Vector3, color:Color, isTransparent) = 
 
-        let v1 = createVertex ursprung Vector3.UnitZ color  (new Vector2(0.0f, 0.0f)) isTransparent 
-        let v2 = createVertex target Vector3.UnitZ color  (new Vector2(0.0f, 0.0f)) isTransparent
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+
+        let v1 = createVertex ursprung Vector3.UnitZ color4  (new Vector2(0.0f, 0.0f))   
+        let v2 = createVertex target Vector3.UnitZ   color4  (new Vector2(0.0f, 0.0f))  
 
         let vert = seq{v1;v2} |> Seq.toArray
         let ind = seq{0;1} |> Seq.toArray
@@ -53,4 +57,4 @@ module Line2D =
 
     let CreateMeshData(ursprung:Vector3, target:Vector3, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        lineVertices (ursprung , target , color , isTransparent)
+        lineVertices (ursprung, target, color, isTransparent)

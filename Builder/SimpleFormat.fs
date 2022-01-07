@@ -129,7 +129,9 @@ module SimpleFormat =
                             Convert.ToSingle(vals.[5].Trim(), CultureInfo.InvariantCulture)
                         ) 
                     vertices.Add(
-                        createVertex pos norm Color.White cv2 isTransparent                    
+                        let color = Color.White
+                        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+                        createVertex pos norm color4 cv2                     
                     )
             advanceLines()
 

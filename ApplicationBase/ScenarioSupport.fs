@@ -89,7 +89,7 @@ module GroundPlaneSurfaces =
             shape =
                 Fläche.InXYPlane(
                     name = "FRONT",
-                    p1 = Vector3.Zero,
+                    ursprung = Vector3.Zero,
                     seitenlaenge = 10.0f,
                     normal = Vector3.BackwardLH,
                     color = Color.Transparent
@@ -104,7 +104,7 @@ module GroundPlaneSurfaces =
             shape =
                   Fläche.InXZPlane(
                       name = "GROUND",
-                      p1 = origin,
+                      ursprung = origin,
                       seitenlaenge = extent,
                       normal = Vector3.Up,
                       color = Color.Transparent
@@ -119,7 +119,7 @@ module GroundPlaneSurfaces =
             shape =
                   Fläche.InYZPlane(
                       name = "RIGHT",
-                      p1 = Vector3.Zero,
+                      ursprung = Vector3.Zero,
                       seitenlaenge = 10.0f,
                       normal = Vector3.Right,
                       color = Color.Transparent

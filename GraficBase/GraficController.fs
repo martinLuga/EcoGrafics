@@ -66,7 +66,7 @@ module GraficController =
     type ControllerStatus = | New | Prepared | Running | Idle | Terminated
 
     [<AllowNullLiteral>]
-    type MyController(application:string, graficWindow: MyWindow) =
+    type MyController(graficWindow: MyWindow) =
         static let mutable instance:MyController = null
         
         let mutable aspectRatio = 1.0f
@@ -77,8 +77,8 @@ module GraficController =
         let mutable defaultPixelShaderDesc : ShaderDescription = null
         let mutable defaultDomainShaderDesc : ShaderDescription = null
         let mutable defaultHullShaderDesc : ShaderDescription = null
-        let mutable defaultRasterStateDesc = RasterizerStateDescription.Default()
-        let mutable defaultBlendStateDesc = BlendStateDescription.Default()
+        let mutable defaultRasterizerDesc = RasterizerDescription.Default()
+        let mutable defaultBlendDesc = BlendDescription.Default()
         let mutable defaultSampleDesc = SampleDescription()
         let mutable defaultTopologyType = PrimitiveTopologyType.Triangle
 
@@ -89,7 +89,8 @@ module GraficController =
         let mutable lightDir = Vector4.Zero
         let mutable myGpu = new MyGPU()
         let mutable rasterizationFactor = 8.0f
-        let mutable rasterizerStateDesc = RasterizerStateDescription.Default()
+        let mutable rasterizerDesc = RasterizerDescription.Default()
+        let mutable blendDesc = BlendDescription.Default()
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
         let mutable tessellationFactor = 8.0f
@@ -153,11 +154,11 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Construct
         // ----------------------------------------------------------------------------------------------------
-        static member CreateInstance(application:string, graficWindow: MyWindow) =
-            MyController.Instance <- MyController.newForConfiguration(application, graficWindow) 
+        static member CreateInstance(graficWindow: MyWindow) =
+            MyController.Instance <- MyController.newForConfiguration(graficWindow) 
 
-        static member newForConfiguration(application:string, graficWindow: MyWindow) =
-            let instance = MyController(application, graficWindow)
+        static member newForConfiguration(graficWindow: MyWindow) =
+            let instance = MyController(graficWindow)
             graficWindow.Renderer <- instance.GPU
             instance.Configure()
             instance
@@ -173,8 +174,8 @@ module GraficController =
             defaultDomainShaderDesc     <- ShaderDescription()
             defaultHullShaderDesc       <- ShaderDescription()
             defaultSampleDesc           <- SampleDescription(1, 0)
-            defaultBlendStateDesc       <- BlendStateDescription.Default() 
-            defaultRasterStateDesc      <- RasterizerStateDescription.Default()
+            defaultRasterizerDesc       <- RasterizerDescription.Default()
+            defaultBlendDesc            <- BlendDescription.Default()
             defaultTopologyType         <- PrimitiveTopologyType.Triangle
       
             this.ConfigureGPU()  
@@ -189,8 +190,8 @@ module GraficController =
                 defaultDomainShaderDesc ,
                 defaultHullShaderDesc  ,
                 defaultSampleDesc  ,      
-                defaultBlendStateDesc ,   
-                defaultRasterStateDesc , 
+                defaultBlendDesc ,   
+                defaultRasterizerDesc , 
                 defaultTopologyType     
             )
 
@@ -372,11 +373,11 @@ module GraficController =
         // Toggle Displayable Properties
         // ----------------------------------------------------------------------------------------------------
         member this.ToggleRasterizerState() = 
-            if rasterizerStateDesc = rasterizerStateSolid then
-                rasterizerStateDesc <- rasterizerStateWired
+            if rasterizerDesc = rasterWiredDescription then
+                rasterizerDesc <- rasterSolidDescription
             else
-                rasterizerStateDesc  <- rasterizerStateSolid
-            myGpu.RasterizerStateDesc <- rasterizerStateDesc
+                rasterizerDesc  <- rasterWiredDescription
+            myGpu.RasterizerDesc <- rasterizerDesc
 
         member this.TessellationFactor
             with get() = tessellationFactor
@@ -386,9 +387,14 @@ module GraficController =
             with get() = rasterizationFactor
             and set(value) = rasterizationFactor <- value
 
-        member this.RasterizerStateDesc
-            with get() = rasterizerStateDesc
-            and set(value) = rasterizerStateDesc <- value
+        member this.RasterizerDesc
+            with get() = rasterizerDesc
+            and set(value) = rasterizerDesc <- value
+
+        
+        member this.BlendDesc
+            with get() = blendDesc
+            and set(value) = blendDesc <- value
             
         member this.StartCameraPosition
                  with get() = startCameraPosition
@@ -430,7 +436,8 @@ module GraficController =
             this.Timer.Reset()
             // Windows Render-Loop
             let loop = new RenderLoop(graficWindow)
-            let sorted = objects.Values|> Seq.sortBy(fun disp -> disp.Transparent) 
+            // Depth-Z sort for Transparency
+            let sorted = objects.Values|> Seq.sortBy(fun disp -> - (Vector3.Distance(disp.Position, Camera.Instance.Position)))  
             while loop.NextFrame() && this.isRunning() do
                 if this.notIdle() then
                     logInfo("Step")
@@ -510,8 +517,7 @@ module GraficController =
                 new SampleDescription(1, 0),
                 part.Shape.TopologyType,
                 part.Shape.Topology,
-                blendStateFromVisibility(part.Visibility),
-                rasterizerStateSolid
+                blendDescriptionFromVisibility(part.Visibility)
             )
 
             myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, part.TextureName())

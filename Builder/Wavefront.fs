@@ -225,7 +225,9 @@ module Wavefront =
             let position    = geoCache.pointAt(index.vi) * generalSizeFactor
             let normal      = geoCache.normalAt(index.ni)
             let uv          = geoCache.textureAt(index.ti)
-            createVertex position normal Color.White uv isTransparent
+            let color = Color.White
+            let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+            createVertex position normal color4 uv  
 
         member this.createHilitePart() =
             let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 

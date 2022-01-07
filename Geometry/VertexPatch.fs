@@ -20,12 +20,13 @@ module Generic =
     //  Quadratisches Patch durch 4 Controlpoints   
     // ----------------------------------------------------------------------------------------------------
     let quadVertices p1 p2 p3 p4 (color:Color) idx isTransparent =  
-        let text = defaultTexture 1.0f 
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+        let text = defaultQuadTexture 1.0f 
         let texti = deconstructQuadTexture text |> Array.ofSeq 
-        let v1 = createVertex  p1  -Vector3.UnitY color texti.[0] isTransparent
-        let v2 = createVertex  p2  -Vector3.UnitY color texti.[1] isTransparent
-        let v3 = createVertex  p3  -Vector3.UnitY color texti.[2] isTransparent 
-        let v4 = createVertex  p4  -Vector3.UnitY color texti.[3] isTransparent 
+        let v1 = createVertex  p1  -Vector3.UnitY color4 texti.[0]  
+        let v2 = createVertex  p2  -Vector3.UnitY color4 texti.[1]  
+        let v3 = createVertex  p3  -Vector3.UnitY color4 texti.[2]   
+        let v4 = createVertex  p4  -Vector3.UnitY color4 texti.[3]   
         let vert = {QV1 = v1; QV2 = v2; QV3 = v3; QV4 = v4}  
         let ind =  {QI1 = idx + 0; QI2 = idx + 1; QI3 = idx + 2; QI4 = idx + 3}
         (vert, ind)    
@@ -44,13 +45,14 @@ module Generic =
     //  Vertices für ein dreieckiges Patch   
     //  Die Ecken werden immer im Uhrzeigersinn angelegt
     // ----------------------------------------------------------------------------------------------------
-    let triVertices p1 p2 p3 (color:Color) idx isTransparent= 
-        let text = defaultTexture 1.0f 
-        let texti = deconstructQuadTexture text |> Array.ofSeq 
+    let triVertices p1 p2 p3 (color:Color) idx isTransparent =     
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+        let text = defaultTriangleTexture 1.0f 
+        let texti = deconstructTriangleTexture text |> Array.ofSeq 
         let normal = (createNormal p1 p2 p3) 
-        let v1 = createVertex  p1 normal color texti.[0] isTransparent
-        let v2 = createVertex  p2 normal color texti.[0] isTransparent
-        let v3 = createVertex  p3 normal color texti.[0] isTransparent
+        let v1 = createVertex  p1 normal color4 texti.[0]  
+        let v2 = createVertex  p2 normal color4 texti.[0]  
+        let v3 = createVertex  p3 normal color4 texti.[0]    
         let vert = {TV1 = v1; TV2 = v2; TV3 = v3}   
         let ind =  {ITV1 = idx + 0; ITV2 = idx + 1; ITV3 = idx + 2}
         (vert, ind)  

@@ -19,7 +19,7 @@ open Framework
 module VertexDefs =
 
     let ToTransparentColor(color:Color4) = 
-        let mutable color4 = color
+        let mutable color4 = Color.Transparent.ToColor4()
         color4.Alpha <- 0.5f
         color4
 
@@ -66,11 +66,9 @@ module VertexDefs =
         end
 
     let vertexLength = Utilities.SizeOf<Vertex>()
-    let vertexPrint (aVertex:Vertex) = "Vertex:" + aVertex.Position.ToString() 
+    let vertexPrint (aVertex:Vertex) = "Vertex:" + aVertex.Position.ToString()     
 
-    // Jeweils Position, Normale, Farbe und UV
-    let createVertex pos normal (color:Color) uv isTransparent = 
-       let mutable colr4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+    let createVertex pos normal colr4 uv   = 
        new Vertex(pos, normal, colr4, uv)
 
     let maxVertex (vec1:Vertex) (vec2:Vertex) =

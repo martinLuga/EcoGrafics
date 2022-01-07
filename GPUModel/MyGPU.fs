@@ -21,6 +21,7 @@ open SharpDX.DXGI
 
 open Base.LoggingSupport
 open Base.MeshObjects
+open Base.ShaderSupport
 
 open DirectX.GraficUtils
 open DirectX.TextureSupport 
@@ -120,8 +121,8 @@ module MyGPU =
         let mutable frameLength = 0 
 
         // Display
-        let mutable rasterizerStateDesc=rasterizerStateSolid
-        let mutable blendStateDesc=blendStateOpaque
+        let mutable rasterizerDesc=RasterizerDescription.Default()
+        let mutable blendDesc=BlendDescription.Default()
 
         // Synchronization objects.
         let mutable coordinator:ProcessorCoordinator = null
@@ -173,16 +174,16 @@ module MyGPU =
                 pixelShaderDesc <- value
                 pipelineProvider.PixelShaderDesc <- pixelShaderDesc
         
-        member this.BlendStateDesc
-            with get() = blendStateDesc
+        member this.BlendDesc
+            with get() = blendDesc
             and set(value) = 
-                blendStateDesc <- value                
-                pipelineProvider.BlendDesc <- blendStateDesc
+                blendDesc <- value                
+                pipelineProvider.BlendDesc <- blendDesc
             
-        member this.RasterizerStateDesc
-            with get() = rasterizerStateDesc
+        member this.RasterizerDesc
+            with get() = rasterizerDesc
             and set(value) =
-                rasterizerStateDesc <- value
+                rasterizerDesc <- value
                 pipelineProvider.RasterizerDesc <- value 
 
         member this.CurrFrameResource = frameResources.[currentFrameResourceIndex]
@@ -353,8 +354,8 @@ module MyGPU =
             _DomainShaderDesc,
             _HullShaderDesc,
             _SampleDesc,
-            _BlendStateDesc,
-            _RasterizerStateDesc,
+            _BlendDesc,
+            _RasterizerDesc,
             _TopologyType
             ) =
             pipelineProvider.Initialize(
@@ -365,8 +366,8 @@ module MyGPU =
                 _DomainShaderDesc,
                 _HullShaderDesc, 
                 _SampleDesc,
-                _BlendStateDesc,
-                _RasterizerStateDesc,
+                _BlendDesc,
+                _RasterizerDesc,
                 _TopologyType
             )
 
@@ -385,8 +386,7 @@ module MyGPU =
                 sampleDescription:SampleDescription,
                 topologyType:PrimitiveTopologyType,
                 topology:PrimitiveTopology,
-                blendStateDesc:BlendStateDescription,
-                rasterizerStateDesc:RasterizerStateDescription
+                blendDesc:BlendDescription
             ) =            
             pipelineProvider.InputLayoutDesc    <- inputLayoutDesc
             pipelineProvider.RootSignatureDesc  <- vertexShaderDesc.RootSignature
@@ -394,8 +394,7 @@ module MyGPU =
             pipelineProvider.PixelShaderDesc    <- pixelShaderDesc 
             pipelineProvider.DomainShaderDesc   <- domainShaderDesc
             pipelineProvider.HullShaderDesc     <- hullShaderDesc
-            pipelineProvider.BlendDesc          <- blendStateDesc 
-            pipelineProvider.RasterizerDesc     <- rasterizerStateDesc 
+            pipelineProvider.BlendDesc          <- blendDesc 
             pipelineProvider.TopologyType       <- topologyType
             pipelineProvider.Topology           <- topology             
 
