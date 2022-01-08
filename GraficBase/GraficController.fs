@@ -92,8 +92,6 @@ module GraficController =
         let mutable blendDesc = BlendDescription.Default()
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
-        let mutable axes:BaseObject = null
-        let mutable ground:BaseObject = null
         let mutable worldMatrix = Matrix.Identity
         let mutable matNr = 0
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
@@ -201,10 +199,10 @@ module GraficController =
             myGpu.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
 
         member this.ConfigureWorld(origin:Vector3, halfLength:float32, makeGround, makeAxes) =
-            axes <- makeAxes(halfLength) 
+            let axes = makeAxes(halfLength) 
             if axes <> null then
                 this.AddObject(axes)
-            ground <- makeGround(origin, halfLength * 2.0f)
+            let ground = makeGround(origin, halfLength * 2.0f)
             if ground <> null then
                 this.AddObject(ground) 
 
