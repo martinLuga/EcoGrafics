@@ -262,6 +262,7 @@ module GeometricModel =
         
         new(name, origin, radius, hoehe, farbe1, farbe2) = Cylinder(name, origin, radius, hoehe, farbe1, farbe2, true)
         new(name, origin, radius, hoehe, farbe) = Cylinder(name, origin, radius, hoehe, farbe, farbe, true)
+        new(name, radius, hoehe, farbe) = Cylinder(name, Vector3.Zero, radius, hoehe, farbe, farbe, true)
         new(name, origin, radius, hoehe) = Cylinder(name, origin, radius, hoehe, Color.Transparent, Color.Transparent, true)
         new(name, radius, hoehe) = Cylinder(name, Vector3.Zero, radius, hoehe, Color.Transparent, Color.Transparent, true)
         new(radius, hoehe, farbe) = Cylinder("Cylinder", Vector3.Zero, radius, hoehe, farbe, farbe, true)

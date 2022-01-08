@@ -104,9 +104,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.13" />
+    <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.0" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
@@ -123,6 +123,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.2" />
+    <PackageReference Update="FSharp.Core" Version="6.0.1" />
   </ItemGroup>
 </Project>
