@@ -6,7 +6,6 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
-open System
 open System.Collections.Generic
 
 open log4net
@@ -14,7 +13,6 @@ open log4net
 open SharpDX
 open SharpDX.Windows
 open SharpDX.DXGI 
-open SharpDX.Direct3D
 open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
 
@@ -89,11 +87,13 @@ module GraficController =
         let mutable lightDir = Vector4.Zero
         let mutable myGpu = new MyGPU()
         let mutable rasterizationFactor = 8.0f
+        let mutable tessellationFactor = 8.0f
         let mutable rasterizerDesc = RasterizerDescription.Default()
         let mutable blendDesc = BlendDescription.Default()
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
-        let mutable tessellationFactor = 8.0f
+        let mutable axes:BaseObject = null
+        let mutable ground:BaseObject = null
         let mutable worldMatrix = Matrix.Identity
         let mutable matNr = 0
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
@@ -199,6 +199,14 @@ module GraficController =
             myGpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
             myGpu.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
             myGpu.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
+
+        member this.ConfigureWorld(origin:Vector3, halfLength:float32, makeGround, makeAxes) =
+            axes <- makeAxes(halfLength) 
+            if axes <> null then
+                this.AddObject(axes)
+            ground <- makeGround(origin, halfLength * 2.0f)
+            if ground <> null then
+                this.AddObject(ground) 
 
         member this.ConfigureCamera(position:Vector3, target:Vector3) = 
             CameraController.Instance.ConfigureCamera( position, target, graficWindow.AspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_STRENGTH)  
@@ -500,7 +508,7 @@ module GraficController =
             logDebug("Draw part " + idx.ToString() + " " + part.Shape.Name)
             let matIdx = materialIndices.Item(part.Material.Name)
 
-            if part.Shape.Flexible then
+            if part.Shape.Animated then
                 part.Shape.Update(timer)
                 myGpu.ReplaceMesh( 
                     part.Shape.Name,

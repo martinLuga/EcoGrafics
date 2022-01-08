@@ -59,6 +59,10 @@ module ObjectBase =
             with get () = changed
             and set (aValue) = changed <- aValue
 
+        // Body has changed: update Grafic
+        abstract member OnUpdateBody:Unit -> Unit
+        default this.OnUpdateBody () = ()
+
         member this.Position
             with get () = position
             and set (aValue) = position <- aValue

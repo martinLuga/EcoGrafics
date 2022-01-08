@@ -185,7 +185,7 @@ module ModelSupport =
         let mutable name = name
         let mutable origin = origin
         let mutable size = size
-        let mutable flexible = false
+        let mutable animated = false
         let mutable primitiveTopology : PrimitiveTopology = PrimitiveTopology.TriangleList
         let mutable primitiveTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Triangle
         let mutable rasterFactor = raster
@@ -227,9 +227,9 @@ module ModelSupport =
             with get () = name
             and set (value) = name <- value
 
-        member this.Flexible
-            with get () = flexible
-            and set (value) = flexible <- value
+        member this.Animated
+            with get () = animated
+            and set (value) = animated <- value
 
         member this.Origin
             with get () = origin

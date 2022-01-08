@@ -15,17 +15,15 @@ open Base.ModelSupport
 
 module VertexSphere  = 
 
-    let mutable tessellation:int32 = 32
-    let mutable delta = IIpi / float32 tessellation 
-
     // ----------------------------------------------------------------------------------------------------
     // Vertices 
     // Berechnung erfolgt nur für den Radius, d.h. Center = Nullpunkt
     // In der Anwendung orientiert sich ein Objekt immer an der linken unteren Ecke als Ursprung
     // Deshalb wird immer noch der Vektor Center=(r, r, r) aufaddiert
     // ----------------------------------------------------------------------------------------------------
-    let sphereVertices (ursprung:Vector3) (color:Color) (radius:float32) isTransparent =
-
+    let sphereVertices (ursprung:Vector3, color:Color, radius:float32, tessellation:int32, isTransparent) =
+    
+        let mutable delta = IIpi / float32 tessellation 
         let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
 
         let center = ursprung + Vector3(radius, radius, radius)
@@ -66,7 +64,7 @@ module VertexSphere  =
 
         vertices
 
-    let sphereIndices (clockWiseWinding:bool) =
+    let sphereIndices (clockWiseWinding:bool, tessellation:int32) =
         // Fill the index buffer with triangles joining each pair of latitude rings.
         let verticalSegments = tessellation
         let horizontalSegments = tessellation * 2
@@ -111,9 +109,8 @@ module VertexSphere  =
                     indexCount <- indexCount + 1
         indices
 
-    let CreateMeshData(ursprung:Vector3, color:Color, radius:float32, raster:int, visibility:Visibility) =
+    let CreateMeshData(ursprung:Vector3, color:Color, radius:float32, tesselation:int, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        let vertices = sphereVertices ursprung color radius isTransparent   
-        let indices = sphereIndices CLOCKWISE
-        tessellation <- raster
+        let vertices = sphereVertices(ursprung, color, radius, tesselation, isTransparent)
+        let indices = sphereIndices(CLOCKWISE, tesselation)
         new MeshData(vertices, indices)

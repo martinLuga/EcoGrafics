@@ -45,11 +45,7 @@ module GeometricModel =
     exception GeometryException of string
 
     let mutable instanceCount = 1
-    let mutable raster = 8 
     let mutable tesselation = 8 
-
-    let setRaster (newRaster:Raster) = 
-        raster  <- (int newRaster) 
 
     let setTesselation (newTesselation:Raster) = 
         tesselation <- (int newTesselation)
@@ -94,7 +90,7 @@ module GeometricModel =
         override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " U= " + this.Origin.ToString()
         
         override this.CreateVertexData(visibility:Visibility) =
-            VertexSphere.CreateMeshData(origin, color, radius, raster, visibility)
+            VertexSphere.CreateMeshData(origin, color, radius, Shape.Raster, visibility)
 
     // ----------------------------------------------------------------------------------------------------
     //  Quader
@@ -311,7 +307,7 @@ module GeometricModel =
             with get () = Vector3( this.Origin.X +  radius,  this.Origin.Y + hoehe,  this.Origin.Z + radius)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, raster, visibility)  
+            VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, Shape.Raster, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     // Pyramid
@@ -581,7 +577,7 @@ module GeometricModel =
             q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y , ursprung.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
-            q.Flexible <- true
+            q.Animated <- true
             q
 
         member this.Waves = 

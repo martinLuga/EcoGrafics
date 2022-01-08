@@ -27,7 +27,8 @@ module ScenarioSupport =
     let logger = LogManager.GetLogger("Scenario")
     let logDebug = Debug(logger)
 
-    let mutable iActiveScenario = -1
+    let mutable iActiveScenario  = -1
+    let mutable iScenarioObjects = 1
 
     let mutable scenarios:Dictionary<int,(unit->unit)> = new Dictionary<int,(unit->unit)>()
     let mutable scenarioNames:Dictionary<string, int> = Dictionary<string, int>()
@@ -139,15 +140,19 @@ module TestScenariosCommon =
 
     let WITH_GROUND = true
     let WITHOUT_GROUND = false
+
+    let WORLDORIGIN = Vector3.Zero
+    let GROUND_LEVEL = WORLDORIGIN.Y
+    let WORLD_HALF_LENGTH = 100.0f
     
     let downDirection  = Vector3.UnitY * -1.0f
     let backDirection  = Vector3.UnitZ *  1.0f
     let rightDirection = Vector3.UnitX *  1.0f
     let leftDirection  = Vector3.UnitX * -1.0f
     
-    let axFrom = -50.0f
-    let axTo = 50.0f
-
+    // ----------------------------------------------------------------------------------------------------
+    //  AXES
+    // ----------------------------------------------------------------------------------------------------
     let xAxis(from, too) =
         new Part(
             name = "XAxis",
@@ -187,6 +192,24 @@ module TestScenariosCommon =
             material = MAT_WHITE
         )
 
+    let createAXES(from, too) =
+        new BaseObject(
+            name = "Achsen",
+            display = 
+                new Display(
+                    parts = [
+                        xAxis(from, too); yAxis(from, too); zAxis(from, too)
+                    ]
+                ),
+            position = Vector3.Zero
+        )
+
+    let DEFAULT_AXES(extent) =
+        createAXES(-extent/2.0f, extent/2.0f) 
+
+    // ----------------------------------------------------------------------------------------------------
+    //  SHAPE
+    // ----------------------------------------------------------------------------------------------------
     let MATERIAL(name, color:Color) =  
             new Material( 
                 name=name,
@@ -204,15 +227,15 @@ module TestScenariosCommon =
             fileName=texturName,
             pathName=""
         )
-
-    let createAXES(from, too) =
-        new BaseObject(
-            name = "Achsen",
-            display = new Display(parts = [ xAxis(from, too); yAxis(from, too); zAxis(from, too) ]),
-            position = Vector3.Zero
-        )
     
+    // ----------------------------------------------------------------------------------------------------
+    //  GROUND
+    // ----------------------------------------------------------------------------------------------------
     let GROUND_HEIGHT = 0.0f
+
+    let NO_GROUND(center:Vector3, extent) =
+        let result:BaseObject = null
+        result
 
     let createGround(center:Vector3, extent) =
         let origin = 
@@ -230,13 +253,31 @@ module TestScenariosCommon =
             position = origin
         )
 
-    // Aufruf aus dem Scenario
-    let configureScenario(origin, extent, hasAxes, hasGround) =
-        if hasAxes then
-            let axes = createAXES(-extent/2.0f, extent/2.0f) 
-            MyController.Instance.AddObject (axes)
-
-        if hasGround then
-            let ground = createGround(origin, extent)
-            if ground <> null then
-                MyController.Instance.AddObject(ground) 
+    let DEFAULT_GROUND(center:Vector3, halfLenth) =
+        let origin = 
+            Vector3(
+                center.X - halfLenth/2.0f,
+                center.Y - GROUND_HEIGHT,
+                center.Z - halfLenth/2.0f
+            )
+        new BaseObject(
+            name = "GROUND",
+            display =  
+                new Display(
+                    parts = [
+                        new Part(  
+                            name = "GROUND",
+                            shape=Quader( 
+                                name="GROUND", 
+                                laenge=halfLenth,
+                                breite=halfLenth,
+                                hoehe= GROUND_HEIGHT,
+                                color=Color.Black
+                            ),
+                            material=MAT_DARKSLATEGRAY,
+                            texture=TEXT_EMPTY
+                        )
+                    ]
+                ),
+            position = origin
+        )
