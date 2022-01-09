@@ -34,12 +34,14 @@ module MyPipelineSupport =
         | BlendType.Opaque       -> blendStateOpaque
         | BlendType.Transparent  -> blendStateTransparent
         | BlendType.Undefinded   -> blendStateOpaque
+        |_ -> blendStateOpaque
 
     let rasterStateFromType(rasterType:RasterType)=
         match rasterType with 
         | RasterType.Solid      -> rasterizerStateSolid
         | RasterType.Wired      -> rasterizerStateWired
         | RasterType.Undefinded -> rasterizerStateSolid
+        |_ -> rasterizerStateSolid
 
 
     let loggerProvider = LogManager.GetLogger("Pipeline.Provider")

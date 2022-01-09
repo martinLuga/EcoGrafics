@@ -135,12 +135,6 @@ module TestScenariosCommon =
 
     open GroundPlaneSurfaces
 
-    let WITH_AXES = true
-    let WITHOUT_AXES = false
-
-    let WITH_GROUND = true
-    let WITHOUT_GROUND = false
-
     let WORLDORIGIN = Vector3.Zero
     let GROUND_LEVEL = WORLDORIGIN.Y
     let WORLD_HALF_LENGTH = 100.0f
@@ -206,6 +200,10 @@ module TestScenariosCommon =
 
     let DEFAULT_AXES(extent) =
         createAXES(-extent/2.0f, extent/2.0f) 
+
+    let NO_AXES(extent) =
+        let result:BaseObject = null
+        result
 
     // ----------------------------------------------------------------------------------------------------
     //  SHAPE

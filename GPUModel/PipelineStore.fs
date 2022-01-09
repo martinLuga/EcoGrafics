@@ -38,13 +38,13 @@ module MyPipelineStore =
         let mutable psoDesc = emptyPsoDesc() 
         psoDesc.InputLayout             <- inputLayoutDesc
         psoDesc.RootSignature           <- createRootSignature(device, rootSignatureDesc) 
-        if not (vertexShaderDesc.IsEmpty()) then
-            psoDesc.VertexShader        <- shaderFromFile(vertexShaderDesc) 
-        if not (pixelShaderDesc.IsEmpty()) then 
+        if vertexShaderDesc.IsSet()  then
+            psoDesc.VertexShader        <- shaderFromFile(vertexShaderDesc)  
+        if  pixelShaderDesc.IsSet()  then 
             psoDesc.PixelShader         <- shaderFromFile(pixelShaderDesc)   
-        if not (domainShaderDesc.IsEmpty()) then
+        if  domainShaderDesc.IsSet()  then
             psoDesc.DomainShader        <- shaderFromFile(domainShaderDesc) 
-        if not (hullShaderDesc.IsEmpty()) then  
+        if  hullShaderDesc.IsSet()  then  
             psoDesc.HullShader          <- shaderFromFile(hullShaderDesc) 
         psoDesc.BlendState              <- blendStateDesc   
         psoDesc.RasterizerState         <- rasterizerStateDesc 
@@ -90,7 +90,20 @@ module MyPipelineStore =
         let logDebug = Debug(loggerPSO)
         
         member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc, rasterizerStateDesc, topologyType) =
-            let psoDesc = psoDesc(device, inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc,  rasterizerStateDesc, topologyType, SampleDescription(1, 0))
+            let psoDesc = 
+                psoDesc(
+                    device,
+                    inputLayoutDesc,
+                    rootSignatureDesc,
+                    vertexShaderDesc,
+                    pixelShaderDesc,
+                    domainShaderDesc,
+                    hullShaderDesc,
+                    blendStateDesc, 
+                    rasterizerStateDesc,
+                    topologyType,
+                    SampleDescription(1, 0)
+                    )
             try                 
                 let pipelineState = device.CreateGraphicsPipelineState(psoDesc)
                 pipelineState

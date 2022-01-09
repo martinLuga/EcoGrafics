@@ -57,8 +57,7 @@ module Cache =
                 ShaderCache.Instance.Add(c)
 
         static member AddShaderFromDesc(topologyType:PrimitiveTopologyType, topology:PrimitiveTopology, desc: ShaderDescription) =
-            ShaderCache.AddShader(desc.Klass, topologyType , topology, desc)
- 
+            ShaderCache.AddShader(desc.Klass, topologyType , topology, desc) 
 
         static member GetShader(_ShaderType:ShaderType, topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
             ShaderCache.Instance.Get(_ShaderType, topoType, topo) 

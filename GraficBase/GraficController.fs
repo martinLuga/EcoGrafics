@@ -97,51 +97,56 @@ module GraficController =
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
         let mutable materialIndices = new Dictionary<string, int>()
 
+        let currentVertexShader(part:Part)  = 
+            match part.Shaders.VertexShaderDesc with
+            | {ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->               
+                ShaderCache.GetShader(ShaderType.Vertex,part.Shape.TopologyType, part.Shape.Topology)
+            | {ShaderDescription.Use=ShaderUsage.Required} -> 
+                part.Shaders.VertexShaderDesc
+            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
+                raise (System.Exception("VertexShader muss gesetzt sein"))
+            |_ -> defaultVertexShaderDesc            
+
+        let currentPixelShader(part:Part)   =
+            match part.Shaders.PixelShaderDesc with 
+            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
+                ShaderCache.GetShader(ShaderType.Pixel,part.Shape.TopologyType, part.Shape.Topology)
+            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
+                raise (System.Exception("VertexShader muss gesetzt sein"))
+            | {ShaderDescription.Use=ShaderUsage.Required} -> 
+                part.Shaders.PixelShaderDesc                
+            |_ -> defaultPixelShaderDesc  
+
+        let currentDomainShader(part:Part)  = 
+            match part.Shaders.DomainShaderDesc with 
+            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
+                ShaderCache.GetShader(ShaderType.Domain, part.Shape.TopologyType, part.Shape.Topology)
+            | {ShaderDescription.Use=ShaderUsage.Required} -> 
+                part.Shaders.DomainShaderDesc 
+            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
+                defaultDomainShaderDesc 
+            |_ -> raise (System.Exception("DomainShader invalid use"))
+
+        let currentHullShader(part:Part)  =
+            match part.Shaders.HullShaderDesc with
+            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
+                ShaderCache.GetShader(ShaderType.Hull, part.Shape.TopologyType, part.Shape.Topology)
+            | {ShaderDescription.Use=ShaderUsage.Required} -> 
+                part.Shaders.HullShaderDesc 
+            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
+                 defaultHullShaderDesc 
+            |_ -> raise (System.Exception("DomainShader invalid use"))
+
+        // RootSignature 
         let currentRootSignatureDesc(part:Part, defaultRootSignatureDesc:RootSignatureDescription) =
-            if part.Shaders.VertexShaderDesc.RootSignature = rootSignatureDescEmpty then
+            if isRootSignatureDescEmpty(part.Shaders.VertexShaderDesc.RootSignature) then
                 let fromCache = ShaderCache.GetShader(ShaderType.Vertex, part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || fromCache.IsEmpty() then
+                if fromCache = null || (fromCache.Use=ShaderUsage.ToBeFilledIn) then
                     defaultRootSignatureDesc
                 else
                     fromCache.RootSignature
             else 
                 part.Shaders.VertexShaderDesc.RootSignature
-
-        let currentVertexShader(part:Part)  = 
-            if part.Shaders.VertexShaderDesc.IsEmpty() then                 
-                let fromCache = ShaderCache.GetShader(ShaderType.Vertex,part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || fromCache.IsEmpty() then
-                    defaultVertexShaderDesc 
-                else 
-                    fromCache
-            else part.Shaders.VertexShaderDesc
-
-        let currentPixelShader(part:Part)   =
-            if part.Shaders.PixelShaderDesc.IsEmpty()  then 
-                let fromCache = ShaderCache.GetShader(ShaderType.Pixel,part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || fromCache.IsEmpty() then
-                    defaultPixelShaderDesc 
-                else 
-                    fromCache 
-            else part.Shaders.PixelShaderDesc 
-
-        let currentDomainShader(part:Part)  = 
-            if part.Shaders.DomainShaderDesc.IsEmpty()  then 
-                let fromCache = ShaderCache.GetShader(ShaderType.Domain, part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || fromCache.IsEmpty() then
-                    defaultDomainShaderDesc 
-                else 
-                    fromCache 
-            else part.Shaders.DomainShaderDesc
-
-        let currentHullShader(part:Part)    =
-            if part.Shaders.HullShaderDesc.IsEmpty()  then                
-                let fromCache = ShaderCache.GetShader(ShaderType.Hull, part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || fromCache.IsEmpty() then
-                    defaultHullShaderDesc 
-                else 
-                    fromCache 
-            else part.Shaders.HullShaderDesc 
         
         let mutable timer = new GameTimer()
 
@@ -167,10 +172,10 @@ module GraficController =
         member this.Configure() = 
             defaultInputLayoutDesc      <- layoutCookBook
             defaultRootSignatureDesc    <- rootSignatureDescCookBook
-            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_0", rootSignatureDescCookBook)
-            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_0", rootSignatureDescCookBook)
-            defaultDomainShaderDesc     <- ShaderDescription()
-            defaultHullShaderDesc       <- ShaderDescription()
+            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_0", rootSignatureDescCookBook, ShaderUsage.Required)
+            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_0", rootSignatureDescCookBook, ShaderUsage.Required)
+            defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
+            defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
             defaultSampleDesc           <- SampleDescription(1, 0)
             defaultRasterizerDesc       <- RasterizerDescription.Default()
             defaultBlendDesc            <- BlendDescription.Default()

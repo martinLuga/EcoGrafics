@@ -394,23 +394,23 @@ module ModelSupport =
         let mutable visibility = visibility
         let mutable shaders = shaders
 
-        new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, new ShaderConfiguration())
+        new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, ShaderConfiguration.CreateNoTesselation()) 
         new(name, shape, material, visibility, shaders) = Part(name, shape, material, new Texture(), visibility, shaders)
-        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility, new ShaderConfiguration()) 
+        new(name, shape, material, visibility) = Part(name, shape, material, new Texture(), visibility,  ShaderConfiguration.CreateNoTesselation()) 
         new(name, material, texture, visibility, shaders) = Part(name, null, material, texture, visibility, shaders)
-        new(name, material, texture, visibility) = Part(name, null, material, texture, visibility, new ShaderConfiguration())
+        new(name, material, texture, visibility) = Part(name, null, material, texture, visibility,  ShaderConfiguration.CreateNoTesselation())
         new(name, shape, material, texture, shaders) = Part(name, shape,  material, texture, Visibility.Opaque, shaders)
-        new(name, shape, material, texture) = Part(name, shape,  material, texture, Visibility.Opaque, new ShaderConfiguration())
+        new(name, shape, material, texture) = Part(name, shape,  material, texture, Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation())
         new(shape, material, texture, shaders) = Part("", shape,  material, texture, Visibility.Opaque, shaders)
-        new(shape, material, texture) = Part("", shape,  material, texture, Visibility.Opaque,  new ShaderConfiguration())
+        new(shape, material, texture) = Part("", shape,  material, texture, Visibility.Opaque,   ShaderConfiguration.CreateNoTesselation())
         new(name, shape, material, shaders) = Part(name, shape, material, new Texture(), Visibility.Opaque, shaders)
-        new(name, shape, material ) = Part(name, shape, material, new Texture(), Visibility.Opaque, new ShaderConfiguration())
+        new(name, shape, material ) = Part(name, shape, material, new Texture(), Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation())
         new(name, shape, texture, shaders) = Part(name, shape, new Material(), texture, Visibility.Opaque, shaders)
         new(name, shape, shaders) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, shaders)
-        new(name, shape) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, new ShaderConfiguration())
+        new(name, shape) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation())
         new(material, shaders) = Part("", null, material, new Texture(), Visibility.Opaque, shaders)
         new(name, material, texture, shaders) = Part(name, null, material, texture, Visibility.Opaque, shaders)
-        new() = Part("", null, new Material(), new Texture(), Visibility.Opaque, new ShaderConfiguration()) 
+        new() = Part("", null, new Material(), new Texture(), Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation()) 
 
         member this.Copy() =
             new Part(name, shape, material, texture, visibility, shaders) 

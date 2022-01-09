@@ -251,7 +251,7 @@ module Wavefront =
         // Build the Displayable deep 
         // Also the MeshData
         // ----------------------------------------------------------------------------------------------------
-        member this.Build (material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality) = 
+        member this.Build (material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
 
             augmentation <- augment 
 
@@ -340,7 +340,8 @@ module Wavefront =
                     if (actualTopology <> (lastTopology)) || (groupName <> "") then
                         faceCount <- faceCount + 1
                         let faceName = if groupName <> "" then groupName else shapeName()  
-                        part <- new Part(faceName, actualMaterial, actualTexture, visibility)
+
+                        part <- new Part(faceName, actualMaterial, actualTexture, visibility, shaders)
                         
                         let mutable shape:Shape = null
                         match actualTopologyType with

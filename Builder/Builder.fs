@@ -57,9 +57,9 @@ module WavefrontBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Komplette Displayables  für eine Wavefront .obj Datei
     // ----------------------------------------------------------------------------------------------------
-    let Build (name: string, fileName: string, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality) =
+    let Build (name: string, fileName: string, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for Wavefront-File:" + fileName)
         let builder = new WavefrontBuilder(name, fileName)
         builder.CreateMaterials()
-        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality) 
+        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders) 
         builder.Parts 

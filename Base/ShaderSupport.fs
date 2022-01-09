@@ -22,7 +22,8 @@ module ShaderSupport =
     type TopologyType   = | Triangle      | Patch         |  Line         | Undefinded
     type RasterType     = | Solid  = 'S'  | Wired = 'W'   |  Undefinded = 'U'
     type BlendType      = | Opaque = 'O'  | Transparent = 'T' | Undefinded = 'U'
-    type ShaderType     = | Vertex = 0    | Pixel = 1     |  Domain = 2   | Hull = 3  | Undefinded = 99
+    type ShaderType     = | Vertex = 1    | Pixel = 2     |  Domain = 3   | Hull = 4   
+    type ShaderUsage    = | Required = 0  | NotRequired = 1 | ToBeFilledIn = 2
 
     let GetStaticSamplers() =   
         [|
@@ -81,22 +82,35 @@ module ShaderSupport =
         |]
 
     let rootSignatureDescEmpty =
-        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers())  
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers()) 
+        
+    let isRootSignatureDescEmpty(rs:RootSignatureDescription) =
+        rs.Parameters.Length = 0
 
     [<AllowNullLiteral>] 
+    // ----------------------------------------------------------------------------------------------------
+    // Shaderdescription
+    // ----------------------------------------------------------------------------------------------------
     type ShaderDescription =
         val Klass:ShaderType
         val Directory:string 
         val File:string
         val Entry:string
         val Mode:string
+        val Use:ShaderUsage
         val RootSignature:RootSignatureDescription
-        new (klass, directory, file, entry, mode, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; RootSignature=rootSignature}
-        new () = {Klass=ShaderType.Undefinded; Directory=""; File=""; Entry=""; Mode=""; RootSignature=rootSignatureDescEmpty}
+        new (klass, directory, file, entry, mode, rootSignature, usage) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode ;RootSignature=rootSignature; Use=usage}
+        new (klass) = {Klass=klass; Directory=""; File=""; Entry=""; Mode=""; RootSignature=rootSignatureDescEmpty;Use=ShaderUsage.ToBeFilledIn}
+        new (klass, usage) = {Klass=klass; Directory=""; File=""; Entry=""; Mode=""; RootSignature=rootSignatureDescEmpty;Use=usage}
         override this.ToString() = this.Klass.ToString() + "->" + this.Entry
-        member self.IsEmpty() = self.Klass=ShaderType.Undefinded
+        member self.NotRequired() = self.Use=ShaderUsage.NotRequired
+        member self.ToBeFilledIn() = self.Use=ShaderUsage.ToBeFilledIn
+        member self.IsSet() = not (self.IsEmpty())
+        member self.IsEmpty()= self.File = ""
         member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
         member self.asString = self.File + "." + self.Entry
+        static member CreateToBeFilledIn(klass) = new ShaderDescription(klass, ShaderUsage.ToBeFilledIn)
+        static member CreateNotRequired(klass) = new ShaderDescription(klass, ShaderUsage.NotRequired)
 
     [<AllowNullLiteral>] 
     type TopologyTypeDescription=
@@ -294,7 +308,7 @@ module ShaderSupport =
         | "ps"  ->       ShaderType.Pixel        
         | "ds"  ->       ShaderType.Domain   
         | "hs"  ->       ShaderType.Hull           
-        | _     ->       ShaderType.Undefinded   
+        | _     ->       raise (System.Exception("Invalid Shadertype")  )
         
     let blendOpaqueDescription =
         BlendDescription(BlendType.Opaque, blendStateOpaque)
@@ -330,9 +344,8 @@ module ShaderSupport =
         let mutable domainShaderDesc=domainShaderDesc
         let mutable hullShaderDesc=hullShaderDesc
     
-        new() = new ShaderConfiguration(ShaderDescription(), ShaderDescription(), ShaderDescription(), ShaderDescription())
-        new(vertexShaderDesc) = new ShaderConfiguration(vertexShaderDesc,ShaderDescription(),ShaderDescription(),ShaderDescription() )
-        new(vertexShaderDesc, pixelShaderDesc) = new ShaderConfiguration(vertexShaderDesc,pixelShaderDesc,ShaderDescription(),ShaderDescription() )
+
+        new(vertexShaderDesc, pixelShaderDesc) = new ShaderConfiguration(vertexShaderDesc,pixelShaderDesc, ShaderDescription.CreateNotRequired(ShaderType.Domain), ShaderDescription.CreateNotRequired(ShaderType.Hull))
     
         member this.VertexShaderDesc
             with get() = vertexShaderDesc
@@ -352,5 +365,14 @@ module ShaderSupport =
             and set(value) = 
                 hullShaderDesc <- value 
     
-        member this.IsEmpty() = this.VertexShaderDesc.IsEmpty() && this.PixelShaderDesc.IsEmpty() && this.DomainShaderDesc.IsEmpty() && this.HullShaderDesc.IsEmpty() 
+        member this.IsEmpty() = this.VertexShaderDesc.IsEmpty()
+
+        // Dummy Configuration
+        // Alle shader über den Cache
+        static member CreateForTesselation() = 
+            new ShaderConfiguration(ShaderDescription.CreateToBeFilledIn(ShaderType.Vertex),ShaderDescription.CreateToBeFilledIn(ShaderType.Pixel), ShaderDescription.CreateToBeFilledIn(ShaderType.Domain), ShaderDescription.CreateToBeFilledIn(ShaderType.Hull))
      
+        // Dummy Configuration
+        // Vertex und Pixel shader über den Cache, die anderen nicht benötigt
+        static member CreateNoTesselation() = 
+            new ShaderConfiguration(ShaderDescription.CreateToBeFilledIn(ShaderType.Vertex), ShaderDescription.CreateToBeFilledIn(ShaderType.Pixel), ShaderDescription.CreateNotRequired(ShaderType.Domain), ShaderDescription.CreateNotRequired(ShaderType.Hull))
