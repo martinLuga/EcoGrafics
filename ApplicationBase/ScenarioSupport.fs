@@ -28,7 +28,7 @@ module ScenarioSupport =
     let logDebug = Debug(logger)
 
     let mutable iActiveScenario  = -1
-    let mutable iScenarioObjects = 1
+    let mutable iScenarioObjects = 2
 
     let mutable scenarios:Dictionary<int,(unit->unit)> = new Dictionary<int,(unit->unit)>()
     let mutable scenarioNames:Dictionary<string, int> = Dictionary<string, int>()

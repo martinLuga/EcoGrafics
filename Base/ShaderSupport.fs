@@ -19,10 +19,10 @@ open log4net
 // ----------------------------------------------------------------------------------------------------
 module ShaderSupport = 
 
-    type TopologyType   = | Triangle    | Patch         |  Line         | Undefinded
-    type RasterType     = | Solid       | Wired         |  Undefinded
-    type BlendType      = | Opaque      | Transparent   |  Undefinded
-    type ShaderType     = | Vertex = 0  | Pixel = 1     |  Domain = 2   | Hull = 3  | Undefinded = 99
+    type TopologyType   = | Triangle      | Patch         |  Line         | Undefinded
+    type RasterType     = | Solid  = 'S'  | Wired = 'W'   |  Undefinded = 'U'
+    type BlendType      = | Opaque = 'O'  | Transparent = 'T' | Undefinded = 'U'
+    type ShaderType     = | Vertex = 0    | Pixel = 1     |  Domain = 2   | Hull = 3  | Undefinded = 99
 
     let GetStaticSamplers() =   
         [|
@@ -96,6 +96,7 @@ module ShaderSupport =
         override this.ToString() = this.Klass.ToString() + "->" + this.Entry
         member self.IsEmpty() = self.Klass=ShaderType.Undefinded
         member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
+        member self.asString = self.File + "." + self.Entry
 
     [<AllowNullLiteral>] 
     type TopologyTypeDescription=
@@ -147,7 +148,8 @@ module ShaderSupport =
         new (typ, description) = {Type=typ; Description=description}
         override this.ToString() =  "RASTR->" + this.Type.ToString()
         static member Default() = 
-            new RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
+            new RasterizerDescription(RasterType.Solid, rasterizerStateSolid)       
+        member self.asString = string self.Type  
 
     [<AllowNullLiteral>] 
     type BlendDescription=
@@ -156,7 +158,8 @@ module ShaderSupport =
         new (typ, description) = {Type=typ; Description=description}
         override this.ToString() = "BLD->" + this.Type.ToString()
         static member Default() = 
-            new BlendDescription(BlendType.Opaque, blendStateTransparent)
+            new BlendDescription(BlendType.Opaque, blendStateTransparent)        
+        member self.asString = string self.Type 
 
     let blendDescOpaque =
         BlendDescription(BlendType.Opaque, blendStateOpaque)

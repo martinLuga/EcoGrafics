@@ -80,10 +80,10 @@ module MyPipelineSupport =
             psoStore <- new PipelineStore(device)
 
         override this.ToString() =
-               vertexShaderDesc.ToString()  + " " + pixelShaderDesc.ToString() + " " + domainShaderDesc.ToString() + " " + hullShaderDesc.ToString() + " "
-             + rasterizerDesc.ToString()    + " " + blendDesc.ToString()       + " " + topologyType.ToString()
+               vertexShaderDesc.asString  + " " + pixelShaderDesc.asString + " " + domainShaderDesc.asString + " " + hullShaderDesc.asString + " "
+             + rasterizerDesc.asString    + " " + blendDesc.asString       + " " + topologyType.ToString()
 
-        member this.Initialize(_InputLayoutDesc, _RootSignatureDesc, _VertexShaderDesc, _PixelShaderDesc, _DomainShaderDesc, _HullShaderDesc,  _SampleDesc, _BlendDesc:BlendDescription,  _RasterizerDesc:RasterizerDescription, _TopologyType) =
+        member this.Initialize(_InputLayoutDesc, _RootSignatureDesc, _VertexShaderDesc:ShaderDescription, _PixelShaderDesc:ShaderDescription, _DomainShaderDesc:ShaderDescription, _HullShaderDesc:ShaderDescription,  _SampleDesc, _BlendDesc:BlendDescription,  _RasterizerDesc:RasterizerDescription, _TopologyType) =
             inputLayoutDesc     <- _InputLayoutDesc
             rootSignatureDesc   <- _RootSignatureDesc
             rootSignature       <- createRootSignature(device, rootSignatureDesc) 
@@ -91,12 +91,12 @@ module MyPipelineSupport =
             try 
                 this.InitialPipelineState <- 
                     psoStore.Get(
-                        _VertexShaderDesc.ToString(),
-                        _PixelShaderDesc.ToString(),
-                        _DomainShaderDesc.ToString(),
-                        _HullShaderDesc.ToString(),
-                        _BlendDesc.Type.ToString(),
-                        _RasterizerDesc.Type.ToString(),
+                        _VertexShaderDesc.asString,
+                        _PixelShaderDesc.asString,
+                        _DomainShaderDesc.asString,
+                        _HullShaderDesc.asString,
+                        _BlendDesc.asString, 
+                        _RasterizerDesc.asString,
                         _TopologyType 
                     )
             with 
@@ -106,12 +106,12 @@ module MyPipelineSupport =
         member this.Add (vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc:BlendDescription,  rasterizerDesc:RasterizerDescription,topologyType) =
             let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description,topologyType)
             psoStore.Add( 
-                vertexShaderDesc.ToString(),
-                pixelShaderDesc.ToString(),
-                domainShaderDesc.ToString(),
-                hullShaderDesc.ToString(),
-                blendDesc.Type.ToString(),
-                rasterizerDesc.Type.ToString(),
+                vertexShaderDesc.asString,
+                pixelShaderDesc.asString,
+                domainShaderDesc.asString,
+                hullShaderDesc.asString,
+                blendDesc.asString,
+                rasterizerDesc.asString,
                 topologyType,
                 pso
             )
@@ -124,26 +124,25 @@ module MyPipelineSupport =
                 try 
                     currentPipelineState <- 
                         psoStore.Get(
-                            vertexShaderDesc.ToString(),
-                            pixelShaderDesc.ToString(),
-                            domainShaderDesc.ToString(),
-                            hullShaderDesc.ToString(),
-                            blendDesc.Type.ToString(),
-                            rasterizerDesc.Type.ToString(),
+                            vertexShaderDesc.asString,
+                            pixelShaderDesc.asString,
+                            domainShaderDesc.asString,
+                            hullShaderDesc.asString,
+                            blendDesc.asString,
+                            rasterizerDesc.asString,
                             topologyType
                         )
-                    logDebug("READ PSO " + this.ToString())
                 with 
                     | :? PipelineStateNotFoundException -> 
                                         
                         let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description, topologyType)
                         psoStore.Add( 
-                            vertexShaderDesc.ToString(),
-                            pixelShaderDesc.ToString(),
-                            domainShaderDesc.ToString(),
-                            hullShaderDesc.ToString(),
-                            blendDesc.Type.ToString(),
-                            rasterizerDesc.Type.ToString(),
+                            vertexShaderDesc.asString,
+                            pixelShaderDesc.asString,
+                            domainShaderDesc.asString,
+                            hullShaderDesc.asString,
+                            blendDesc.asString,
+                            rasterizerDesc.asString,
                             topologyType,
                             pso
                         )                        
