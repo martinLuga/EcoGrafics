@@ -220,6 +220,53 @@ module GeometricModel =
         override this.CreateVertexData(visibility:Visibility) =
             VertexCube.CreateMeshData(ursprung, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
 
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Keil
+    // ----------------------------------------------------------------------------------------------------
+    type Keil
+        (
+            name: string,
+            ursprung: Vector3,
+            laenge: float32,
+            hoehe: float32,
+            breite: float32,
+            color: Color 
+        ) =
+        inherit Quader
+            (
+                name ,
+                ursprung ,
+                laenge ,
+                hoehe ,
+                breite ,
+                color ,
+                color ,
+                color ,
+                color ,
+                color ,
+                color 
+            )
+        let mutable laenge = laenge
+        let mutable hoehe = hoehe
+        let mutable breite = breite 
+
+        let mutable p1 = Vector3.Zero
+
+        new(name, ursprung, laenge, hoehe, breite) =
+            Keil(name, ursprung, laenge, hoehe, breite, Color.Black)
+        
+        new(name, laenge, hoehe, breite, color) =
+            Keil(name, Vector3.Zero, laenge, hoehe, breite, color)
+
+        new(name, laenge, hoehe, breite) =
+            Keil(name, Vector3.Zero, laenge, hoehe, breite, Color.Black)
+
+        new(name, min: Vector3, max: Vector3, color) = Keil(name, (max.X - min.X), (max.Y - min.Y), (max.Z - min.Z), color)
+
+        override this.CreateVertexData(visibility:Visibility) =
+            VertexPrisma.CreateMeshData(ursprung, laenge, hoehe, breite, color, color, color, color, color, color, visibility)  
+
     // ----------------------------------------------------------------------------------------------------
     //  Box
     // ----------------------------------------------------------------------------------------------------

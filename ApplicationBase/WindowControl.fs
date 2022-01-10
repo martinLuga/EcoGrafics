@@ -107,8 +107,8 @@ module WindowControl =
     //  Key movements
     // ---------------------------------------------------------------------------------------------------- 
     let addStandardKeyMovements(form:MyWindow) =
-        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageUp    then Camera.Instance.Zoom -zoomFactor)
-        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageDown  then Camera.Instance.Zoom  zoomFactor)
+        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageDown  then Camera.Instance.Zoom -zoomFactor)
+        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageUp    then Camera.Instance.Zoom  zoomFactor)
 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Up    then Camera.Instance.RotateVertical  (true)) 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Down  then Camera.Instance.RotateVertical  (false))

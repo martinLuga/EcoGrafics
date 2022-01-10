@@ -153,8 +153,8 @@ module TestScenariosCommon =
             shape =
                 Linie(
                     name = "XAxis",
-                    von = Vector3(from, 0.5f, 0.0f),
-                    bis = Vector3(too, 0.5f, 0.0f),
+                    von = Vector3(from, 0.0f, 0.0f),
+                    bis = Vector3(too, 0.0f, 0.0f),
                     color = Color.White
                 ),
             material = MAT_WHITE

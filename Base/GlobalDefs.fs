@@ -26,6 +26,7 @@ module GlobalDefs =
 
     let pi:float32 = float32 System.Math.PI
     let IIpi = 2.0f * pi
+    let piviertel = pi / 4.0f
     let pihalbe = pi / 2.0f
     let dreiPiHalbe =  3.0f * pihalbe 
 

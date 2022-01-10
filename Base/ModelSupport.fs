@@ -522,7 +522,6 @@ module ModelSupport =
         member this.isTransparent =
             match visibility with
             | Transparent -> true
-            | Opaque -> false
             | _ -> not (
                     parts
                     |> Seq.exists (fun p -> p.Visibility = Visibility.Opaque)

@@ -108,6 +108,7 @@ module MaterialsAndTextures =
     let MAT_BEIGE = MATERIAL("BEIGE",Color.Beige) 
     let MAT_DARKGOLDENROD = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
     let MAT_DARKSLATEGRAY = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
+    let MAT_SILVER = MATERIAL("MAT_SILVER", Color.Silver) 
 
     let MATERIAL_LIMIT (name, color: Color) =
         new Material(

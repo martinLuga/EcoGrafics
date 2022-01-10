@@ -85,6 +85,21 @@ module GeometricTypes =
         [ifront; iright; iback; ileft; itop; ibottom]
 
     // ----------------------------------------------------------------------------------------------------
+    //  Prisma 
+    // ----------------------------------------------------------------------------------------------------
+    type PrismaType       = { PRIGHT:  TriangleType;       PBACK:  SquareType;      PLEFT:  TriangleType;      PTOP:  SquareType;       PBOTTOM:  SquareType}
+    type PrismaIndexType  = { IPRIGHT: TriangleIndexType;  IPBACK: SquareIndexType; IPLEFT: TriangleIndexType; IPTOP: SquareIndexType;  IPBOTTOM: SquareIndexType}
+    
+    // Würfel in Quadrate zerlegen
+    let deconstructPrisma (prism:PrismaType) = 
+        let {PRIGHT = right; PBACK = back; PLEFT = left; PTOP = top; PBOTTOM = bottom} = prism
+        (right, back, left, top, bottom)
+
+    let deconstructPrismaIndex (prismIndex:PrismaIndexType) = 
+        let {IPRIGHT = iright; IPBACK = iback; IPLEFT = ileft; IPTOP = itop; IPBOTTOM = ibottom} = prismIndex
+        (iright, iback, ileft, itop, ibottom)
+
+    // ----------------------------------------------------------------------------------------------------
     //  Pyramide: Quadratische Grundfläche, 4 Dreiecke
     // ----------------------------------------------------------------------------------------------------
     type PyramidType       = {BASE: SquareType ; FRONT: TriangleType ; RIGHT: TriangleType; BACK: TriangleType; LEFT: TriangleType }
