@@ -6,20 +6,14 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open SharpDX
-
 open log4net
 open NUnit.Framework
 
 open Base.FileSupport
 open Base.LoggingSupport 
 open Base.MeshObjects
-open Base.ModelSupport
 open Builder.WavefrontFormat
-open Builder 
 open Base.RecordSupport
-
-open Base.MaterialsAndTextures
  
 open Initializations
 

@@ -99,3 +99,23 @@ module ShaderCompile =
                 logger.Error("Compile-Error : " + compResult.Message)
                 raise (ShaderError(compResult.Message))
         ShaderBytecode(byteCode.Data)
+
+    let shaderFromString (str: string, entry, profile) =
+        let compResult = ShaderBytecode.Compile(str, entry, profile, ShaderFlags.OptimizationLevel3, EffectFlags.None) 
+        if compResult.Bytecode <> null then
+            byteCode <- compResult.Bytecode
+        else
+            logger.Error("Compile-Error : " + compResult.Message)
+            raise (ShaderError(compResult.Message))
+        ShaderBytecode(byteCode.Data)
+
+    let shaderFromStringAndFile (shParms: string, dir:string, file:string, entry, profile) =
+        let fileName = fileNameHere dir file + ".hlsl" 
+        let fs = new FileStream(fileName, FileMode.Open, FileAccess.Read)  :> Stream 
+        
+        // read the whole content to a string.
+        let mutable code = ""
+        using (new StreamReader(fs))(fun r ->
+            code <-r.ReadToEnd() 
+        )
+        shaderFromString (shParms + code, entry, profile)

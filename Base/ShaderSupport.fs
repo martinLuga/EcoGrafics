@@ -264,14 +264,18 @@ module ShaderSupport =
 
     // LunaBook App
     let rootSignatureDescLunaBook =
-        let rootParameter0 = new RootParameter(ShaderVisibility.All,    new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : Per Object
-        let rootParameter1 = new RootParameter(ShaderVisibility.All,    new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : Per Frame
-        let rootParameter2 = new RootParameter(ShaderVisibility.All,    new RootDescriptor(0, 1), RootParameterType.ShaderResourceView)     // b2 : Per Material
-        let rootParameter3 = new RootParameter(ShaderVisibility.All,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) 
-        let rootParameter4 = new RootParameter(ShaderVisibility.All,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 1))
-
-        let slotRootParameters = [|rootParameter0; rootParameter1; rootParameter2; rootParameter3; rootParameter4|] 
-        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers())  
+        let slotRootParameters =
+            [|
+                new RootParameter(ShaderVisibility.All,    new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : Per Object
+                new RootParameter(ShaderVisibility.All,    new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : Per Frame
+                new RootParameter(ShaderVisibility.All,    new RootDescriptor(0, 1), RootParameterType.ShaderResourceView)     // b2 : Per Material
+                new RootParameter(ShaderVisibility.All,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) 
+                new RootParameter(ShaderVisibility.All,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 1))
+            |]
+        new RootSignatureDescription(
+            RootSignatureFlags.AllowInputAssemblerInputLayout,
+            slotRootParameters,
+            GetStaticSamplers())  
 
     let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =
         device.CreateRootSignature(new DataPointer (signatureDesc.Serialize().BufferPointer, int (signatureDesc.Serialize().BufferSize)))
