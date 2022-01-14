@@ -19,7 +19,7 @@ open Base.Framework
 open Base.LoggingSupport
 open Base.ShaderSupport
 
-open DirectX.Assets
+open DirectX.Pipeline
 
 open Shader.ShaderCompile
   

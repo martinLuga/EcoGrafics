@@ -26,7 +26,7 @@ open Base.ShaderSupport
 open DirectX.GraficUtils
 open DirectX.TextureSupport 
 
-open DirectX.Assets
+open DX12GameProgramming
 
 open Base.ShaderSupport
 
@@ -335,10 +335,11 @@ module MyGPU =
                         textureIdx <- textureIdx + 1
                     else
                         if textureFilename.EndsWith("dds") then 
-                            let  resource, isCube = CreateTextureFromDDS(device, textureFilename)
+                            let resource = TextureUtilities.CreateTextureFromDDS(device, textureFilename)
                             textureHeapWrapper.AddResource(resource)
                             textures.Add(textureName, textureIdx)
                             textureIdx <- textureIdx + 1
+
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 

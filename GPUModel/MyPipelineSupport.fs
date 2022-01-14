@@ -78,7 +78,6 @@ module MyPipelineSupport =
         let mutable topology=PrimitiveTopology.TriangleList
 
         do            
-            rootSignature <- createRootSignature(device, rootSignatureDescCookBook) 
             psoStore <- new PipelineStore(device)
 
         override this.ToString() =

@@ -1,0 +1,165 @@
+﻿namespace DirectX
+//
+//  ShaderSupport.fs
+//
+//  Created by Martin Luga on 08.02.18.
+//  Copyright © 2018 Martin Luga. All rights reserved.
+//
+
+open System
+open System.Collections.Generic 
+
+open SharpDX.DXGI
+open SharpDX.Direct3D12
+open SharpDX.Mathematics.Interop
+open SharpDX 
+
+open D3DUtilities
+open Assets
+
+// ----------------------------------------------------------------------------------------------------
+// Hilfs-klassen für die Pipeline  
+// ----------------------------------------------------------------------------------------------------
+module Pipeline = 
+    // ----------------------------------------------------------------------------------------------------
+    // PipelinStateObject Descriptions
+    // ----------------------------------------------------------------------------------------------------
+    let emptyPsoDesc ()  = 
+        let psoDesc = 
+            new GraphicsPipelineStateDescription( 
+                // InputLayout
+                // RootSignature  
+                // VertexShader  
+                // PixelShader =  
+                // RasterizerState
+                // BlendState 
+                DepthStencilState = DepthStencilStateDescription.Default(),
+                SampleMask = Int32.MaxValue,
+                // PrimitiveTopologyType
+                RenderTargetCount = 1,  
+                // SampleDescription
+                StreamOutput=StreamOutputDescription(),
+                DepthStencilFormat = DEPTHSTENCILFORMAT
+            )            
+        psoDesc.RenderTargetFormats.SetValue(BACKBUFFERFORMAT, 0)
+        psoDesc
+
+    let newPsoDesc (inputLayout, rootSignature, vertexShader , pixelShader, domainShader:ShaderBytecode, hullShader:ShaderBytecode, blendState, rasterizerState, primitiveTopologyType, sampleDescription)  = 
+        let psoDesc = emptyPsoDesc () 
+        psoDesc.InputLayout <- inputLayout
+        psoDesc.RootSignature <- rootSignature 
+        psoDesc.VertexShader <- vertexShader   
+        psoDesc.PixelShader <- pixelShader 
+        if domainShader.Buffer <> null then
+            psoDesc.DomainShader <-  domainShader 
+        if hullShader.Buffer <> null then
+            psoDesc.HullShader <-  hullShader 
+        psoDesc.RasterizerState <- rasterizerState 
+        psoDesc.BlendState <- blendState 
+        psoDesc.DepthStencilState <- DepthStencilStateDescription.Default() 
+        psoDesc.SampleMask <- Int32.MaxValue 
+        psoDesc.PrimitiveTopologyType <- primitiveTopologyType 
+        psoDesc.RenderTargetCount <- 1   
+        psoDesc.SampleDescription <- sampleDescription 
+        psoDesc.StreamOutput <- StreamOutputDescription() 
+        psoDesc.DepthStencilFormat <- DEPTHSTENCILFORMAT
+        psoDesc.RenderTargetFormats.SetValue(BACKBUFFERFORMAT, 0)
+        psoDesc
+
+    let rootSignatureDescEmpty =
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers()) 
+        
+    let isRootSignatureDescEmpty(rs:RootSignatureDescription) =
+        rs.Parameters = null || rs.Parameters.Length = 0
+
+    let defaultInputElementsDescriptionNew = 
+        new InputLayoutDescription(
+            [| 
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0);
+                new InputElement("NORMAL",   0, Format.R32G32B32_Float, 12, 0);
+                new InputElement("COLOR",    0, Format.R32G32B32A32_Float, 24, 0);    
+                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0)
+            |]
+        )
+
+    let layoutCookBook =
+        new InputLayoutDescription(
+            [| 
+                new InputElement("SV_POSITION",     0, Format.R32G32B32_Float,       0, 0);
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);
+                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   24, 0);    
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         40, 0);
+                new InputElement("BLENDINDICES",    0, Format.R32G32B32A32_UInt,    48, 0); 
+                new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
+            |]
+        ) 
+
+    let layoutLunaBook =
+        new InputLayoutDescription(
+            [| 
+                new InputElement("SV_POSITION",     0, Format.R32G32B32_Float,       0, 0);
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);
+                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   24, 0);    
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         40, 0);
+                new InputElement("BLENDINDICES",    0, Format.R32G32B32A32_UInt,    48, 0); 
+                new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
+            |]
+        ) 
+
+    let layoutTesselated =
+        new InputLayoutDescription(
+            [| 
+                new InputElement("POSITION",        0, Format.R32G32B32_Float,       0, 0);
+                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   12, 0);
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         24, 0);
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      32, 0);
+            |]
+        ) 
+
+    // ----------------------------------------------------------------------------------------------------
+    // Root signature descriptions
+    // ----------------------------------------------------------------------------------------------------
+
+    // CookBook App
+    let rootSignatureDescCookBook  =
+        let textureTable = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
+        let rootParameter0 = new RootParameter(ShaderVisibility.Pixel, textureTable)                                                     // t0 : Texture
+        let rootParameter1 = new RootParameter(ShaderVisibility.All,     new RootDescriptor(0, 0), RootParameterType.ConstantBufferView) // b0 : per Object
+        let rootParameter2 = new RootParameter(ShaderVisibility.All,     new RootDescriptor(1, 0), RootParameterType.ConstantBufferView) // b1 : per Frame
+        let rootParameter3 = new RootParameter(ShaderVisibility.All,     new RootDescriptor(2, 0), RootParameterType.ConstantBufferView) // b2 : per Material
+        let rootParameter4 = new RootParameter(ShaderVisibility.All,     new RootDescriptor(3, 0), RootParameterType.ConstantBufferView) // b3 : per Armature 
+ 
+        let slotRootParameters = [|rootParameter0; rootParameter1; rootParameter2; rootParameter3; rootParameter4|] 
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers())  
+
+    // CookBook App with tesselation
+    let rootSignatureDescCookBookTesselate  =
+        let textureTable   = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
+        let rootParameter0 = new RootParameter(ShaderVisibility.Pixel, textureTable)                                                  // t0 : Texture
+        let rootParameter1 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(0, 0), RootParameterType.ConstantBufferView) // b0 : per Object
+        let rootParameter2 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(1, 0), RootParameterType.ConstantBufferView) // b1 : per Frame
+        let rootParameter3 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(2, 0), RootParameterType.ConstantBufferView) // b2 : per Material
+        let rootParameter4 = new RootParameter(ShaderVisibility.All,  new RootDescriptor(3, 0), RootParameterType.ConstantBufferView) // b3 : per Armature 
+ 
+        let slotRootParameters = [|rootParameter0; rootParameter1; rootParameter2; rootParameter3; rootParameter4|] 
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers())  
+
+    // LunaBook App
+    let rootSignatureDescLunaBook =
+        let textureTable   = new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0) 
+        let slotRootParameters =
+            [|
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(0, 0), RootParameterType.ConstantBufferView) 
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(1, 0), RootParameterType.ConstantBufferView) 
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(0, 1), RootParameterType.ShaderResourceView) 
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) 
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 1))
+            |]
+        new RootSignatureDescription(
+            RootSignatureFlags.AllowInputAssemblerInputLayout,
+            slotRootParameters,
+            GetStaticSamplers())  
+
+    let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =
+        device.CreateRootSignature(new DataPointer (signatureDesc.Serialize().BufferPointer, int (signatureDesc.Serialize().BufferSize)))
+

@@ -270,11 +270,13 @@ module GeometricModel =
     // ----------------------------------------------------------------------------------------------------
     //  Box
     // ----------------------------------------------------------------------------------------------------
-    type Box (name: string, width:float32,  height:float32,  depth:float32,  numSubdivisions:int) =
-        inherit Geometry(name, Vector3.Zero, Color.Transparent, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+    type Box (name: string, width:float32,  height:float32,  depth:float32,  color, numSubdivisions:int) =
+        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
         let mutable laenge = width
         let mutable hoehe = height
         let mutable breite = depth 
+
+        new (name, width,  height,  depth,  numSubdivisions) = new Box(name, width,  height,  depth,  Color.White, numSubdivisions)
 
         member this.Laenge
             with get () = laenge
@@ -293,7 +295,7 @@ module GeometricModel =
             and set (value) = base.Origin <- new Vector3(value.X - this.Laenge / 2.0f, value.Y - this.Hoehe / 2.0f, value.Z - this.Breite / 2.0f)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexBox.CreateMeshData(laenge, hoehe, breite, numSubdivisions) 
+            VertexBox.CreateMeshData(laenge, hoehe, breite, numSubdivisions, color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     //  Cylinder

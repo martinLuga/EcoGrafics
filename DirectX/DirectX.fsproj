@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="D3DUtilities.fs" />
     <Compile Include="Assets.fs" />
+    <Compile Include="Pipeline.fs" />
     <Compile Include="GraficUtils.fs" />
     <Compile Include="Camera.fs" />
     <Compile Include="TextureSupport.fs" />

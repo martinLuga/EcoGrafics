@@ -10,6 +10,7 @@ open Base.LoggingSupport
 open log4net
 open NUnit.Framework
 open Shader.ShaderCompile
+open Shader.Connector
 
 open ShaderCommons 
 
@@ -80,3 +81,21 @@ module ShaderTests =
             let shader = shaderFromStringAndFile (shString, "shaders", fileShaderCode, "PS", "ps_5_1")            
             Assert.NotNull (shader)
             this.logger.Info("Shader compiled from string")
+
+    [<TestFixture>]
+    type ConnectorTests() = 
+        
+        [<DefaultValue>] val mutable logger: ILog
+        
+        [<SetUp>]
+        member this.setUp() =
+            this.logger <- LogManager.GetLogger("ConnectorTests")
+
+        [<Test>]
+        member this.CreateSignatureTest() =
+            let constant = new Constant(0,1)
+            let connector  =  new Connector()
+            connector.AddConstant(constant)
+            let signature = connector.GetRootSignatureDesc()
+            Assert.NotNull (signature)
+            this.logger.Info("Signature created")

@@ -27,6 +27,7 @@ open Cache
 open DirectX
 open DirectX.D3DUtilities
 open DirectX.Camera
+open DirectX.Pipeline
 
 open GPUModel.MyGPU 
 

@@ -55,10 +55,10 @@ module VertexDefs =
                 px:float32, py:float32, pz:float32,
                 nx:float32, ny:float32, nz:float32,
                 tx:float32, ty:float32, tz:float32,
-                u:float32 , v:float32) = new Vertex(
+                u:float32 , v:float32,color) = new Vertex(
                         new Vector3(px, py, pz),
                         new Vector3(nx, ny, nz),
-                        Color.Transparent,
+                        color,
                         new Vector2(u, v)
                         )
 
