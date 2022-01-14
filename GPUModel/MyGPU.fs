@@ -22,6 +22,7 @@ open SharpDX.DXGI
 open Base.LoggingSupport
 open Base.MeshObjects
 open Base.ShaderSupport
+open Base.VertexDefs
 
 open DirectX.GraficUtils
 open DirectX.TextureSupport 
@@ -293,15 +294,15 @@ module MyGPU =
             directRecorder.Play()
 
         // ----------------------------------------------------------------------------------------------------
-        // MeshData
+        // MeshData<Vertex>
         // ----------------------------------------------------------------------------------------------------        
         member this.hasMesh(name) =
             meshCache.Contains(name) 
 
-        member this.InstallMesh(name, meshData: MeshData, topology) =
+        member this.InstallMesh(name, meshData:MeshData<Vertex>, topology) =
             meshCache.Append(name, meshData.Vertices, meshData.Indices, topology) 
 
-        member this.ReplaceMesh(name, meshData: MeshData) =
+        member this.ReplaceMesh(name, meshData: MeshData<Vertex>) =
             this.StartInstall()
             meshCache.Replace(name, meshData.Vertices)  
             this.FinalizeInstall()

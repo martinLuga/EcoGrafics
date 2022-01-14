@@ -189,13 +189,3 @@ module VertexDefs =
             x <- x + deltax
         result |> Seq.toList
 
-    let MidPoint(v0:Vertex, v1:Vertex) =
- 
-        // Compute the midpoints of all the attributes. Vectors need to be normalized
-        // since linear interpolating can make them not unit length.
-        let pos = 0.5f * (v0.Position + v1.Position) 
-        let normal = Vector3.Normalize(0.5f * (v0.Normal + v1.Normal)) 
-        //let tangent = Vector3.Normalize(0.5f * (v0.TangentU + v1.TangentU)) 
-        let tex = 0.5f * (v0.Texture + v1.Texture) 
-
-        new Vertex(pos, normal, Color.Transparent, tex)

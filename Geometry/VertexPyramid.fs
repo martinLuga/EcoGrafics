@@ -10,6 +10,7 @@ open SharpDX
 
 open Base.MeshObjects
 open Base.ModelSupport
+open Base.VertexDefs
  
 open GeometricTypes
 
@@ -75,6 +76,6 @@ module VertexPyramid =
 
     let CreateMeshData(ursprung:Vector3, laenge:float32, hoehe, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData( 
+        new MeshData<Vertex>( 
             pyramidVerticesAndIndices (ursprung, laenge, hoehe, colorFront, colorRight, colorBack, colorLeft, colorBasis, isTransparent)
         )

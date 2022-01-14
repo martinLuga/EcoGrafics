@@ -114,7 +114,7 @@ module QuadPatch =
         let quadIndexList = deconstructQuadIndex qIndexes
         let vertices = quadVertexList |> Array.ofSeq 
         let indices = quadIndexList |> Array.ofSeq 
-        let oben = new MeshData(vertices, indices)  
+        let oben = new MeshData<Vertex>(vertices, indices)  
         
         let qv = quadVertices p1 p4 p3 p2 color 0 isTransparent
         let qVertexes, qIndexes = qv   
@@ -122,7 +122,7 @@ module QuadPatch =
         let quadIndexList = deconstructQuadIndex qIndexes
         let vertices = quadVertexList |> Array.ofSeq 
         let indices = quadIndexList |> Array.ofSeq 
-        let unten = new MeshData(vertices, indices) 
+        let unten = new MeshData<Vertex>(vertices, indices) 
         MeshData.Compose(oben, unten)
     
     let CreateMeshData(p1, p2, p3, p4,color:Color, visibility:Visibility) =
@@ -160,7 +160,7 @@ module QuadPlanePatch =
         
     let CreateMeshData(seitenLaenge:float32, patchLaenge:float32, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData(   
+        new MeshData<Vertex>(   
             quadPlaneContext(seitenLaenge, patchLaenge, color, isTransparent)
         ) 
 
@@ -182,7 +182,7 @@ module TriPatch =
 
     let CreateMeshData(p1, p2, p3, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData(   
+        new MeshData<Vertex>(   
             triContext (p1, p2, p3, color, isTransparent)
         ) 
 
@@ -228,7 +228,7 @@ module IcosahedronPatch =
         
     let CreateMeshData(center:Vector3, radius:float32, color:Color,  visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData(   
+        new MeshData<Vertex>(   
             icosahedronContext (center, radius, color, isTransparent)
         ) 
 

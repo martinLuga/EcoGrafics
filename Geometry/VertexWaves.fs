@@ -6,11 +6,9 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open Base.Framework
 open Base.MeshObjects 
 open Base.ModelSupport
 open Base.VertexDefs
-open Base.MathHelper
 
 open SharpDX
 
@@ -226,4 +224,4 @@ module VertexWaves  =
         let isTransparent = TransparenceFromVisibility(visibility)
         let vertices = waves.CreateVertices(color)
         let indices = waves.CreateIndices()
-        new MeshData(vertices, indices)
+        new MeshData<Vertex>(vertices, indices)

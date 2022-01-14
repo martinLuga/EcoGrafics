@@ -10,6 +10,7 @@ open SharpDX
 
 open Base.MeshObjects 
 open Base.ModelSupport
+open Base.VertexDefs
 
 open GeometricTypes 
 
@@ -87,7 +88,7 @@ module VertexPrisma =
     
     let CreateMeshData(ursprung:Vector3,laenge:float32, hoehe:float32, breite:float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorTop:Color, colorBottom:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData(   
+        new MeshData<Vertex>(   
             prismaVerticesAndIndices ursprung laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent
         )  
 

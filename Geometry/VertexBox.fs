@@ -96,6 +96,6 @@ module VertexBox =
         let meshData = MeshData.Create(createVertices(width,  height, depth, numSubdivisions, color, isTransparent), createIndices()) 
         // Put a cap on the number of subdivisions.
         let maxNumSubdivisions = Math.Min(numSubdivisions, 6);
-        meshData.Subdivide(maxNumSubdivisions)
+        //meshData.Subdivide(maxNumSubdivisions)
         meshData
 

@@ -34,7 +34,7 @@ module Square2D =
 
         let vert = seq{v1;  v2; v3; v4; v1} |> Seq.toArray
         let ind = seq{0;1;2;3;0} |> Seq.toArray
-        new MeshData(vert, ind)
+        new MeshData<Vertex>(vert, ind)
 
     let CreateMeshData(p1, p2, p3, p4,color:Color, visibility:Visibility, quality:Quality) =
         let isTransparent = TransparenceFromVisibility(visibility)
@@ -53,7 +53,7 @@ module Line2D =
 
         let vert = seq{v1;v2} |> Seq.toArray
         let ind = seq{0;1} |> Seq.toArray
-        new MeshData(vert, ind)
+        new MeshData<Vertex>(vert, ind)
 
     let CreateMeshData(ursprung:Vector3, target:Vector3, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)

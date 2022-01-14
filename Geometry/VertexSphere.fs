@@ -113,4 +113,4 @@ module VertexSphere  =
         let isTransparent = TransparenceFromVisibility(visibility)
         let vertices = sphereVertices(ursprung, color, radius, tesselation, isTransparent)
         let indices = sphereIndices(CLOCKWISE, tesselation)
-        new MeshData(vertices, indices)
+        new MeshData<Vertex>(vertices, indices)

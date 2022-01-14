@@ -932,5 +932,5 @@ module GeometricModel =
         override this.Topology = PrimitiveTopology.LineList
 
         override this.CreateVertexData(visibility: Visibility) =            
-            this.MeshData <- new MeshData(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
+            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
             this.MeshData

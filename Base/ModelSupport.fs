@@ -191,7 +191,7 @@ module ModelSupport =
         let mutable rasterFactor = raster
         let mutable tessFactor = tessFactor
         let mutable quality = quality
-        let mutable meshData = new MeshData()
+        let mutable meshData = new MeshData<Vertex>()
         let mutable vertices = vertices
         let mutable indices = indices
         
@@ -315,7 +315,7 @@ module ModelSupport =
             let zMax = box.Maximum.Z - box.Minimum.Z
             max xMax (max yMax zMax)
 
-        abstract member CreateVertexData : Visibility -> MeshData 
+        abstract member CreateVertexData : Visibility -> MeshData<Vertex> 
         default this.CreateVertexData(visibility) =
             raise (new System.Exception("Not Implemented"))
 
@@ -374,7 +374,7 @@ module ModelSupport =
             this.Size <- factor
 
         override this.CreateVertexData(visibility: Visibility) =            
-            this.MeshData <- new MeshData(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
+            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
             this.MeshData
 
         override this.Center 
