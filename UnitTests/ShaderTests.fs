@@ -7,12 +7,16 @@
 //
 
 open Base.LoggingSupport
+open Base.VertexDefs
+
 open log4net
 open NUnit.Framework
+
 open Shader.ShaderCompile
 open Shader.Connector
 
 open ShaderCommons 
+open Initializations
 
 // ----------------------------------------------------------------------------------------------------
 // Shader Komponenten als String erzeugen
@@ -21,20 +25,17 @@ open ShaderCommons
 // ----------------------------------------------------------------------------------------------------  
 module ShaderTests =
 
-    configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
-    let getLogger(name:string) = LogManager.GetLogger(name)
-
     [<TestFixture>]
     type CompileTests() = 
 
         [<DefaultValue>] val mutable logger: ILog
         [<SetUp>]
         member this.setUp() =
-            this.logger <- LogManager.GetLogger("CompileTests")
+            logger.Info("CompileTests set up ")
             
         [<OneTimeTearDownAttribute>]
         member this.tearDown() =
-             this.logger.Info("CompileTests cleaned up ")
+             logger.Info("CompileTests cleaned up ")
 
         [<Test>]
         member this.CompileFromString() =
@@ -58,7 +59,7 @@ module ShaderTests =
                 "
             let shader = shaderFromString (parametersString, "PS", "ps_5_1")            
             Assert.NotNull (shader)
-            this.logger.Info("Shader compiled from string")
+            logger.Info("Shader compiled from string")
 
         [<Test>]
         member this.CompileFromStringAndFile() =
@@ -80,7 +81,7 @@ module ShaderTests =
             let fileShaderCode = "SKYSH"
             let shader = shaderFromStringAndFile (shString, "shaders", fileShaderCode, "PS", "ps_5_1")            
             Assert.NotNull (shader)
-            this.logger.Info("Shader compiled from string")
+            logger.Info("Shader compiled from string")
 
     [<TestFixture>]
     type ConnectorTests() = 
@@ -88,8 +89,8 @@ module ShaderTests =
         [<DefaultValue>] val mutable logger: ILog
         
         [<SetUp>]
-        member this.setUp() =
-            this.logger <- LogManager.GetLogger("ConnectorTests")
+        member this.setUp() =            
+            logger.Info("ConnectorTests set up ")
 
         [<Test>]
         member this.CreateSignatureTest() =
@@ -98,4 +99,26 @@ module ShaderTests =
             connector.AddConstant(constant)
             let signature = connector.GetRootSignatureDesc()
             Assert.NotNull (signature)
-            this.logger.Info("Signature created")
+            logger.Info("Signature created")
+
+    [<TestFixture>]
+    type AnalyzeTests() = 
+        
+        [<DefaultValue>] val mutable logger: ILog
+        
+        [<SetUp>]
+        member this.setUp() =
+           logger.Info("AnalyzeTests set up ")
+
+        [<Test>]
+        member this.AnalyzeVertexTest() =
+            let vertex = new Vertex()
+            let t = vertex.GetType()
+            let fields = t.GetFields()
+            logger.Debug("-----------")
+            let name = sprintf "%s" t.FullName
+            logger.Debug(name)
+            fields |> Array.iter (fun field -> 
+                let sprop =  sprintf "%s: %s: %O" field.Name field.FieldType.FullName field
+                logger.Debug(sprop) 
+            )

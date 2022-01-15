@@ -12,6 +12,8 @@ open NUnit.Framework
 open Base.FileSupport
 open Base.LoggingSupport 
 open Base.MeshObjects
+open Base.VertexDefs
+
 open Builder.WavefrontFormat
 open Base.RecordSupport
  
@@ -37,7 +39,7 @@ module RecordTests =
     let LogText(logfun, text ) = 
         logfun(text)
     
-    let LogMesh(logfun, mesh:MeshData) = 
+    let LogMesh(logfun, mesh:MeshData<Vertex>) = 
         logfun("" + mesh.Properties.ToString()) 
 
     let LogObjects(logfun, objects:string list list) =
@@ -83,7 +85,7 @@ module RecordTests =
         member this.LogText(text ) = 
             logger.Debug(text)
         
-        member this.LogMesh(mesh:MeshData) = 
+        member this.LogMesh(mesh:MeshData<Vertex>) = 
             logger.Debug("" + mesh.ToString())
 
         member this.LogObjects(objects:string list list) =
@@ -223,7 +225,7 @@ module RecordTests =
         member this.LogText(text ) = 
             logger.Debug(text)
         
-        member this.LogMesh(mesh:MeshData) = 
+        member this.LogMesh(mesh:MeshData<Vertex>) = 
             logger.Debug("" + mesh.ToString())
 
         member this.LogObjects(objects:string list list) =
