@@ -18,7 +18,6 @@
     <Compile Include="Pipeline.fs" />
     <Compile Include="GraficUtils.fs" />
     <Compile Include="Camera.fs" />
-    <Compile Include="TextureSupport.fs" />
     <Compile Include="UploadBuffer.fs" />
   </ItemGroup>
   <ItemGroup>

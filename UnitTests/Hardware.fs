@@ -16,8 +16,6 @@ open SharpDX.Direct3D12
 
 open Base.LoggingSupport 
 
-open DirectX.TextureSupport
-
 open GraficBase.GraficWindow
 
 open GPUModel.MyGPU

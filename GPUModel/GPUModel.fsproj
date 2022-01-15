@@ -24,7 +24,7 @@
     <Compile Include="MyGPU.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EcoGrafics" Version="1.0.0" />
+    <PackageReference Include="EcoGrafics" Version="1.0.1" />
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Desktop" Version="4.2.0" />

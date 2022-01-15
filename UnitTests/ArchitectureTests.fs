@@ -11,7 +11,6 @@ open Base.FileSupport
 open Base.Framework
 open Base.LoggingSupport
 open Base.VertexDefs
-open DirectX.TextureSupport
 open GPUModel.MyGPU
 open GraficBase.GraficController
 open GraficBase.GraficWindow
@@ -21,6 +20,7 @@ open NUnit.Framework
 open SharpDX
 open System
 open System.IO
+open DX12GameProgramming
 
 module Architecture =
 
@@ -79,14 +79,9 @@ module Architecture =
             this.logger <- getLogger("GraficFunctions")
 
         [<Test>]
-        member this.TestMakefour() =  
-            let result = MAKEFOURCC('D', 'X', 'T', '5')
-            logger.Info("MAKEFOURCC result " + result.ToString())
-
-        [<Test>]
         member this.TestTextureSupport() =  
             let filename = fileNameInMap "EcoGrafics" "UnitTests" "Textures" "grass.dds"
-            let texRes = CreateTextureFromDDS(device, filename) 
+            let texRes = TextureUtilities.CreateTextureFromDDS(device, filename) 
             logger.Info("Textur gelesen")
 
         [<Test>]

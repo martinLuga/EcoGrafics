@@ -25,11 +25,8 @@ open Base.ShaderSupport
 open Base.VertexDefs
 
 open DirectX.GraficUtils
-open DirectX.TextureSupport 
 
 open DX12GameProgramming
-
-open Base.ShaderSupport
 
 open MyFrame
 open MyPipelineSupport
@@ -330,7 +327,7 @@ module MyGPU =
             if textureName <> null then
                 if not (textures.ContainsKey(textureName)) && not (textureName = "") then
                     if textureFilename.EndsWith("jpg") then
-                        let  resource = CreateTextureFromBitmap(device, textureFilename)
+                        let  resource = TextureUtilities.CreateTextureFromBitmap(device, textureFilename)
                         textureHeapWrapper.AddResource(resource)
                         textures.Add(textureName, textureIdx)
                         textureIdx <- textureIdx + 1
