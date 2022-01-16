@@ -8,11 +8,6 @@
 
 open System.Collections.Generic 
 
-open VertexDefs
-open MathSupport
-
-open SharpDX
-
 module MeshObjects =
 
     // ----------------------------------------------------------------------------------------------------
@@ -117,5 +112,3 @@ module MeshObjects =
 
     let fromMeshData(meshData: MeshData<'VERTX>) =
         (meshData.Vertices, meshData.Indices)
-
-    let stdMeshData = new MeshData<Vertex>()

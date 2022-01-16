@@ -22,8 +22,6 @@ open Base.Framework
 
 open DirectX.Assets
 open DirectX.D3DUtilities
-
-open Base.VertexDefs 
   
 // ----------------------------------------------------------------------------------------------------
 // GPU helper classes
@@ -168,13 +166,13 @@ module MYUtils =
     //  Mesh support   
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteralAttribute>]
-    type MeshCache(device:Device) =
+    type MeshCache<'T when 'T:struct and 'T:(new:unit->'T) and 'T:>ValueType>(device:Device) =
         let mutable device=device
         let mutable indexBufferGPU:Resource = null
         let mutable vertexBufferGPU:Resource = null
         let mutable indexBufferUploader:Resource = null
         let mutable vertexBufferUploader:Resource = null
-        let mutable vertexBufferCPU = new List<Vertex>()
+        let mutable vertexBufferCPU = new List<'T>()
         let mutable indexBufferCPU = new List<int>()
         let mutable ocbs = Dictionary<string,ObjectControlblock>()
 
@@ -186,7 +184,7 @@ module MYUtils =
                 vertexBufferUploader.Dispose() 
 
         member this.ResetBuffers() =
-            vertexBufferCPU <- new List<Vertex>()
+            vertexBufferCPU <- new List<'T>()
             indexBufferCPU  <- new List<int>()
             vertexBufferGPU <- null
             indexBufferGPU  <- null
@@ -218,7 +216,7 @@ module MYUtils =
                 
             ocbs.Replace(geometryName, ocb)
 
-        member this.Replace(geometryName:string, vertices:List<Vertex>)=
+        member this.Replace(geometryName:string, vertices:List<'T>)=
             let found, ocb = ocbs.TryGetValue(geometryName) 
             let mutable idx = 0
             if found then
@@ -252,9 +250,9 @@ module MYUtils =
         member this.getVertexBuffer(objectName) = 
             let ocb = ocbs.Item(objectName)
             new VertexBufferView(
-                BufferLocation = vertexBufferGPU.GPUVirtualAddress + int64 (ocb.StartVertices*sizeof<Vertex>),
-                StrideInBytes = sizeof<Vertex>,
-                SizeInBytes = ocb.AnzahlVertices*sizeof<Vertex>
+                BufferLocation = vertexBufferGPU.GPUVirtualAddress + int64 (ocb.StartVertices*sizeof<'T>),
+                StrideInBytes = sizeof<'T>,
+                SizeInBytes = ocb.AnzahlVertices*sizeof<'T>
             ) 
 
         member this.getIndexBuffer(objectName) =

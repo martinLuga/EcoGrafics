@@ -106,7 +106,7 @@ module MyGPU =
         let mutable rootObjectParmIdx = 0
         let mutable rootFrameParmIdx = 0
         let mutable textureHeapWrapper:HeapWrapper = null
-        let mutable meshCache:MeshCache = null
+        let mutable meshCache:MeshCache<Vertex> = null
 
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
@@ -312,7 +312,7 @@ module MyGPU =
             directRecorder.Play()
 
         member this.initializeMeshCache() =
-            meshCache <- new MeshCache(device)
+            meshCache <- new MeshCache<Vertex>(device)
 
         member this.resetMeshCache() =
             meshCache.Reset()

@@ -6,7 +6,6 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open Base.LoggingSupport
 open Base.VertexDefs
 
 open log4net
@@ -94,12 +93,20 @@ module ShaderTests =
 
         [<Test>]
         member this.CreateSignatureTest() =
-            let constant = new Constant(0,1)
+            let vertex = new Vertex()
+            let constant = new Constant("VertexIn", vertex)
             let connector  =  new Connector()
             connector.AddConstant(constant)
             let signature = connector.GetRootSignatureDesc()
             Assert.NotNull (signature)
             logger.Info("Signature created")
+
+        [<Test>]
+        member this.ConnectorAPITest() =
+            let vertex = new Vertex()
+            let constant = new Constant("VertexIn", vertex)
+            let shaderStruct = constant.AsShaderStruct()            
+            logger.Info("Shader Struct:   \n" + shaderStruct)
 
     [<TestFixture>]
     type AnalyzeTests() = 
