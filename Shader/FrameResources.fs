@@ -155,17 +155,6 @@ module FrameResources =
                 DefaultLightArray
             )
 
-        //  Directional light
-        [<StructLayout(LayoutKind.Sequential, Pack = 1)>]
-        type DirectionalLight =
-            struct  
-                val mutable Color: Color4               // 16 bytes
-                val mutable Direction: Vector3          // 12 bytes
-                val _padding: float32                   // 4 bytes
-                new(color,direction) = {Color=color; Direction=direction; _padding = 0.0f}            
-                new(color) = DirectionalLight(color,Vector3.Zero)
-            end 
-
         let newFrameResource(device, itemCount, matCount) = 
             new FrameResource<ObjectConstants, MaterialConstants, FrameConstants>(device, itemCount, matCount)
 

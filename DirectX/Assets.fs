@@ -30,17 +30,40 @@ module Assets =
     let mutable allInputLayoutDescriptions           = new Dictionary<string, InputLayoutDescription>() 
     let mutable allGraphicsPipelineStateDescriptions = new Dictionary<string, GraphicsPipelineStateDescription>() 
 
-    let textureDescription(resource:Resource) =
+    let textureDesc2D(resource:Resource) =
         new ShaderResourceViewDescription(
             Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
-            Format = resource.Description.Format,
             Dimension = ShaderResourceViewDimension.Texture2D,
+            Format = resource.Description.Format,
             Texture2D = new ShaderResourceViewDescription.Texture2DResource(
                 MostDetailedMip = 0,
                 MipLevels = -1,
                 ResourceMinLODClamp = 0.0f
             )
         )
+
+    let textureDescCube(resource:Resource) =
+        new ShaderResourceViewDescription(
+            Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
+            Dimension = ShaderResourceViewDimension.TextureCube,
+            Format = resource.Description.Format, 
+            Texture2D = new ShaderResourceViewDescription.Texture2DResource(
+                MostDetailedMip = 0,
+                MipLevels = -1,
+                ResourceMinLODClamp = 0.0f
+            ),
+            TextureCube = new ShaderResourceViewDescription.TextureCubeResource(
+                MostDetailedMip = 0,
+                MipLevels = int resource.Description.MipLevels,
+                ResourceMinLODClamp = 0.0f
+            )
+        )
+
+    let textureDescription(resource:Resource, isCube:bool) =
+        if isCube then
+            textureDescCube(resource)
+        else 
+            textureDesc2D(resource)
 
     // Depth stencil state
     let ff = 

@@ -80,6 +80,12 @@ module ModelSupport =
         | Visibility.Transparent  -> BlendDescription(BlendType.Transparent, blendStateTransparent)
         | Visibility.Invisible    -> BlendDescription(BlendType.Transparent, blendStateTransparent)
 
+    let rasterDescriptionFromVisibility(visibility:Visibility) =
+        match visibility with 
+        | Visibility.Opaque       -> RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
+        | Visibility.Transparent  -> RasterizerDescription(RasterType.Transparent, rasterizerStateSolid)
+        | Visibility.Invisible    -> RasterizerDescription(RasterType.Transparent, rasterizerStateTransparent)
+
     let TransparenceFromVisibility(visibility:Visibility) =
         match visibility with 
         | Visibility.Opaque       -> false
@@ -90,18 +96,22 @@ module ModelSupport =
         TRI | QUAD | BEZIER | NONE
 
     [<AllowNullLiteral>]
-    type Texture(name: string, fileName: string, pathName: string) =
+    type Texture(name: string, fileName:string, pathName:string, isCube:bool) =
         let mutable name=name
         let mutable fileName=fileName
         let mutable path = pathName 
+        let mutable isCube = isCube 
 
-        new() = Texture("", "", "") // Null Declaration
+        new(name, fileName, pathName) = Texture(name, fileName, pathName, false) 
+        new() = Texture("", "", "", false) // Null Declaration
 
         member this.Name = name
         member this.FileName = fileName
         member this.Path =
             if path <> "" then path
             else "textures/" + this.FileName
+
+        member this.IsCube = isCube = true 
 
         member this.isEmpty = this.Name = "" 
 
@@ -455,6 +465,9 @@ module ModelSupport =
 
         member this.Transparent =
             this.Visibility = Visibility.Transparent 
+
+        member this.Invisible =
+            this.Visibility = Visibility.Invisible 
 
         member this.resize(generalSizeFactor)=
             shape.resize(generalSizeFactor)

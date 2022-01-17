@@ -152,30 +152,31 @@ module MaterialsAndTextures =
     // ----------------------------------------------------------------------------------------------------
     // TEXTUR
     // ----------------------------------------------------------------------------------------------------
-    let TEXTURE(name:string, texturName:string) =
+    let TEXTURE(name:string, texturName:string, isCube:bool) =
         let textureName = (texturName.Split('.')).[0]
         new Texture (
             name=textureName,
             fileName=texturName,
-            pathName=""
+            pathName="",
+            isCube=isCube
         )
 
-    let TEXT_EMPTY = TEXTURE("", "")
-    let TEXT_WALL = TEXTURE("WALL", "texture_140.jpg")
-    let TEXT_KUGEL = TEXTURE("KUGEL", "water_texture.jpg")
-    let TEXT_QUADER = TEXTURE("QUADER", "crate.jpg")
-    let TEXT_EARTH = TEXTURE("EARTH", "8081_earthmap2k.jpg")
-    let TEXT_EARTH_HR = TEXTURE("EARTHHR", "8081_earthmap10k.jpg")
-    let TEXT_FOOD = TEXTURE("FOOD", "ebonykate.jpg")
-    let TEXT_HILL = TEXTURE("HILL", "texture_140.jpg")
-    let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg")
-    let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg")
-    let TEXT_GRASS = TEXTURE("GRASS", "grass.jpg")
-    let TEXT_SKY   = TEXTURE("SKY", "grasscube1024.dds")
-    let TEXT_WATER = TEXTURE("WATER", "water1.dds")
-    let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg")
-    let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg")
-    let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg")
+    let TEXT_EMPTY = TEXTURE("", "", false)
+    let TEXT_WALL = TEXTURE("WALL", "texture_140.jpg", false)
+    let TEXT_KUGEL = TEXTURE("KUGEL", "water_texture.jpg", false)
+    let TEXT_QUADER = TEXTURE("QUADER", "crate.jpg", false)
+    let TEXT_EARTH = TEXTURE("EARTH", "8081_earthmap2k.jpg", false)
+    let TEXT_EARTH_HR = TEXTURE("EARTHHR", "8081_earthmap10k.jpg", false)
+    let TEXT_FOOD = TEXTURE("FOOD", "ebonykate.jpg", false)
+    let TEXT_HILL = TEXTURE("HILL", "texture_140.jpg", false)
+    let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg", false)
+    let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg", false)
+    let TEXT_GRASS = TEXTURE("GRASS", "grass.jpg", false)
+    let TEXT_SKY   = TEXTURE("SKY", "grasscube1024.dds", true)
+    let TEXT_WATER = TEXTURE("WATER", "water1.dds", false)
+    let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg", false)
+    let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg", false)
+    let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg", false)
 
     let DefaultMaterials () =
         [

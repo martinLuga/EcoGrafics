@@ -16,11 +16,11 @@ open log4net
 // ----------------------------------------------------------------------------------------------------
 module ShaderSupport = 
 
-    type TopologyType   = | Triangle      | Patch         |  Line         | Undefinded
-    type RasterType     = | Solid  = 'S'  | Wired = 'W'   |  Undefinded = 'U'
-    type BlendType      = | Opaque = 'O'  | Transparent = 'T' | Undefinded = 'U'
-    type ShaderType     = | Vertex = 1    | Pixel = 2     |  Domain = 3   | Hull = 4   
-    type ShaderUsage    = | Required = 0  | NotRequired = 1 | ToBeFilledIn = 2
+    type TopologyType   = | Triangle      | Patch               | Line         | Undefinded
+    type RasterType     = | Solid  = 'S'  | Wired = 'W'         | Transparent = 'T'|  Undefinded = 'U'
+    type BlendType      = | Opaque = 'O'  | Transparent = 'T'   | Undefinded = 'U'
+    type ShaderType     = | Vertex = 1    | Pixel = 2           | Domain = 3   | Hull = 4   
+    type ShaderUsage    = | Required = 0  | NotRequired = 1     | ToBeFilledIn = 2
 
     [<AllowNullLiteral>] 
     // ----------------------------------------------------------------------------------------------------
@@ -66,6 +66,10 @@ module ShaderSupport =
             CullMode = CullMode.None,
             IsFrontCounterClockwise = RawBool(false)
         ) 
+    let rasterizerStateTransparent =
+        let mutable result = RasterizerStateDescription.Default()
+        result.CullMode <- CullMode.None
+        result
 
     let transparencyBlendDesc =
         new RenderTargetBlendDescription(        

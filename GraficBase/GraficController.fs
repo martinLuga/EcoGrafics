@@ -70,8 +70,8 @@ module GraficController =
         
         let mutable aspectRatio = 1.0f
         
-        let mutable defaultInputLayoutDesc:InputLayoutDescription = layoutCookBook
-        let mutable defaultRootSignatureDesc:RootSignatureDescription = rootSignatureDescCookBook
+        let mutable defaultInputLayoutDesc:InputLayoutDescription = inputLayoutDescription
+        let mutable defaultRootSignatureDesc:RootSignatureDescription = rootSignatureDesc
         let mutable defaultVertexShaderDesc : ShaderDescription = null
         let mutable defaultPixelShaderDesc : ShaderDescription = null
         let mutable defaultDomainShaderDesc : ShaderDescription = null
@@ -171,10 +171,10 @@ module GraficController =
         // Initialize (Default Configuration)
         // ----------------------------------------------------------------------------------------------------
         member this.Configure() = 
-            defaultInputLayoutDesc      <- layoutCookBook
-            defaultRootSignatureDesc    <- rootSignatureDescCookBook
-            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_0", rootSignatureDescCookBook, ShaderUsage.Required)
-            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_0", rootSignatureDescCookBook, ShaderUsage.Required)
+            defaultInputLayoutDesc      <- inputLayoutDescription
+            defaultRootSignatureDesc    <- rootSignatureDesc
+            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_1", rootSignatureDesc, ShaderUsage.Required)
+            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_1", rootSignatureDesc, ShaderUsage.Required)
             defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
             defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
             defaultSampleDesc           <- SampleDescription(1, 0)
@@ -256,26 +256,21 @@ module GraficController =
            materialIndices.Clear()
            materials.Clear()
 
-        member this.AddMaterials(materials:Material list) =
-            for material in materials do                   
-                this.addMaterialCPU(material)                
-                myGpu.UpdateMaterial(this.getMaterialGPU (material.Name, false))
-
         member this.addMaterialCPU(material:Material) =
             if not (materialIndices.ContainsKey(material.Name)) then
                 materials.Add(matNr, material)    
                 materialIndices.Add(material.Name, matNr)
                 matNr <- matNr + 1
 
-        member this.getMaterialCPU(name) =
+        member this.getMaterial(name) =
             let mutable tempMatNr = 0
             let success = materialIndices.TryGetValue(name, &tempMatNr)
             if success then 
                 materials.Item(tempMatNr) 
             else null
 
-        member this.getMaterialGPU(name:string, hasTexture:bool) = 
-            let material = this.getMaterialCPU(name)
+        member this.getMaterialConstants(name:string, hasTexture:bool) = 
+            let material = this.getMaterial(name)
             if material = null then
                 raise (ObjectNotFoundException("Invalid Materialname ")) 
             let mutable newMaterial = 
@@ -350,23 +345,25 @@ module GraficController =
             this.Prepare()
         
         member this.InstallPart(part: Part) =
+
+            // Vertex Data
             if  myGpu.hasMesh(part.Shape.Name)  then
-                logDebug("Mesh present for " + part.Shape.Name)
+                ()
             else
-                logDebug("Install Mesh for " + part.Shape.Name)
                 myGpu.InstallMesh(
                     part.Shape.Name,
                     part.Shape.CreateVertexData(part.Visibility),
                     part.Shape.Topology
                 )
             
-            if this.getMaterialCPU(part.Material.Name) = null then
+            // Material Data
+            if this.getMaterial(part.Material.Name) = null then
                 this.addMaterialCPU(part.Material)
-                logDebug("Install Material " + part.Material.Name)            
-                myGpu.UpdateMaterial(this.getMaterialGPU (part.Material.Name, part.hasTexture ()))
-
+                logDebug("Install Material " + part.Material.Name)     
+            
+            // Texture Data
             if part.Texture <> null then
-                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path)
+                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path, part.Texture.IsCube) 
 
         // ---------------------------------------------------------------------------------------------------- 
         // Alle Meshes erneut schreiben
@@ -492,7 +489,9 @@ module GraficController =
                 )
             let matIdx = materialIndices.Item(material.Name) 
             myGpu.UpdateMaterial(matIdx, ref newMaterial)
-
+        
+        // Update 
+        // Objekt-Eigenschaften
         member this.updatePerPart(idx:int, displayable:BaseObject, part:Part) = 
             logDebug("Update part " + idx.ToString() + " " + part.Shape.Name)
             let viewProjectionMatrix = Camera.Instance.ViewProj
@@ -529,6 +528,7 @@ module GraficController =
                 new SampleDescription(1, 0),
                 part.Shape.TopologyType,
                 part.Shape.Topology,
+                rasterDescriptionFromVisibility(part.Visibility),
                 blendDescriptionFromVisibility(part.Visibility)
             )
 

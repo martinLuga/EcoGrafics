@@ -21,7 +21,8 @@ open SharpDX.DXGI
 open Base.Framework
 
 open DirectX.Assets
-open DirectX.D3DUtilities
+
+open DX12GameProgramming
   
 // ----------------------------------------------------------------------------------------------------
 // GPU helper classes
@@ -120,8 +121,8 @@ module MYUtils =
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
 
-        member this.AddResource(resource:Resource) =
-            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource)), hDescriptor)
+        member this.AddResource(resource:Resource, isCube:bool) =
+            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube)), hDescriptor)
             this.Increment()
 
     type ObjectControlblock (StartVertices:int, StartIndices:int, EndVertices:int, EndIndices:int, IndexCount:int, Topology:PrimitiveTopology) =
@@ -227,14 +228,19 @@ module MYUtils =
         member this.createBuffers(commandList:GraphicsCommandList) =
             let vertexArray = vertexBufferCPU |> Seq.toArray 
             let totalVertexBufferByteSize = Utilities.SizeOf(vertexArray) 
-            vertexBufferGPU <-
-                D3DUtil.CreateDefaultBuffer(
-                    device,
-                    commandList,
-                    vertexArray,
-                    int64 totalVertexBufferByteSize,
-                    &vertexBufferUploader
-                )
+            try 
+                vertexBufferGPU <-
+                    D3DUtil.CreateDefaultBuffer(
+                        device,
+                        commandList,
+                        vertexArray,
+                        int64 totalVertexBufferByteSize,
+                        &vertexBufferUploader
+                    )
+            with  
+            | :? SharpDXException as ex -> 
+                let reason = device.DeviceRemovedReason 
+                raise (Exception("SharpDX Error: " + reason.ToString()))
 
             let indexArray = indexBufferCPU|> Seq.toArray
             let totalIndexBufferByteSize = (Utilities.SizeOf(indexArray))

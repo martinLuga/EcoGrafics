@@ -9,7 +9,6 @@
 open System.Collections.Generic 
 
 open Base.MeshObjects 
-open Base.MeshObjects 
 open Base.ModelSupport
 
 open System
@@ -25,7 +24,80 @@ open SharpDX
 
 module VertexBox = 
 
-    let createVertices(width:float32,  height:float32,  depth:float32,  numSubdivisions:int, color:Color, isTransparent) =
+    // TOTO Color ? Tangent?
+    let MidPoint( v0:Vertex, v1:Vertex) = 
+        // Compute the midpoints of all the attributes. Vectors need to be normalized
+        // since linear interpolating can make them not unit length.
+        let pos = 0.5f * (v0.Position + v1.Position);
+        let normal  = Vector3.Normalize(0.5f * (v0.Normal + v1.Normal)) 
+        //let tangent = Vector3.Normalize(0.5f * (v0.TangentU + v1.TangentU)) 
+        let tex = 0.5f * (v0.Texture + v1.Texture);
+        new Vertex(pos, normal, Color.White, tex);
+
+    let Subdivide(vertices:List<Vertex>, indices:List<int>, maxNumSubdivisions:int) =
+    
+        // Save a copy of the input geometry.
+        let verticesCopy = vertices.ToArray() 
+        let indicesCopy  = indices.ToArray()
+
+        let resultVertices = new List<Vertex>()
+        let resultIndices = new List<int>()
+
+        //       v1
+        //       *
+        //      / \
+        //     /   \
+        //  m0*-----*m1
+        //   / \   / \
+        //  /   \ /   \
+        // *-----*-----*
+        // v0    m2     v2
+
+        let numTriangles = indices.Count / 3
+        for i in 0..numTriangles-1 do
+
+            let v0 = verticesCopy.[indicesCopy.[i * 3 + 0]]
+            let v1 = verticesCopy.[indicesCopy.[i * 3 + 1]]
+            let v2 = verticesCopy.[indicesCopy.[i * 3 + 2]]
+
+            //
+            // Generate the midpoints.
+            //
+
+            let m0 = MidPoint(v0, v1)
+            let m1 = MidPoint(v1, v2)
+            let m2 = MidPoint(v0, v2)
+
+            //
+            // Add new geometry.
+            //
+
+            resultVertices.Add(v0) // 0
+            resultVertices.Add(v1) // 1
+            resultVertices.Add(v2) // 2
+            resultVertices.Add(m0) // 3
+            resultVertices.Add(m1) // 4
+            resultVertices.Add(m2) // 5
+
+            resultIndices.Add(i * 6 + 0)
+            resultIndices.Add(i * 6 + 3)
+            resultIndices.Add(i * 6 + 5)
+
+            resultIndices.Add(i * 6 + 3)
+            resultIndices.Add(i * 6 + 4)
+            resultIndices.Add(i * 6 + 5)
+
+            resultIndices.Add(i * 6 + 5)
+            resultIndices.Add(i * 6 + 4)
+            resultIndices.Add(i * 6 + 2)
+
+            resultIndices.Add(i * 6 + 3)
+            resultIndices.Add(i * 6 + 1)
+            resultIndices.Add(i * 6 + 4)
+
+        MeshData.Create(resultVertices, resultIndices) 
+
+    let createVertices(width:float32,  height:float32,  depth:float32, color:Color, isTransparent) =
 
         let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
 
@@ -93,9 +165,8 @@ module VertexBox =
 
     let CreateMeshData(width:float32,  height:float32, depth:float32, numSubdivisions, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        let meshData = MeshData.Create(createVertices(width,  height, depth, numSubdivisions, color, isTransparent), createIndices()) 
-        // Put a cap on the number of subdivisions.
-        let maxNumSubdivisions = Math.Min(numSubdivisions, 6);
-        //meshData.Subdivide(maxNumSubdivisions)
-        meshData
+        let vertices = createVertices(width,  height, depth, color, isTransparent)
+        let indices = createIndices()        
+        let maxNumSubdivisions = Math.Min(numSubdivisions, 6) // Put a cap on the number of subdivisions.
+        Subdivide(vertices, indices, maxNumSubdivisions)
 
