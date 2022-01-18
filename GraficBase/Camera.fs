@@ -1,4 +1,4 @@
-﻿namespace DirectX
+﻿namespace GraficBase
 //
 //  Camera.fs
 //
@@ -13,8 +13,6 @@ open SharpDX
 open Base.MathSupport
 open Base.LoggingSupport
 open Base.GlobalDefs
-
-open GraficUtils
 
 // ----------------------------------------------------------------------------------------------------
 //  Camera 

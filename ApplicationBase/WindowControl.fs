@@ -6,8 +6,8 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
-open GraficBase.CameraControl  
-open DirectX.Camera
+open GraficBase.CameraControl
+open GraficBase.Camera
 open Base.ObjectBase
 open Base.Framework
 open Base.LoggingSupport

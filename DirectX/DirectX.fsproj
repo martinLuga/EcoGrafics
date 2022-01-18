@@ -17,7 +17,6 @@
     <Compile Include="Assets.fs" />
     <Compile Include="Pipeline.fs" />
     <Compile Include="GraficUtils.fs" />
-    <Compile Include="Camera.fs" />
     <Compile Include="UploadBuffer.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -9,7 +9,7 @@ open Shader.FrameResources
  
 open SharpDX
 
-open DirectX.Camera
+open Camera
  
 // ----------------------------------------------------------------------------------------------------
 //  Singleton zur Verwendung der Kamera

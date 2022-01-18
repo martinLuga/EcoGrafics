@@ -24,9 +24,7 @@ open Base.GameTimer
 
 open Cache
 
-open DirectX
 open DirectX.D3DUtilities
-open DirectX.Camera
 open DirectX.Pipeline
 
 open GPUModel.MyGPU 
@@ -35,6 +33,7 @@ open Shader.FrameResources.CookBook
 
 open GraficWindow
 open CameraControl 
+open Camera
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
