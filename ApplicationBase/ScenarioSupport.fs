@@ -147,12 +147,12 @@ module TestScenariosCommon =
     // ----------------------------------------------------------------------------------------------------
     //  AXES
     // ----------------------------------------------------------------------------------------------------
-    let xAxis(from, too) =
+    let xLine(name, from, too) =
         new Part(
-            name = "XAxis",
+            name = name,
             shape =
                 Linie(
-                    name = "XAxis",
+                    name = name,
                     von = Vector3(from, 0.0f, 0.0f),
                     bis = Vector3(too, 0.0f, 0.0f),
                     color = Color.White
@@ -160,12 +160,12 @@ module TestScenariosCommon =
             material = MAT_WHITE
         )
 
-    let yAxis(from, too) =
+    let yLine(name, from, too) =
         new Part(
-            name = "YAxis",
+            name = name,
             shape =
                 Linie(
-                    name = "YAxis",
+                    name = name,
                     von = Vector3(0.0f, from, 0.0f),
                     bis = Vector3(0.0f, too, 0.0f),
                     color = Color.White
@@ -173,12 +173,12 @@ module TestScenariosCommon =
             material = MAT_WHITE
         )
 
-    let zAxis(from, too) =
+    let zLine(name, from, too) =
         new Part(
-            name = "ZAxis",
+            name = name,
             shape =
                 Linie(
-                    name = "ZAxis",
+                    name = name,
                     von = Vector3(0.0f, 0.0f, from),
                     bis = Vector3(0.0f, 0.0f, too),
                     color = Color.White
@@ -186,20 +186,39 @@ module TestScenariosCommon =
             material = MAT_WHITE
         )
 
-    let createAXES(from, too) =
+    let createAXES(negativeMax, positiveMax) =
         new BaseObject(
             name = "Achsen",
             display = 
                 new Display(
                     parts = [
-                        xAxis(from, too); yAxis(from, too); zAxis(from, too)
+                        xLine("XAxis", negativeMax, positiveMax); yLine("YAxis",negativeMax, positiveMax); zLine("ZAxis", negativeMax, positiveMax)
                     ]
                 ),
             position = Vector3.Zero
         )
 
-    let DEFAULT_AXES(extent) =
-        createAXES(-extent/2.0f, extent/2.0f) 
+    let createCross(name, center:Vector3, extent) =
+        let negativeX = center.X - extent
+        let positiveX = center.X + extent 
+        let negativeY = center.Y - extent
+        let positiveY = center.Y + extent 
+        let negativeZ = center.Z - extent
+        let positiveZ = center.Z + extent 
+
+        new BaseObject(
+            name = name,
+            display = 
+                new Display(
+                    parts = [
+                        xLine(name + "X", negativeX, positiveX); yLine(name + "Y", negativeY, positiveY); zLine(name + "Z", negativeZ, positiveZ)
+                    ]
+                ),
+            position = center
+        )
+
+    let DEFAULT_AXES(halfLength) =
+        createAXES(-halfLength , halfLength ) 
 
     let NO_AXES(extent) =
         let result:BaseObject = null
@@ -251,7 +270,7 @@ module TestScenariosCommon =
             position = origin
         )
 
-    let DEFAULT_GROUND(center:Vector3, halfLenth) =
+    let DEFAULT_GROUND(center:Vector3, halfLenth:float32) =
         let origin = 
             Vector3(
                 center.X - halfLenth/2.0f,
@@ -273,7 +292,7 @@ module TestScenariosCommon =
                                 color=Color.Black
                             ),
                             material=MAT_DARKSLATEGRAY,
-                            texture=TEXT_EMPTY
+                            texture=TEXT_WALL
                         )
                     ]
                 ),

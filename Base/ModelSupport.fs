@@ -200,19 +200,15 @@ module ModelSupport =
         let mutable primitiveTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Triangle
         let mutable rasterFactor = raster
         let mutable tessFactor = tessFactor
-        let mutable quality = quality
-        let mutable meshData = new MeshData<Vertex>()
-        let mutable vertices = vertices
-        let mutable indices = indices
         
         static let mutable raster = 8 
         static let mutable tesselation = 8.0f 
         static member Raster with get() = raster and set(value) = raster <- value
         static member Tesselation with get() = tesselation and set(value) = tesselation <- value
 
-        member this.Vertices
-            with get () = vertices
-            and set (value) = vertices <- value
+        abstract member Vertices: List<Vertex> with get, set
+
+        abstract member Indices: List<int> with get, set
 
         abstract member AddVertices: List<Vertex>-> Unit
         default this.AddVertices(vertexe:List<Vertex>) =
@@ -222,12 +218,10 @@ module ModelSupport =
         default this.AddIndices(indexe: List<int>) = 
             indices.AddRange(indexe)
 
+        abstract member CreateVertexData : Visibility -> MeshData<Vertex> 
+
         member this.Points = 
             vertices |> Seq.map (fun v -> v.Position)
-
-        member this.Indices
-            with get () = indices
-            and set (value) = indices <- value
 
         member this.World
             with get () = world
@@ -268,10 +262,6 @@ module ModelSupport =
         member this.TessFactor
             with get () = tessFactor
             and set (value) = tessFactor <- value
-
-        member this.MeshData
-            with get () = meshData
-            and set (value) = meshData <- value
 
         abstract Maximum : Vector3 with get, set
         default this.Maximum 
@@ -325,10 +315,6 @@ module ModelSupport =
             let zMax = box.Maximum.Z - box.Minimum.Z
             max xMax (max yMax zMax)
 
-        abstract member CreateVertexData : Visibility -> MeshData<Vertex> 
-        default this.CreateVertexData(visibility) =
-            raise (new System.Exception("Not Implemented"))
-
     // ----------------------------------------------------------------------------------------------------
     //  type Geometriy: Basis für das GeometricModel
     // ----------------------------------------------------------------------------------------------------
@@ -345,6 +331,14 @@ module ModelSupport =
         override this.AddIndices(indexe:List<int>) =
             raise (new System.Exception("Not appliccable"))
 
+        override this.Vertices
+            with get() = raise (new System.Exception("Not appliccable"))
+            and set(value) = raise (new System.Exception("Not appliccable"))
+
+        override this.Indices
+            with get() = raise (new System.Exception("Not appliccable"))
+            and set(value) = raise (new System.Exception("Not appliccable"))
+            
         override this.Maximum
             with get () = maximum
             and set (value) = maximum <- value
@@ -362,6 +356,27 @@ module ModelSupport =
         inherit Shape(name, origin, vertices, indices, Color.Transparent, Shape.Tesselation, Shape.Raster, size, quality)        
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero
+        let mutable meshData = new MeshData<Vertex>()
+        let mutable vertices = vertices
+        let mutable indices = indices
+
+        override this.Vertices
+            with get () = vertices
+            and set (value) = vertices <- value
+
+        override this.AddVertices(vertexe:List<Vertex>) =
+            vertices.AddRange(vertexe)
+            
+        override this.Indices
+            with get () = indices
+            and set (value) = indices <- value
+
+        override this.AddIndices(indexe: List<int>) = 
+            indices.AddRange(indexe)
+
+        member this.MeshData
+            with get () = meshData
+            and set (value) = meshData <- value
 
         override this.Maximum
             with get () = 

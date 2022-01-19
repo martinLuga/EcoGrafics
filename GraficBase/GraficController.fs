@@ -416,15 +416,15 @@ module GraficController =
         //  GPU Steuerung
         // ----------------------------------------------------------------------------------------------------
         member this.Stop() =
-            logError("Stop")
+            logInfo("Stop")
             status <- ControllerStatus.Terminated
 
         member this.Start() =
-            logError("Start")
+            logInfo("Start")
             status <- ControllerStatus.Running
 
         member this.SetIdle() =
-            logError("Idle")
+            logInfo("Idle")
             status <- ControllerStatus.Idle
 
         member this.isRunning() =

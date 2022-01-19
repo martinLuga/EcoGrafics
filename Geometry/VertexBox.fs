@@ -34,12 +34,8 @@ module VertexBox =
         let tex = 0.5f * (v0.Texture + v1.Texture);
         new Vertex(pos, normal, Color.White, tex);
 
-    let Subdivide(vertices:List<Vertex>, indices:List<int>, maxNumSubdivisions:int) =
+    let Subdivide(vertices:Vertex[], indices:int[], maxNumSubdivisions:int) =
     
-        // Save a copy of the input geometry.
-        let verticesCopy = vertices.ToArray() 
-        let indicesCopy  = indices.ToArray()
-
         let resultVertices = new List<Vertex>()
         let resultIndices = new List<int>()
 
@@ -53,12 +49,12 @@ module VertexBox =
         // *-----*-----*
         // v0    m2     v2
 
-        let numTriangles = indices.Count / 3
+        let numTriangles = indices.Length / 3
         for i in 0..numTriangles-1 do
 
-            let v0 = verticesCopy.[indicesCopy.[i * 3 + 0]]
-            let v1 = verticesCopy.[indicesCopy.[i * 3 + 1]]
-            let v2 = verticesCopy.[indicesCopy.[i * 3 + 2]]
+            let v0 = vertices.[indices.[i * 3 + 0]]
+            let v1 = vertices.[indices.[i * 3 + 1]]
+            let v2 = vertices.[indices.[i * 3 + 2]]
 
             //
             // Generate the midpoints.
@@ -95,13 +91,13 @@ module VertexBox =
             resultIndices.Add(i * 6 + 1)
             resultIndices.Add(i * 6 + 4)
 
-        MeshData.Create(resultVertices, resultIndices) 
+        new MeshData<Vertex>(resultVertices.ToArray(), resultIndices.ToArray()) 
 
     let createVertices(width:float32,  height:float32,  depth:float32, color:Color, isTransparent) =
 
         let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
 
-        let mutable result = new List<Vertex>()
+        let mutable result:Vertex[] = Array.create 24  (new Vertex()) 
 
         //
         // Create the vertices.
@@ -112,60 +108,56 @@ module VertexBox =
         let d2 = 0.5f * depth
 
         // Fill in the front face vertex data.
-        result.Add(new Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4))
+        result.[0]  <- new Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4) 
+        result.[1]  <- new Vertex(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4) 
+        result.[2]  <- new Vertex(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4) 
+        result.[3]  <- new Vertex(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4)
         // Fill in the back face vertex data.
-        result.Add(new Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4))
-        result.Add(new Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4))
+        result.[4]  <- new Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4)
+        result.[5]  <- new Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4)
+        result.[6]  <- new Vertex(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4)
+        result.[7]  <- new Vertex(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4)
         // Fill in the top face vertex data.
-        result.Add(new Vertex(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4))
+        result.[8]  <- new Vertex(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4)
+        result.[9]  <- new Vertex(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4)
+        result.[10] <- new Vertex(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4)
+        result.[11] <- new Vertex(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4)
         // Fill in the bottom face vertex data.
-        result.Add(new Vertex(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4))
-        result.Add(new Vertex(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4))
+        result.[12] <- new Vertex(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, color4)
+        result.[13] <- new Vertex(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, color4)
+        result.[14] <- new Vertex(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, color4)
+        result.[15] <- new Vertex(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, color4)
         // Fill in the left face vertex data.
-        result.Add(new Vertex(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, color4))
-        result.Add(new Vertex(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, color4))
+        result.[16] <- new Vertex(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, color4)
+        result.[17] <- new Vertex(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, color4)
+        result.[18] <- new Vertex(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, color4)
+        result.[19] <- new Vertex(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, color4)
         // Fill in the right face vertex data.
-        result.Add(new Vertex(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, color4))
-        result.Add(new Vertex(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, color4))
-        result.Add(new Vertex(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, color4))
+        result.[20] <- new Vertex(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, color4)
+        result.[21] <- new Vertex(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, color4)
+        result.[22] <- new Vertex(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, color4)
+        result.[23] <- new Vertex(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, color4)
         result
 
     let createIndices() =
-        let mutable result = new List<int>()
-        result.AddRange ( 
-            [
-                // Fill in the front face index data.
-                0; 1; 2; 0; 2; 3;
-                // Fill in the back face index data.
-                4; 5; 6; 4; 6; 7;
-                // Fill in the top face index data.
-                8; 9; 10; 8; 10; 11;
-                // Fill in the bottom face index data.
-                12; 13; 14; 12; 14; 15;
-                // Fill in the left face index data
-                16; 17; 18; 16; 18; 19;
-                // Fill in the right face index data
-                20; 21; 22; 20; 22; 23
-            ] 
-        )
-        result
+        [|
+            // Fill in the front face index data.
+            0; 1; 2; 0; 2; 3;
+            // Fill in the back face index data.
+            4; 5; 6; 4; 6; 7;
+            // Fill in the top face index data.
+            8; 9; 10; 8; 10; 11;
+            // Fill in the bottom face index data.
+            12; 13; 14; 12; 14; 15;
+            // Fill in the left face index data
+            16; 17; 18; 16; 18; 19;
+            // Fill in the right face index data
+            20; 21; 22; 20; 22; 23
+        |] 
 
     let CreateMeshData(width:float32,  height:float32, depth:float32, numSubdivisions, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        let vertices = createVertices(width,  height, depth, color, isTransparent)
+        let vertices = createVertices(width, height, depth, color, isTransparent)
         let indices = createIndices()        
         let maxNumSubdivisions = Math.Min(numSubdivisions, 6) // Put a cap on the number of subdivisions.
         Subdivide(vertices, indices, maxNumSubdivisions)

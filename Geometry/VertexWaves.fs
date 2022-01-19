@@ -37,6 +37,9 @@ module VertexWaves  =
         let mutable _columnCount = n
         let mutable _vertexCount = m * n
         let mutable _triangleCount = (m - 1) * (n - 1) * 2
+        let mutable _vertices:Vertex[] = [||]
+        let mutable _indices:int[] = [||]
+        let mutable _meshdata:MeshData<Vertex> = new MeshData<Vertex>()
 
         do    
 
@@ -46,10 +49,12 @@ module VertexWaves  =
             _k2 <-  (4.0f - 8.0f  * e) / d
             _k3 <-  (2.0f * e) / d
 
-            _prevSolution <- Array.create _vertexCount Vector3.Zero  
-            _currSolution <- Array.create _vertexCount Vector3.Zero
-            _normals <- Array.create _vertexCount Vector3.Zero
-            _tangentX <- Array.create _vertexCount Vector3.Zero
+            _prevSolution   <- Array.create _vertexCount Vector3.Zero  
+            _currSolution   <- Array.create _vertexCount Vector3.Zero
+            _normals        <- Array.create _vertexCount Vector3.Zero
+            _tangentX       <- Array.create _vertexCount Vector3.Zero
+            _vertices       <- Array.create _vertexCount (new Vertex())
+            _meshdata       <- new MeshData<Vertex>()
 
             // Generate grid vertices in system memory.
 
@@ -64,6 +69,9 @@ module VertexWaves  =
                     _currSolution[i * n + j] <-  new Vector3(x, 0.0f, z)
                     _normals[i * n + j]  <-  Vector3.UnitY
                     _tangentX[i * n + j] <-  Vector3.UnitX 
+
+        member this.Vertices
+            with get () = _vertices 
 
         member this.RowCount
             with get () = _rowCount 
@@ -180,48 +188,57 @@ module VertexWaves  =
             _currSolution[(i - 1) * this.ColumnCount + j].Y <-
                 _currSolution[(i - 1) * this.ColumnCount + j].Y + halfMag
 
-        member this.CreateIndices() =
- 
-               let indices = Array.create (3 * this.TriangleCount) 0   // 3 indices per face.
-               Debug.Assert(this.VertexCount < System.Int32.MaxValue)
+        member this.MeshData 
+            with get() =
+                if _meshdata.Indices.Count = 0 then 
+                    _meshdata.AddIndices(this.Indices)  
+                _meshdata
 
-               // Iterate over each quad.
-               let m = this.RowCount 
-               let n = this.ColumnCount 
-               let mutable k = 0 
-               for i = 0 to m - 2 do               
-                   for  j = 0 to n - 2 do                   
-                       indices[k + 0] <-  (i * n + j)
-                       indices[k + 1] <-  (i * n + j + 1)
-                       indices[k + 2] <-  ((i + 1) * n + j)
+        member this.Indices  
+            with get() =
+                if _indices.Length = 0 then 
+                    _indices <- Array.create (3 * this.TriangleCount) 0   // 3 indices per face.
+                    Debug.Assert(this.VertexCount < System.Int32.MaxValue)
 
-                       indices[k + 3] <-  ((i + 1) * n + j)
-                       indices[k + 4] <-  (i * n + j + 1)
-                       indices[k + 5] <-  ((i + 1) * n + j + 1)
-                       k <- k + 6 // Next quad.
-               indices
+                    // Iterate over each quad.
+                    let m = this.RowCount 
+                    let n = this.ColumnCount 
+                    let mutable k = 0 
+                    for i = 0 to m - 2 do               
+                        for  j = 0 to n - 2 do                   
+                            _indices[k + 0] <-  (i * n + j)
+                            _indices[k + 1] <-  (i * n + j + 1)
+                            _indices[k + 2] <-  ((i + 1) * n + j)
 
-        member this.CreateVertices(color:Color) =
-            let vertices = Array.create this.VertexCount (new Vertex())
+                            _indices[k + 3] <-  ((i + 1) * n + j)
+                            _indices[k + 4] <-  (i * n + j + 1)
+                            _indices[k + 5] <-  ((i + 1) * n + j + 1)
+                            k <- k + 6 // Next quad.
+                _indices
 
-            for i = 0 to this.VertexCount - 1 do    
-                let mutable v = new Vertex(                
-                    position = this.Position(i),
-                    normal = this.Normal(i),
-                    color= color
-                )
+        member this.UpdateVertices(color:Color) = 
+
+            for i = 0 to this.VertexCount - 1 do 
+                _vertices.[i].Position <- this.Position(i)
+                _vertices.[i].Normal <- this.Normal(i)
+                _vertices.[i].Color <- color.ToColor4()
         
                 // Derive tex-coords from position by
                 // mapping [-w/2,w/2] --> [0,1]
-                v.Texture <- new Vector2(
-                    0.5f + v.Position.X / this.Width,
-                    0.5f - v.Position.Z / this.Depth
-                )
-                vertices.[i] <- v
-            vertices 
+
+                _vertices.[i].Texture <-
+                    new Vector2(
+                        0.5f + this.Position(i).X / this.Width,
+                        0.5f - this.Position(i).Z / this.Depth
+                    )
+
+        member this.CreateMeshData(color:Color, visibility) = 
+            let isTransparent = TransparenceFromVisibility(visibility)
+            this.UpdateVertices(color)
+            this.MeshData.Vertices <- _vertices |> ResizeArray<Vertex> 
+            this.MeshData
 
     let CreateMeshData(waves:Waves, color, visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        let vertices = waves.CreateVertices(color)
-        let indices = waves.CreateIndices()
-        new MeshData<Vertex>(vertices, indices)
+        waves.UpdateVertices(color)
+        new MeshData<Vertex>(waves.Vertices, waves.Indices)

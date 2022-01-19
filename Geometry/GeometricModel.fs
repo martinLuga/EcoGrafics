@@ -667,7 +667,7 @@ module GeometricModel =
         override this.Topology = PrimitiveTopology.TriangleList
 
         override this.CreateVertexData(visibility: Visibility) =
-            VertexWaves.CreateMeshData(this.Waves, color, visibility)   
+            this.Waves.CreateMeshData (color, visibility)   
 
     // ----------------------------------------------------------------------------------------------------
     //  Polyeder
@@ -732,7 +732,7 @@ module GeometricModel =
 
         new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
 
-        member this.Contour=contour
+        member this.Contour=contour 
         member this.ColorBottom=colorBottom
         member this.ColorTop=colorTop
         member this.ColorSide=colorSide
@@ -918,19 +918,3 @@ module GeometricModel =
             new TriangularShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "SimpleShape (x " + this.Size.ToString() + ") " +  this.Name 
-
-    // ----------------------------------------------------------------------------------------------------
-    // Linie
-    // ----------------------------------------------------------------------------------------------------
-    type Generic(name:string, color:Color) =
-        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), 1.0f, Quality.Original)
-        
-        override this.ToString() = "Generic:" + this.Name  
-                    
-        override this.TopologyType = PrimitiveTopologyType.Line
-
-        override this.Topology = PrimitiveTopology.LineList
-
-        override this.CreateVertexData(visibility: Visibility) =            
-            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
-            this.MeshData
