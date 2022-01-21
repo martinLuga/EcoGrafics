@@ -26,6 +26,7 @@
     <Compile Include="MathHelper.fs" />
     <Compile Include="ShaderSupport.fs" />
     <Compile Include="FileSupport.fs" />
+    <Compile Include="ShaderCompile.fs" />
     <Compile Include="LoggingSupport.fs" />
     <Compile Include="Framework.fs" />
     <Compile Include="GlobalDefs.fs" />
@@ -45,6 +46,7 @@
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>

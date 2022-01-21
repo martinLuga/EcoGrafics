@@ -82,15 +82,15 @@ module ModelSupport =
 
     let rasterDescriptionFromVisibility(visibility:Visibility) =
         match visibility with 
-        | Visibility.Opaque       -> RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
-        | Visibility.Transparent  -> RasterizerDescription(RasterType.Transparent, rasterizerStateSolid)
-        | Visibility.Invisible    -> RasterizerDescription(RasterType.Transparent, rasterizerStateTransparent)
+        | Visibility.Opaque         -> RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
+        | Visibility.Transparent    -> RasterizerDescription(RasterType.Transparent, rasterizerStateSolid)
+        | Visibility.Invisible      -> RasterizerDescription(RasterType.Transparent, rasterizerStateTransparent)
 
     let TransparenceFromVisibility(visibility:Visibility) =
         match visibility with 
-        | Visibility.Opaque       -> false
-        | Visibility.Transparent  -> true
-        | _ -> false
+        | Visibility.Opaque         -> false
+        | Visibility.Transparent    -> true
+        | Visibility.Invisible      -> true
 
     type TesselationMode = 
         TRI | QUAD | BEZIER | NONE

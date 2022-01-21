@@ -17,7 +17,6 @@ open GraficBase.GraficController
 open GraficBase.GraficWindow
 open log4net
 open ScenarioSupport
-open Shader.FrameResources
 open SharpDX
 open System 
 open System.Windows.Forms
@@ -34,8 +33,6 @@ module WindowControl =
     let logDebug = Debug(logger)
      
     type Keys = System.Windows.Forms.Keys
-
-    type DirectionalLight = CookBook.DirectionalLight
 
     let mutable lastMousePos = new System.Drawing.Point()
     let mutable zoomFactor = 0.5f 

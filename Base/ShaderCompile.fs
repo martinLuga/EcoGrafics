@@ -1,4 +1,4 @@
-﻿namespace Shader
+﻿namespace Base
 //
 //  ShaderCompile.fs
 //

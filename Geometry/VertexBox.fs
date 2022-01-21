@@ -160,5 +160,6 @@ module VertexBox =
         let vertices = createVertices(width, height, depth, color, isTransparent)
         let indices = createIndices()        
         let maxNumSubdivisions = Math.Min(numSubdivisions, 6) // Put a cap on the number of subdivisions.
-        Subdivide(vertices, indices, maxNumSubdivisions)
+        //Subdivide(vertices, indices, maxNumSubdivisions)
+        new MeshData<Vertex>(vertices , indices)
 

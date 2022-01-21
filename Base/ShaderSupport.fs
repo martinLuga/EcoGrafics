@@ -66,6 +66,7 @@ module ShaderSupport =
             CullMode = CullMode.None,
             IsFrontCounterClockwise = RawBool(false)
         ) 
+
     let rasterizerStateTransparent =
         let mutable result = RasterizerStateDescription.Default()
         result.CullMode <- CullMode.None

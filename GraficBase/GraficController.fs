@@ -22,18 +22,16 @@ open Base.ObjectBase
 open Base.ShaderSupport
 open Base.GameTimer
 
-open Cache
-
 open DirectX.D3DUtilities
 open DirectX.Pipeline
 
-open GPUModel.MyGPU 
+open GPUModel.MyGPU
+open GPUModel.MyFrame
 
-open Shader.FrameResources.CookBook
-
-open GraficWindow
 open CameraControl 
 open Camera
+open Cache
+open GraficWindow
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
@@ -335,8 +333,8 @@ module GraficController =
                 for part in object.Display.Parts do                  
                     this.InstallPart(part)
             
-            myGpu.FinalizeInstall() 
-            myGpu.FinishInstall()
+            myGpu.FinalizeMeshCache() 
+            myGpu.ExecuteInstall()
             this.Start()
 
         member this.InstallObjects(objects:BaseObject list) =
@@ -374,8 +372,8 @@ module GraficController =
                 for part in object.Display.Parts do 
                     myGpu.InstallMesh(part.Shape.Name, part.Shape.CreateVertexData(part.Visibility), part.Shape.Topology) 
                     logDebug("Refresh Mesh for " + part.Shape.Name)
-            myGpu.FinalizeInstall() 
-            myGpu.FinishInstall()
+            //myGpu.FinalizeMeshCache() 
+            myGpu.ExecuteInstall()
 
         // ----------------------------------------------------------------------------------------------------
         // Toggle Displayable Properties
@@ -398,7 +396,6 @@ module GraficController =
         member this.RasterizerDesc
             with get() = rasterizerDesc
             and set(value) = rasterizerDesc <- value
-
         
         member this.BlendDesc
             with get() = blendDesc
@@ -445,7 +442,7 @@ module GraficController =
             // Windows Render-Loop
             let loop = new RenderLoop(graficWindow)
             // Depth-Z sort for Transparency
-            let sorted = objects.Values|> Seq.sortBy(fun disp -> - (Vector3.Distance(disp.Position, Camera.Instance.Position)))  
+            let sorted = objects.Values|> Seq.sortBy(fun disp -> - (Vector3.Distance(disp.Position, Camera.Instance.EyePosition)))  
             while loop.NextFrame() && this.isRunning() do
                 if this.notIdle() then
                     logInfo("Step")
@@ -471,7 +468,7 @@ module GraficController =
                 new FrameConstants(
                     TessellationFactor = tessellationFactor, 
                     Light = frameLight,
-                    CameraPosition  = Camera.Instance.Position    
+                    CameraPosition  = Camera.Instance.EyePosition    
                 )
             myGpu.UpdateFrame(ref frameConst)
 
@@ -493,17 +490,33 @@ module GraficController =
         // Objekt-Eigenschaften
         member this.updatePerPart(idx:int, displayable:BaseObject, part:Part) = 
             logDebug("Update part " + idx.ToString() + " " + part.Shape.Name)
-            let viewProjectionMatrix = Camera.Instance.ViewProj
-            let world = displayable.World
-            let perObjectWorld = world * Camera.Instance.World
-            let newObject = 
+
+            let _world          = displayable.World
+            let _view           = Camera.Instance.View
+            let _proj           = Camera.Instance.Proj
+            let _invView        = Matrix.Invert(_view)
+            let _invProj        = Matrix.Invert(_proj) 
+            let _viewProj       = _view * _proj
+            let _invViewProj    = Matrix.Invert(_viewProj) 
+            let _eyePos         = Camera.Instance.EyePosition
+ 
+            let objConst =                
                 new ObjectConstants(
-                    World=perObjectWorld,
-                    WorldInverseTranspose=Matrix.Transpose(Matrix.Invert(perObjectWorld)),
-                    WorldViewProjection=perObjectWorld * viewProjectionMatrix,
-                    ViewProjection=viewProjectionMatrix
+                    World = _world,
+                    View = Matrix.Transpose(_view),
+                    InvView = Matrix.Transpose(_invView), 
+                    Proj = Matrix.Transpose(_proj) ,
+                    InvProj = Matrix.Transpose(_invProj) ,
+                    ViewProj = Matrix.Transpose(_viewProj) ,
+                    InvViewProj = Matrix.Transpose(_invViewProj), 
+                    WorldViewProjection= _world * _viewProj,
+                    WorldInverseTranspose = Matrix.Transpose(Matrix.Invert(_world)),
+                    ViewProjection = _viewProj,
+                    EyePosW = _eyePos  
                 )
-            let perObject = Transpose(newObject)
+
+            let perObject = Transpose(objConst)
+
             myGpu.UpdateObject(idx, ref perObject)
 
         member this.drawPerPart(idx, part:Part) =  
@@ -512,10 +525,9 @@ module GraficController =
 
             if part.Shape.Animated then
                 part.Shape.Update(timer)
-                myGpu.ReplaceMesh( 
-                    part.Shape.Name,
-                    part.Shape.CreateVertexData(part.Visibility)
-                ) 
+                let mesh = part.Shape.CreateVertexData(part.Visibility)
+                let vertices = mesh.Vertices |> Seq.toList
+                myGpu.ReplaceMesh( part.Shape.Name,mesh) 
 
             myGpu.UpdatePipeline(
                 defaultInputLayoutDesc,

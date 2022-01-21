@@ -51,7 +51,7 @@ module Camera =
     type Camera() =
         
         let mutable viewDirty   = true
-        let mutable position    = Vector3.Zero
+        let mutable eyePosition = Vector3.Zero
         let mutable right       = Vector3.UnitX 
         let mutable up          = Vector3.UnitY 
         let mutable look        = Vector3.UnitZ 
@@ -90,11 +90,10 @@ module Camera =
         static member Instance
             with get() = instance
             and set(value) = instance <- value
-    
-        member this.Position  
-            with get() = position
-            and set(value) = position <- value
 
+        member this.EyePosition
+            with get() = eyePosition
+    
         member this.Target
             with get() = target
             and set(value) = target <- value 
@@ -112,7 +111,7 @@ module Camera =
             and set(value) = look <- value
 
         member this.Log() =
-              "      " + "POS=" + position.ToString() + " TARG=" + target.ToString() + " ASP=" + aspectRatio.ToString()
+              "      " + "POS=" + eyePosition.ToString() + " TARG=" + target.ToString() + " ASP=" + aspectRatio.ToString()
             + "\n      " + "PHI=" + phi.ToString() + " THETA=" + theta.ToString() + " RAD=" + radius.ToString()
     
         member this.NearZ
@@ -150,10 +149,6 @@ module Camera =
         member this.FarWindowWidth =
             this.AspectRatio * this.FarWindowHeight
         
-        member this.World
-            with get() = world
-            and set(value) = world <- value 
-    
         member this.View
             with get() = view
             and set(value) = view <- value 
@@ -190,21 +185,21 @@ module Camera =
             this.Proj <-  Matrix_Perspective(fovY, aspect, zn, zf)  
     
         member this.LookAt(pos:Vector3, targ:Vector3, up:Vector3) =
-            position <- pos 
+            eyePosition <- pos 
             target <- targ 
             this.Look <- Vector3.Normalize(targ - pos) 
             this.Right <- Vector3.Normalize(Vector3.Cross(up, this.Look)) 
             this.Up <- Vector3.Cross(this.Look, this.Right) 
-            radius <- Vector3.Distance (this.Position, this.Target)
+            radius <- Vector3.Distance (eyePosition, this.Target)
             viewDirty <- true 
     
         member this.Strafe(d:float32) =
-            this.Position <- this.Position + this.Right * d
-            this.View <-  Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            eyePosition <- eyePosition + this.Right * d
+            this.View <-  Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
     
         member this.Walk(d:float32) =
-            this.Position <- this.Position + this.Look * d 
-            this.View <-  Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            eyePosition <- eyePosition + this.Look * d 
+            this.View <-  Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
     
         member this.Pitch(angle:float32) =
             // Rotate up and look vector about the right vector.
@@ -219,7 +214,7 @@ module Camera =
         member this.Zoom (delta:float32) = 
             radius <- radius + delta
             this.ToCartesian()
-            this.View <-  Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            this.View <-  Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
 
         // ----------------------------------------------------------------------------------------------------
         //  Rotate left / right
@@ -245,7 +240,7 @@ module Camera =
             theta <- MathUtil.Clamp(theta, -MathUtil.TwoPi, MathUtil.TwoPi)
             logDebug("Rotating horizontally" + "phi=" + phi.ToString() + " theta=" + theta.ToString())
             this.ToCartesian()
-            view <- Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            view <- Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
 
         member this.RotateVerticalAmount(up:bool, strength) =
             let mutable direction = ""
@@ -258,24 +253,24 @@ module Camera =
             phi <- MathUtil.Clamp(phi, 0.1f, MathUtil.Pi - 0.1f)
             logDebug("Rotating vertically" + direction + "phi=" + phi.ToString() + " theta=" + theta.ToString())
             this.ToCartesian()
-            view <- Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            view <- Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
 
         // ----------------------------------------------------------------------------------------------------
         //  Conversion Spherical to Cartesian coordinates.
         // ----------------------------------------------------------------------------------------------------
         member this.ToCartesian() =
-            position <- ToCartesian(phi, theta, radius)
-            logDebug("Result position=" + position.ToString())
+            eyePosition <- ToCartesian(phi, theta, radius)
+            logDebug("Result position=" + eyePosition.ToString())
 
         member this.InitRadians() = 
-            let (p, t) = ToRadians(position, radius)  
+            let (p, t) = ToRadians(eyePosition, radius)  
             phi   <- p
             theta <- t
 
         member this.Init(cameraPosition, cameraTarget, aspectRatio, horizontal, vertical, stren) = 
             this.LookAt(cameraPosition, cameraTarget, Vector3.Up)
             this.SetLens(MathUtil.PiOverFour, aspectRatio, 1.0f, 1000.0f)
-            this.View <- Matrix_lookAt(position, target, Vector3.Up)
+            this.View <- Matrix_lookAt(eyePosition, target, Vector3.Up)
             rotAmountHorizontal <- horizontal
             rotAmountVertical <- vertical
             rotationStrength <- stren
@@ -285,6 +280,6 @@ module Camera =
         member this.Reset(cameraPosition, cameraTarget) =
             this.LookAt(cameraPosition, cameraTarget, Vector3.Up)
             this.SetLens(MathUtil.PiOverFour, aspectRatio, 1.0f, 1000.0f)
-            this.View <- Matrix_lookAt(this.Position, this.Target, Vector3.Up)
+            this.View <- Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
             this.InitRadians()
             logInfo("Reset to \n" + this.Log())

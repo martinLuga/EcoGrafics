@@ -21,9 +21,9 @@ open SharpDX.DXGI
 open Base.Framework
 
 open DirectX.Assets
-
-open DX12GameProgramming
-  
+open DirectX.D3DUtilities
+open DirectX.UploadBuffer
+ 
 // ----------------------------------------------------------------------------------------------------
 // GPU helper classes
 // ----------------------------------------------------------------------------------------------------
@@ -193,6 +193,10 @@ module MYUtils =
         member this.Reset() =
             this.ResetBuffers()
             ocbs.Clear()
+
+        member this.FreeBuffers() =
+            vertexBufferUploader.Dispose()
+            vertexBufferUploader <- null
 
         member this.Contains(geometryName) =
             ocbs.ContainsKey(geometryName)

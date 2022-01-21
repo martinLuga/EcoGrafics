@@ -105,5 +105,5 @@ module Connector =
 
         member this.GetRootSignatureDesc() =
             let slotRootParameters = blocks |> Seq.map (fun b -> b.AsRootParameter()) |> Seq.toArray
-            new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers())  
+            new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, slotRootParameters, GetStaticSamplers()) 
 

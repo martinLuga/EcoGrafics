@@ -12,16 +12,14 @@ open System.Collections.Generic
 
 open SharpDX
 open SharpDX.DXGI
-open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
 open Base.Framework
 open Base.LoggingSupport
 open Base.ShaderSupport
+open Base.ShaderCompile
 
 open DirectX.Pipeline
-
-open Shader.ShaderCompile
   
 // ----------------------------------------------------------------------------------------------------
 // Wrapper und Cache für Pipelinestates

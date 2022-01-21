@@ -99,7 +99,6 @@ module MyGPU =
         // Shaders
         let mutable pipelineConfigurations=new Dictionary<string, ShaderConfiguration>() 
         let mutable currentPipelineConfigurationName="Basic"
-        let mutable lastPipelineConfigName=""
         let mutable pixelShaderDesc:ShaderDescription=null
 
         // Resources     
@@ -111,8 +110,8 @@ module MyGPU =
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
         let mutable directRecorder:Recorder = null
-        let mutable directFrameResource:MyFrameResource = null
-        let mutable frameResources = new List<MyFrameResource>(NUMFRAMERESOURCES)
+        let mutable directFrameResource:FrameResource = null
+        let mutable frameResources = new List<FrameResource>(NUMFRAMERESOURCES)
         let mutable currentFrameResourceIndex = 0 
         let mutable itemLength = 0 
         let mutable matLength = 0 
@@ -140,9 +139,7 @@ module MyGPU =
             "MyGPU: " + pipelineProvider.ToString()
 
         // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
         // Member
-        // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
         member this.AspectRatio =
             (float) clientWidth / (float) clientHeight
@@ -196,10 +193,8 @@ module MyGPU =
 
         member this.CurrentPipelineConf = pipelineConfigurations.Item(currentPipelineConfigurationName)
 
-        // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
+         // ----------------------------------------------------------------------------------------------------
         // Methoden
-        // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
         
         member this.Begin() =
@@ -216,9 +211,7 @@ module MyGPU =
             else DepthStencilViewDimension.Texture2D
 
         // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
         // Initialisierungen
-        // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
 
         // 
@@ -264,15 +257,12 @@ module MyGPU =
             pipelineProvider <- new PipelineProvider(device)
 
         // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
         // Install
-        // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------
 
         // 
         // Objects 
         // 
-
         member this.StartInstall()=
             loggerGPU.Info("Start Install")   
             directRecorder.StartRecording() 
@@ -282,10 +272,7 @@ module MyGPU =
             this.BuildFrameResources(anzObjects, anzObjects)
             this.resetMeshCache()
 
-        member this.FinalizeInstall() =
-            this.FinalizeMeshCache(directRecorder.CommandList)
-
-        member this.FinishInstall()=
+        member this.ExecuteInstall()=
             loggerGPU.Info("FinishInstall") 
             directRecorder.StopRecording()
             directRecorder.Play()
@@ -299,11 +286,18 @@ module MyGPU =
         member this.InstallMesh(name, meshData:MeshData<Vertex>, topology) =
             meshCache.Append(name, meshData.Vertices, meshData.Indices, topology) 
 
+        member this.UpdateMesh(vertices:Vertex list) =
+            if frameResources.Count > 0 then
+                let mutable i = 0
+                for v in vertices do
+                    this.CurrFrameResource.VertexVB.CopyData(i, ref v) 
+                    i <- i + 1
+
         member this.ReplaceMesh(name, meshData: MeshData<Vertex>) =
             this.StartInstall()
             meshCache.Replace(name, meshData.Vertices)  
-            this.FinalizeInstall()
-            this.FinishInstall()
+            this.FinalizeMeshCache()
+            this.ExecuteInstall()
 
         member this.ResetAllMeshes() =
             directRecorder.StartRecording()
@@ -317,8 +311,8 @@ module MyGPU =
         member this.resetMeshCache() =
             meshCache.Reset()
 
-        member this.FinalizeMeshCache(commandList) =
-            meshCache.createBuffers(commandList)
+        member this.FinalizeMeshCache() =
+            meshCache.createBuffers(directRecorder.CommandList)
 
         // ----------------------------------------------------------------------------------------------------
         // Texture
@@ -558,11 +552,11 @@ module MyGPU =
         // Frame resources
         //
         member this.BuildFrameResources(itemCount:int, materialsCount:int) = 
-            directFrameResource <- new MyFrameResource(device, directRecorder, itemCount, itemLength, materialsCount, matLength, frameLength)
+            directFrameResource <- new FrameResource(device, directRecorder, itemCount, itemLength, materialsCount, matLength, frameLength)
             frameResources.Clear()
             for  i = 0 to NUMFRAMERESOURCES - 1 do 
                 let frameRecorder = new Recorder("Recorder frame " + i.ToString(), device, commandQueue, null)
-                frameResources.Add(new MyFrameResource(device, frameRecorder, itemCount, itemLength, materialsCount, matLength, frameLength))
+                frameResources.Add(new FrameResource(device, frameRecorder, itemCount, itemLength, materialsCount, matLength, frameLength))
                 fenceEvents.Add(new AutoResetEvent(false))  
         
         // Refresh

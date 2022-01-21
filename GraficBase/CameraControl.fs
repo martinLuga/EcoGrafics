@@ -5,7 +5,6 @@
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
-open Shader.FrameResources
  
 open SharpDX
 
@@ -15,8 +14,6 @@ open Camera
 //  Singleton zur Verwendung der Kamera
 //  Behält die Startwerte
 // ----------------------------------------------------------------------------------------------------  
-
-type DirectionalLight = CookBook.DirectionalLight
 
 module CameraControl = 
 

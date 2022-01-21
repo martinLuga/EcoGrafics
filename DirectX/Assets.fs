@@ -30,6 +30,9 @@ module Assets =
     let mutable allInputLayoutDescriptions           = new Dictionary<string, InputLayoutDescription>() 
     let mutable allGraphicsPipelineStateDescriptions = new Dictionary<string, GraphicsPipelineStateDescription>() 
 
+    // ----------------------------------------------------------------------------------------------------
+    // Texture
+    // ----------------------------------------------------------------------------------------------------    
     let textureDesc2D(resource:Resource) =
         new ShaderResourceViewDescription(
             Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
@@ -65,7 +68,9 @@ module Assets =
         else 
             textureDesc2D(resource)
 
-    // Depth stencil state
+    // ----------------------------------------------------------------------------------------------------
+    // Depth stencil  
+    // ----------------------------------------------------------------------------------------------------  
     let ff = 
         new DepthStencilOperationDescription(
             Comparison = Comparison.Always,
@@ -80,33 +85,6 @@ module Assets =
             FailOperation = StencilOperation.Keep,
             DepthFailOperation = StencilOperation.Decrement
         )
-    let depthStencilStateDescription = 
-        new DepthStencilStateDescription(
-            IsDepthEnabled = RawBool(true),  
-            DepthComparison = Comparison.Less,
-            DepthWriteMask = DepthWriteMask.All,
-            IsStencilEnabled = RawBool(false), 
-            StencilReadMask  = byte 0xFF, // 0xff (no mask)
-            StencilWriteMask = byte 0xFF, // 0xff (no mask)
-            FrontFace = ff,
-            BackFace = bf
-        )
-
-    let depthStencilStateDescriptionDefault =
-        new DepthStencilStateDescription(
-            IsDepthEnabled = RawBool(true),
-            DepthWriteMask = DepthWriteMask.All,
-            DepthComparison = Comparison.Less,
-            IsStencilEnabled = RawBool(false), 
-            StencilReadMask = byte 0xFF, // 0xff (no mask)
-            StencilWriteMask = byte 0xFF, // 0xff (no mask)
-            FrontFace = new DepthStencilOperationDescription(
-                Comparison = Comparison.Always, DepthFailOperation = StencilOperation.Keep, FailOperation = StencilOperation.Keep, PassOperation = StencilOperation.Keep
-            ),
-            BackFace = new DepthStencilOperationDescription(
-                Comparison = Comparison.Always, DepthFailOperation = StencilOperation.Keep, FailOperation = StencilOperation.Keep, PassOperation = StencilOperation.Keep
-            )
-         )
 
     let depthStencilDescription (clientWidth:Int64, clientHeight:int, msaaCount:int, msaaQuality:int)  = 
         new ResourceDescription( 
@@ -125,6 +103,9 @@ module Assets =
             Flags = ResourceFlags.AllowDepthStencil
         )
 
+    // ----------------------------------------------------------------------------------------------------
+    // Sampler 
+    // ---------------------------------------------------------------------------------------------------- 
     let samplerStateDescription = 
         new SamplerStateDescription(        
             AddressU = TextureAddressMode.Wrap,
@@ -145,51 +126,6 @@ module Assets =
             MaximumLod = Single.MaxValue,
             MinimumLod = 0.0f,
             MipLodBias = 0.0f
-        )
-
-    let blendStateOpaque =
-        BlendStateDescription.Default()
-
-    let transparencyBlendDesc =
-        new RenderTargetBlendDescription(        
-            IsBlendEnabled = RawBool(true),
-            LogicOpEnable = RawBool(false),
-            SourceBlend = BlendOption.SourceAlpha,
-            DestinationBlend = BlendOption.InverseSourceAlpha ,
-            BlendOperation = BlendOperation.Add,
-            SourceAlphaBlend = BlendOption.One,
-            DestinationAlphaBlend = BlendOption.Zero,
-            AlphaBlendOperation = BlendOperation.Add,
-            //LogicOp = LogicOperation.Noop,
-            RenderTargetWriteMask = ColorWriteMaskFlags.All
-        )
-
-    let blendStateTransparent =
-        let bs = BlendStateDescription.Default()
-        bs.RenderTarget.[0] <- transparencyBlendDesc
-        bs
-
-    // CullMode (Cull=Wegschneiden) Back = hinteres wird weggeschnitten
-    // IsFrontCounterClockwise, korrespondiert zu der Reihenfolge der Indices bei der Meshberechnung
-    let rasterizerStateSolid =
-        new RasterizerStateDescription(
-            FillMode = FillMode.Solid,
-            CullMode = CullMode.Back,
-            IsFrontCounterClockwise = RawBool(true)
-        ) 
-
-    let rasterizerStateWired =
-        new RasterizerStateDescription(
-            FillMode = FillMode.Wireframe,
-            CullMode = CullMode.None,
-            IsFrontCounterClockwise = RawBool(false)
-        ) 
-
-    let textDescription width height =
-        ResourceDescription.Texture2D(
-            Format.R8G8B8A8_UNorm,
-            width,
-            height
         )
 
     let GetStaticSamplers() =   
@@ -248,6 +184,54 @@ module Assets =
             )
         |]
 
+    // ----------------------------------------------------------------------------------------------------
+    // Blendstate and RasterizerState 
+    // ---------------------------------------------------------------------------------------------------- 
+    let blendStateOpaque =
+        BlendStateDescription.Default()
+
+    let transparencyBlendDesc =
+        new RenderTargetBlendDescription(        
+            IsBlendEnabled = RawBool(true),
+            LogicOpEnable = RawBool(false),
+            SourceBlend = BlendOption.SourceAlpha,
+            DestinationBlend = BlendOption.InverseSourceAlpha ,
+            BlendOperation = BlendOperation.Add,
+            SourceAlphaBlend = BlendOption.One,
+            DestinationAlphaBlend = BlendOption.Zero,
+            AlphaBlendOperation = BlendOperation.Add,
+            //LogicOp = LogicOperation.Noop,
+            RenderTargetWriteMask = ColorWriteMaskFlags.All
+        )
+
+    let blendStateTransparent =
+        let bs = BlendStateDescription.Default()
+        bs.RenderTarget.[0] <- transparencyBlendDesc
+        bs
+
+    // CullMode (Cull=Wegschneiden) Back = hinteres wird weggeschnitten
+    // IsFrontCounterClockwise, korrespondiert zu der Reihenfolge der Indices bei der Meshberechnung
+    let rasterizerStateSolid =
+        new RasterizerStateDescription(
+            FillMode = FillMode.Solid,
+            CullMode = CullMode.Back,
+            IsFrontCounterClockwise = RawBool(true)
+        ) 
+
+    let rasterizerStateWired =
+        new RasterizerStateDescription(
+            FillMode = FillMode.Wireframe,
+            CullMode = CullMode.None,
+            IsFrontCounterClockwise = RawBool(false)
+        ) 
+
+    let textDescription width height =
+        ResourceDescription.Texture2D(
+            Format.R8G8B8A8_UNorm,
+            width,
+            height
+        )
+
     let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =
         device.CreateRootSignature(new DataPointer (signatureDesc.Serialize().BufferPointer, int (signatureDesc.Serialize().BufferSize)))
 
@@ -259,14 +243,3 @@ module Assets =
                 Stencil = byte 0
             )
         )
-
-    let defaultInputElementsDescriptionNew = 
-        new InputLayoutDescription(
-            [| 
-                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0);
-                new InputElement("NORMAL",   0, Format.R32G32B32_Float, 12, 0);
-                new InputElement("COLOR",    0, Format.R32G32B32A32_Float, 24, 0);    
-                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0)
-            |]
-        )
-

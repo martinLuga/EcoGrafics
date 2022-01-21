@@ -6,12 +6,12 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open Base.VertexDefs
-
 open log4net
 open NUnit.Framework
 
-open Shader.ShaderCompile
+open Base.VertexDefs
+open Base.ShaderCompile
+
 open Shader.Connector
 
 open ShaderCommons 

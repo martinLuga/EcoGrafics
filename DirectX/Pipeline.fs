@@ -44,28 +44,6 @@ module Pipeline =
         psoDesc.RenderTargetFormats.SetValue(BACKBUFFERFORMAT, 0)
         psoDesc
 
-    let newPsoDesc (inputLayout, rootSignature, vertexShader , pixelShader, domainShader:ShaderBytecode, hullShader:ShaderBytecode, blendState, rasterizerState, primitiveTopologyType, sampleDescription)  = 
-        let psoDesc = emptyPsoDesc () 
-        psoDesc.InputLayout <- inputLayout
-        psoDesc.RootSignature <- rootSignature 
-        psoDesc.VertexShader <- vertexShader   
-        psoDesc.PixelShader <- pixelShader 
-        if domainShader.Buffer <> null then
-            psoDesc.DomainShader <-  domainShader 
-        if hullShader.Buffer <> null then
-            psoDesc.HullShader <-  hullShader 
-        psoDesc.RasterizerState <- rasterizerState 
-        psoDesc.BlendState <- blendState 
-        psoDesc.DepthStencilState <- DepthStencilStateDescription.Default() 
-        psoDesc.SampleMask <- Int32.MaxValue 
-        psoDesc.PrimitiveTopologyType <- primitiveTopologyType 
-        psoDesc.RenderTargetCount <- 1   
-        psoDesc.SampleDescription <- sampleDescription 
-        psoDesc.StreamOutput <- StreamOutputDescription() 
-        psoDesc.DepthStencilFormat <- DEPTHSTENCILFORMAT
-        psoDesc.RenderTargetFormats.SetValue(BACKBUFFERFORMAT, 0)
-        psoDesc
-
     let rootSignatureDescEmpty =
         new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers()) 
         
