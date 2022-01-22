@@ -539,7 +539,7 @@ module GraficController =
                 new SampleDescription(1, 0),
                 part.Shape.TopologyType,
                 part.Shape.Topology,
-                rasterDescriptionFromVisibility(part.Visibility),
+                this.RasterizerDesc,
                 blendDescriptionFromVisibility(part.Visibility)
             )
 

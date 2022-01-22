@@ -918,3 +918,20 @@ module GeometricModel =
             new TriangularShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "SimpleShape (x " + this.Size.ToString() + ") " +  this.Name 
+
+    // ----------------------------------------------------------------------------------------------------
+    // Generisch: Aus Vertexen bestehend
+    // Benutzt in DebugDraw von Physics
+    // ----------------------------------------------------------------------------------------------------
+    type Generic(name:string, color:Color) =
+        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), 1.0f, Quality.Original)
+    
+        override this.ToString() = "Generic:" + this.Name  
+                
+        override this.TopologyType = PrimitiveTopologyType.Line
+
+        override this.Topology = PrimitiveTopology.LineList
+
+        override this.CreateVertexData(visibility: Visibility) =            
+            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
+            this.MeshData
