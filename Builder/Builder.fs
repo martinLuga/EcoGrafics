@@ -14,19 +14,16 @@ open Base.ShaderSupport
  
 open Wavefront
 open SimpleFormat
+open Glb
 
 // ----------------------------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------------------------
 // Client-Schnittestelle
-// Für einfache Grafik-Dateien
-// ----------------------------------------------------------------------------------------------------
+// Für Grafik-Dateien
 // ----------------------------------------------------------------------------------------------------
 
 module SimpleBuilder = 
     // ----------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------------------------
     // Builder für das einfache Format
-    // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     let logger = LogManager.GetLogger("Builder.Simple")
     let logInfo = Info(logger)
@@ -39,26 +36,35 @@ module SimpleBuilder =
         let builder = new SimpleBuilder(name, fileName)  
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
- 
-// ----------------------------------------------------------------------------------------------------
-// Client-Funktionen
-// Für die Wavefront-Schnittstelle
-// ----------------------------------------------------------------------------------------------------
-module WavefrontBuilder =
+
+module GlbBuilder = 
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für das glb Format
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Glb")
+    let logInfo = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
+    //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (name, fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating Geometry for GLB-File: " + fileName  )
+        let builder = new GlbBuilder(name, fileName) 
+        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)    
+        builder.Parts
+ 
+module WavefrontBuilder =
     // ----------------------------------------------------------------------------------------------------
     // Builder für das Wavefront-Format
-    // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     let logger = LogManager.GetLogger("Builder.Wavefront")
     let logInfo = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
-    //  Komplette Displayables  für eine Wavefront .obj Datei
+    //  Parts für eine Wavefront .obj Datei
     // ----------------------------------------------------------------------------------------------------
     let Build (name: string, fileName: string, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-        logInfo ("Creating Geometry for Wavefront-File:" + fileName)
+        logInfo ("Creating Geometry for Wavefront-File: " + fileName)
         let builder = new WavefrontBuilder(name, fileName)
         builder.CreateMaterials()
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders) 

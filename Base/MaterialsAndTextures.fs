@@ -163,7 +163,7 @@ module MaterialsAndTextures =
             fileName=texturName,
             pathName="",
             isCube=isCube
-        )
+        ) 
 
     let TEXT_EMPTY = TEXTURE("", "", false)
     let TEXT_WALL = TEXTURE("WALL", "texture_140.jpg", false)

@@ -10,11 +10,17 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GlbFormat.fs" />
     <Compile Include="WavefrontFormat.fs" />
     <Compile Include="SimpleFormat.fs" />
+    <Compile Include="Glb.fs" />
     <Compile Include="Wavefront.fs" />
     <Compile Include="Builder.fs" />
     <Compile Include="ModelExtension.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="glTF2Loader" Version="1.0.0" />
+    <PackageReference Include="VGltf" Version="0.2.10" />
   </ItemGroup>
 
   <ItemGroup>

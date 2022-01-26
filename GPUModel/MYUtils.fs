@@ -22,7 +22,6 @@ open Base.Framework
 
 open DirectX.Assets
 open DirectX.D3DUtilities
-open DirectX.UploadBuffer
  
 // ----------------------------------------------------------------------------------------------------
 // GPU helper classes
