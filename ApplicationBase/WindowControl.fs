@@ -256,3 +256,7 @@ module WindowControl =
     let printScenario(scenarioName) =
         logInfo("Start Scenario: " + scenarioName) 
         mainWindow.Text <- "Scenario: " + scenarioName
+
+    let print(applicationText) =
+        logInfo(applicationText) 
+        mainWindow.Text <- applicationText

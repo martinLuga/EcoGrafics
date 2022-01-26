@@ -331,6 +331,8 @@ module MyGPU =
                             textureHeapWrapper.AddResource(resource, isCube)
                             textures.Add(textureName, textureIdx)
                             textureIdx <- textureIdx + 1
+                        else 
+                            raise (new System.Exception("Texture file-type?"))
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 

@@ -91,24 +91,28 @@ module MaterialsAndTextures =
 
     let MAT_FRONT = MATERIAL("FRONT", Color.DarkSlateGray)
     let MAT_NONE = MATERIAL("NONE", Color.Transparent)
+
     let MAT_BLUE = MATERIAL("BLUE", Color.Blue)
-    let MAT_LIGHT_BLUE = MATERIAL("LIGHT_BLUE", Color.LightBlue)
-    let MAT_RED = MATERIAL("RED", Color.Red)
-    let MAT_GREEN = MATERIAL("GREEN", Color.DarkGreen)
-    let MAT_ORANGE = MATERIAL("ORANGE", Color.Orange)
-    let MAT_YELLOW = MATERIAL("YELLOW", Color.Yellow)
-    let MAT_MAGENTA = MATERIAL("MAGENTA", Color.Magenta)
-    let MAT_CYAN = MATERIAL("CYAN", Color.Cyan)
+    let MAT_BEIGE = MATERIAL("BEIGE",Color.Beige)
+    let MAT_BROWN = MATERIAL("BROWN", Color.Brown) 
     let MAT_BLACK = MATERIAL("BLACK", Color.Black)
+    let MAT_CYAN = MATERIAL("CYAN", Color.Cyan)
+    let MAT_DARKGOLDENROD = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
+    let MAT_DARKSLATEGRAY = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
+    let MAT_GREEN = MATERIAL("GREEN", Color.DarkGreen)
+    let MAT_GRAY = MATERIAL("GRAY", Color.Gray)
+    let MAT_LIGHT_BLUE = MATERIAL("LIGHT_BLUE", Color.LightBlue)
+    let MAT_MAGENTA = MATERIAL("MAGENTA", Color.Magenta)
+    let MAT_ORANGE = MATERIAL("ORANGE", Color.Orange)
+    let MAT_RED = MATERIAL("RED", Color.Red)
+    let MAT_SILVER = MATERIAL("MAT_SILVER", Color.Silver) 
     let MAT_WHITE = MATERIAL("WHITE", Color.White)
+    let MAT_YELLOW = MATERIAL("YELLOW", Color.Yellow)
+    
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
     let MAT_ANT = MAT("ANT")
     let MAT_HILL = MATERIAL("HILL", Color.Transparent)
     let MAT_PRED = MATERIAL("PRED", Color.Black)
-    let MAT_BEIGE = MATERIAL("BEIGE",Color.Beige) 
-    let MAT_DARKGOLDENROD = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
-    let MAT_DARKSLATEGRAY = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
-    let MAT_SILVER = MATERIAL("MAT_SILVER", Color.Silver) 
 
     let MATERIAL_LIMIT (name, color: Color) =
         new Material(
@@ -177,6 +181,7 @@ module MaterialsAndTextures =
     let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg", false)
     let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg", false)
     let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg", false)
+    let TEXT_WOOD = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
 
     let DefaultMaterials () =
         [
