@@ -41,7 +41,18 @@ module Glb =
         Vector2( x.[0], x.[1])
 
     let myMaterial(mat:Material) = 
-        new ModelSupport.Material(mat.Name)
+        let a = mat.EmissiveFactor.[0]
+        new ModelSupport.Material(
+            name=mat.Name,
+            diffuseAlbedo=Vector4.Zero,
+            fresnelR0=Vector3.Zero,
+            roughness=0.0f,
+            ambient=Color4.White,
+            diffuse=Color4.White,
+            specular=Color4.White,
+            specularPower=0.0f,
+            emissive=Color4.White
+        )
 
     let myTexture(tex:Texture) = 
         new ModelSupport.Texture(tex.Name)
@@ -84,7 +95,7 @@ module Glb =
         let mutable lastTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Undefined
 
         do 
-            container <- getContainer(fileName)
+            container <- getGlbContainer(fileName)
             gltf      <- container.Gltf
             store     <- getStore(container, loader )
 
@@ -98,6 +109,14 @@ module Glb =
             let mesh = gltf.Meshes[childNode.Mesh.Value]
             let primitive = mesh.Primitives[0]
             lastTopologyType <- myTopologyType(primitive.Mode)
+            let material = gltf.Materials[primitive.Material.Value]
+            let roughness = material.PbrMetallicRoughness 
+            let bct = roughness.BaseColorTexture 
+            let bcti = bct.Index 
+            let mf = roughness.MetallicFactor 
+
+            // Textures
+            let texture = gltf.Textures[bcti]
 
             // Vertex
             let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
@@ -113,7 +132,7 @@ module Glb =
             let ueberAlleTexCoords  = alleTexCoord.GetEnumerable().GetEnumerator()
 
             while ueberAllePositionen.MoveNext() && ueberAlleNormalen.MoveNext() && ueberAlleTexCoords.MoveNext()  do
-                let pos = ueberAllePositionen.Current
+                let pos = ueberAllePositionen.Current * generalSizeFactor
                 let norm = ueberAlleNormalen.Current
                 let tex = ueberAlleTexCoords.Current
                 let vertex = new Vertex(pos, norm , Color4.White, tex)

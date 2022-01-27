@@ -137,7 +137,7 @@ module TestScenariosCommon =
 
     let WORLDORIGIN = Vector3.Zero
     let GROUND_LEVEL = WORLDORIGIN.Y
-    let WORLD_HALF_LENGTH = 100.0f
+    let WORLD_HALF_LENGTH = 50.0f
     
     let downDirection  = Vector3.UnitY * -1.0f
     let backDirection  = Vector3.UnitZ *  1.0f
@@ -254,18 +254,18 @@ module TestScenariosCommon =
         let result:BaseObject = null
         result
 
-    let createGround(center:Vector3, extent) =
+    let createGround(center:Vector3, halfLenth:float32) =
         let origin = 
             Vector3(
-                center.X - extent/2.0f,
+                center.X - halfLenth ,
                 center.Y - GROUND_HEIGHT,
-                center.Z - extent/2.0f
+                center.Z - halfLenth 
             )
         new BaseObject(
             name = "GROUND",
             display =  
                 new Display(
-                    parts = [PART_GROUND (Vector3.Zero, extent)]
+                    parts = [PART_GROUND (Vector3.Zero, halfLenth)]
                 ),
             position = origin
         )
@@ -273,9 +273,9 @@ module TestScenariosCommon =
     let DEFAULT_GROUND(center:Vector3, halfLenth:float32) =
         let origin = 
             Vector3(
-                center.X - halfLenth/2.0f,
+                center.X - halfLenth,
                 center.Y - GROUND_HEIGHT,
-                center.Z - halfLenth/2.0f
+                center.Z - halfLenth
             )
         new BaseObject(
             name = "GROUND",
@@ -286,13 +286,42 @@ module TestScenariosCommon =
                             name = "GROUND",
                             shape=Quader( 
                                 name="GROUND", 
-                                laenge=halfLenth,
-                                breite=halfLenth,
+                                laenge=halfLenth * 2.0f,
+                                breite=halfLenth * 2.0f,
                                 hoehe= GROUND_HEIGHT,
                                 color=Color.Black
                             ),
                             material=MAT_DARKSLATEGRAY,
                             texture=TEXT_WALL
+                        )
+                    ]
+                ),
+            position = origin
+        )
+
+    let WATER_GROUND(center:Vector3, halfLenth:float32) =
+        let origin = 
+            Vector3(
+                center.X - halfLenth,
+                center.Y - GROUND_HEIGHT,
+                center.Z - halfLenth
+            )
+        new BaseObject(
+            name = "GROUND",
+            display =  
+                new Display(
+                    parts = [
+                        new Part(  
+                            name = "GROUND",
+                            shape=Quader( 
+                                name="GROUND", 
+                                laenge=halfLenth * 2.0f,
+                                breite=halfLenth * 2.0f,
+                                hoehe= GROUND_HEIGHT,
+                                color=Color.Black
+                            ),
+                            material=MAT_LIGHT_BLUE,
+                            texture=TEXT_WATER
                         )
                     ]
                 ),

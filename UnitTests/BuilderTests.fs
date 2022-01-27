@@ -87,7 +87,7 @@ module BuilderTests =
         [<TestCase("Megalodon.glb")>]
         member this.ReadFromFile(fileName) = 
             this.initFiles("C:\\temp\\obj\\", fileName)  
-            let container = getContainer (this.filename)  
+            let container = getGlbContainer (this.filename)  
             Assert.NotNull(container)
 
         [<TestCase("Megalodon.glb")>]

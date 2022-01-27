@@ -904,7 +904,7 @@ module GeometricModel =
         new(name: string,  ursprung: Vector3,  size: float32, quality:Quality) =
             new PatchShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
-        override this.ToString() = "WavefrontShape (x " + this.Size.ToString() + ") " + this.Name 
+        override this.ToString() = "PatchShape (x " + this.Size.ToString() + ") " + this.Name 
 
     // ----------------------------------------------------------------------------------------------------
     // TopologyType=Triangle
@@ -917,7 +917,7 @@ module GeometricModel =
         new(name: string,  ursprung: Vector3,  size: float32, quality:Quality) = 
             new TriangularShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
-        override this.ToString() = "SimpleShape (x " + this.Size.ToString() + ") " +  this.Name 
+        override this.ToString() = "TriangularShape: " + this.Name 
 
     // ----------------------------------------------------------------------------------------------------
     // Generisch: Aus Vertexen bestehend

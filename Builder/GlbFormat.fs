@@ -28,10 +28,17 @@ module GlbFormat =
     let fileLogger = LogManager.GetLogger("File")
     let logFile  = Debug(fileLogger)
 
-    let getContainer (fileName: string) =
+    let getGlbContainer (fileName: string) =
         let mutable container = 
-            using (new FileStream(fileName, FileMode.Open, FileAccess.Read) )(fun rdr ->
-                GltfContainer.FromGlb(rdr)  
+            using (new FileStream(fileName, FileMode.Open, FileAccess.Read) )(fun fs ->
+                GltfContainer.FromGlb(fs)  
+            )
+        container
+
+    let getGltfContainer (fileName: string) =
+        let mutable container = 
+            using (new FileStream(fileName, FileMode.Open, FileAccess.Read) )(fun fs ->
+                GltfContainer.FromGltf(fs) 
             )
         container
     
@@ -42,7 +49,7 @@ module GlbFormat =
 
     let GetMeshes(fileName: string) =
         let container = 
-            getContainer (fileName )
+            getGlbContainer (fileName )
         container.Gltf.Meshes
 
     let GetNodes(fileName: string) =
