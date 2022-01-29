@@ -20,7 +20,6 @@ open SharpDX.Direct3D12
 open SharpDX.DXGI
 
 open Base.LoggingSupport
-open Base.MeshObjects
 open Base.ShaderSupport
 open Base.VertexDefs
 
@@ -283,8 +282,8 @@ module MyGPU =
         member this.hasMesh(name) =
             meshCache.Contains(name) 
 
-        member this.InstallMesh(name, meshData:MeshData<Vertex>, topology) =
-            meshCache.Append(name, meshData.Vertices, meshData.Indices, topology) 
+        member this.InstallMesh(name, vertices, indices, topology) =
+            meshCache.Append(name, vertices, indices, topology) 
 
         member this.UpdateMesh(vertices:Vertex list) =
             if frameResources.Count > 0 then
@@ -293,9 +292,9 @@ module MyGPU =
                     this.CurrFrameResource.VertexVB.CopyData(i, ref v) 
                     i <- i + 1
 
-        member this.ReplaceMesh(name, meshData: MeshData<Vertex>) =
+        member this.ReplaceMesh(name, vertices) =
             this.StartInstall()
-            meshCache.Replace(name, meshData.Vertices)  
+            meshCache.Replace(name, vertices)  
             this.FinalizeMeshCache()
             this.ExecuteInstall()
 

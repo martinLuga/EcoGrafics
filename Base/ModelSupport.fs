@@ -135,17 +135,20 @@ module ModelSupport =
             diffuse: Color4,
             specular: Color4,
             specularPower: float32,
-            emissive: Color4
+            emissive: Color4,
+            hasTexture:bool 
         ) =
         let mutable ambient = ambient
         let mutable diffuse = diffuse
         let mutable specular = specular
         let mutable emissive = emissive
         let mutable name = name
+        let mutable hasTexture = hasTexture
         member this.DiffuseAlbedo = diffuseAlbedo
         member this.FresnelR0 = fresnelR0
         member this.Roughness = roughness
         member this.SpecularPower = specularPower
+        member this.MatTransform:Matrix = Matrix.Identity
 
         new() = Material("", Vector4.Zero, Vector3.Zero, 0.0f)
         new(name: string) = Material(name, Vector4.Zero, Vector3.Zero, 0.0f)
@@ -160,11 +163,37 @@ module ModelSupport =
                 Color4.White,
                 Color4.White,
                 0.0f,
-                Color4.White
+                Color4.White,
+                false
             )
 
+        new( name:string, ambient: Color4, diffuse: Color4, specular: Color4, specularPower: float32, emissive: Color4, hasTexture) =
+            Material(
+                name,
+                Vector4.Zero,
+                Vector3.Zero, 
+                0.0f, 
+                ambient,
+                diffuse,
+                specular,
+                specularPower,
+                emissive,
+                hasTexture
+                )
+
         new( name:string, ambient: Color4, diffuse: Color4, specular: Color4, specularPower: float32, emissive: Color4) =
-            Material(name, Vector4.Zero, Vector3.Zero, 0.0f, ambient, diffuse, specular, specularPower, emissive)
+            Material(
+                name,
+                Vector4.Zero,
+                Vector3.Zero, 
+                0.0f, 
+                ambient,
+                diffuse,
+                specular,
+                specularPower,
+                emissive,
+                false
+                )
 
         override this.ToString() = "Material: " + this.Name
                 
@@ -183,6 +212,10 @@ module ModelSupport =
         member this.Emissive
             with get () = emissive
             and set (value) = emissive <- value
+
+        member this.HasTexture
+            with get () = hasTexture
+            and set (value) = hasTexture <- value
 
         member this.Specular
             with get () = specular

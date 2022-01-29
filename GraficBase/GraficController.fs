@@ -196,7 +196,8 @@ module GraficController =
                 defaultTopologyType     
             )
 
-        member this.ConfigureGPU() =
+        abstract member ConfigureGPU:Unit -> Unit 
+        default this.ConfigureGPU() =
             myGpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
             myGpu.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
             myGpu.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
@@ -229,6 +230,9 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Member
         // ----------------------------------------------------------------------------------------------------
+        member this.MyGpu  
+            with get () = myGpu
+
         member this.AspectRatio  
             with get () = graficWindow.AspectRatio
 
@@ -347,11 +351,8 @@ module GraficController =
             if  myGpu.hasMesh(part.Shape.Name)  then
                 ()
             else
-                myGpu.InstallMesh(
-                    part.Shape.Name,
-                    part.Shape.CreateVertexData(part.Visibility),
-                    part.Shape.Topology
-                )
+                let meshData = part.Shape.CreateVertexData(part.Visibility)
+                myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology)
             
             // Material Data
             if this.getMaterial(part.Material.Name) = null then
@@ -370,7 +371,8 @@ module GraficController =
             myGpu.resetMeshCache()
             for object in objects.Values do  
                 for part in object.Display.Parts do 
-                    myGpu.InstallMesh(part.Shape.Name, part.Shape.CreateVertexData(part.Visibility), part.Shape.Topology) 
+                    let meshData = part.Shape.CreateVertexData(part.Visibility)
+                    myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology) 
                     logDebug("Refresh Mesh for " + part.Shape.Name)
             //myGpu.FinalizeMeshCache() 
             myGpu.ExecuteInstall()
@@ -526,8 +528,8 @@ module GraficController =
             if part.Shape.Animated then
                 part.Shape.Update(timer)
                 let mesh = part.Shape.CreateVertexData(part.Visibility)
-                let vertices = mesh.Vertices |> Seq.toList
-                myGpu.ReplaceMesh( part.Shape.Name,mesh) 
+                let vertices = mesh.Vertices  
+                myGpu.ReplaceMesh(part.Shape.Name, vertices)  
 
             myGpu.UpdatePipeline(
                 defaultInputLayoutDesc,
