@@ -112,7 +112,7 @@ module GlbFormat =
                 raise ex
             let loader = new ResourceLoaderFromEmbedOnly() 
             let store = new ResourcesStore(container, loader) 
-            (container, store, loader)
+            store
         )
 
     // ---------------------------------------------------------------------------------------------------- 
@@ -120,7 +120,6 @@ module GlbFormat =
     // ---------------------------------------------------------------------------------------------------- 
     type Worker(fileName: string) =
         
-        let mutable container:GltfContainer = null
         let mutable store:ResourcesStore = null
         let mutable gltf:Gltf = null
         let mutable loader:ResourceLoaderFromEmbedOnly = null
@@ -135,11 +134,9 @@ module GlbFormat =
         let mutable topologyType    = PrimitiveTopologyType.Triangle
 
         do 
-            let (_container, _store, _loader) = getContainer(fileName)
-            container   <- _container
-            store       <- _store
-            loader      <- _loader
-            gltf        <- _container.Gltf
+            let _store = getContainer(fileName)
+            store       <- _store           // Der Store enthält alles
+            gltf        <- store.Gltf       // Gltf zeigt in den Store
 
         member this.Vertices 
             with get() = vertices

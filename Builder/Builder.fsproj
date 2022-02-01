@@ -21,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="4.1.0" />
     <PackageReference Include="glTF2Loader" Version="1.0.0" />
-    <PackageReference Include="VGltf" Version="0.2.10" />
+    <PackageReference Include="VGltf" Version="0.2.11" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.1" />
+    <PackageReference Update="FSharp.Core" Version="6.0.2" />
   </ItemGroup>
 </Project>
