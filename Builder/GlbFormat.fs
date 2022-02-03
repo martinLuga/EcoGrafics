@@ -13,11 +13,14 @@ open System.IO
 
 open log4net
 
-open SharpDX
+
 
 open Base
 open Base.LoggingSupport 
 open Base.VertexDefs
+
+open SharpDX
+open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
 open VGltf
@@ -71,6 +74,17 @@ module GlbFormat =
             | _ -> raise(SystemException("Not supported"))
         else 
             PrimitiveTopologyType.Triangle
+
+    let myTopology(src_typ:Nullable<Types.Mesh.PrimitiveType.ModeEnum>) =
+        if src_typ.HasValue then
+            let typ = src_typ.Value
+            match typ with
+            | Types.Mesh.PrimitiveType.ModeEnum.POINTS      -> PrimitiveTopology.PointList
+            | Types.Mesh.PrimitiveType.ModeEnum.LINES       -> PrimitiveTopology.LineList
+            | Types.Mesh.PrimitiveType.ModeEnum.TRIANGLES   -> PrimitiveTopology.TriangleList
+            | _ -> raise(SystemException("Not supported"))
+        else 
+            PrimitiveTopology.TriangleList
 
     let getGlbContainer (fileName: string) =
         let mutable container = 

@@ -31,6 +31,8 @@ open MyFrame
 open MyPipelineSupport
 open MYUtils
 open MyGPUInfrastructure
+
+type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>
   
 // ----------------------------------------------------------------------------------------------------
 // GPU Abstraction
@@ -100,11 +102,16 @@ module MyGPU =
         let mutable currentPipelineConfigurationName="Basic"
         let mutable pixelShaderDesc:ShaderDescription=null
 
+        // Geometry        
+        let mutable meshCache:MeshCache<Vertex> = null
+        let mutable geometry:MeshGeometry = null
+        let mutable vertices:Vertex[] = [||]
+        let mutable indices:int[] = [||]
+
         // Resources     
         let mutable textures = new Dictionary<string, int>()
         let mutable textureIdx = 0
         let mutable textureHeapWrapper:HeapWrapper = null
-        let mutable meshCache:MeshCache<Vertex> = null
 
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
@@ -149,6 +156,9 @@ module MyGPU =
 
         member this.Device
             with get() = device
+
+        member this.Geometry
+            with get() = geometry
 
         member this.ItemLength
             with get() = itemLength

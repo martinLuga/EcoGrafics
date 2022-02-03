@@ -1,6 +1,6 @@
 ﻿namespace GPUModel
 //
-//  MYUtils.fs
+//  MyMesh.fs
 //
 //  Ported from Luna, Frank D. Introduction To 3D Game Programming With Direct X 12 
 //  
@@ -14,6 +14,9 @@ open SharpDX.DXGI
 
 open DirectX.D3DUtilities
 
+open Base.MeshObjects
+open Base.VertexDefs
+
 // ----------------------------------------------------------------------------------------------------
 // Mesh GPU Support
 // Mehrere SubMeshes in einem Mesh in der GPU verwalten
@@ -24,12 +27,15 @@ module MyMesh =
     // Ein Submesh
     // ----------------------------------------------------------------------------------------------------
     type SubmeshGeometry() =
-
+        let mutable name = ""
         let mutable indexCount = 0
         let mutable startIndexLocation = 0
         let mutable baseVertexLocation = 0
-        let mutable bounds = new BoundingBox()
-    
+
+        member this.Name
+            with get() = name
+            and set(value) = name <- value
+
         member this.IndexCount
             with get() = indexCount
             and set(value) = indexCount <- value
@@ -42,14 +48,10 @@ module MyMesh =
             with get()= baseVertexLocation
             and set(value) = baseVertexLocation <- value
 
-        // Bounding box of the geometry defined by this submesh.
-         member this.Bounds 
-            with get() = bounds
-            and set(value) = bounds <- value    
-
     // ----------------------------------------------------------------------------------------------------
     // Mesh 
     // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>]
     type MeshGeometry<'TVertex, 'TIndex 
         when 'TVertex: struct and 'TVertex: (new:Unit -> 'TVertex) and 'TVertex:>System.ValueType
         and  'TIndex : struct and 'TIndex:  (new:Unit -> 'TIndex)  and 'TIndex:>System.ValueType>
@@ -150,13 +152,13 @@ module MyMesh =
             )       
 
         // ----------------------------------------------------------------------------------------------------
-       // Below are helper factory methods in order to make use of generic type inference.
+        // Below are helper factory methods in order to make use of generic type inference.
         // Note that constructors do not support such inference.        
         // ----------------------------------------------------------------------------------------------------
         static member 
             New<
                 'TVertex, 'TIndex when 'TVertex: struct and 'TVertex: (new:Unit -> 'TVertex) and 'TVertex:>System.ValueType
-                and 'TIndex : struct and 'TIndex: (new:Unit -> 'TIndex) and 'TIndex:>System.ValueType 
+                and 'TIndex:>System.ValueType 
             > 
             ( 
                 device:Device,
@@ -169,21 +171,23 @@ module MyMesh =
             let mutable indexBufferUploader:Resource = null
             let mutable vertexBufferUploader:Resource = null
 
-            let vertexBufferByteSize = Utilities.SizeOf(vertices |> Seq.toArray)            
+            let vertexArray:'TVertex[] = (vertices|> Seq.toArray)
+            let vertexBufferByteSize = Utilities.SizeOf(vertexArray)            
             let vertexBuffer = D3DUtil.CreateDefaultBuffer(
                 device,
                 commandList,
-                vertices |> Seq.toArray,
+                vertexArray,
                 vertexBufferByteSize,
                 &vertexBufferUploader
             )
 
-            let indexBufferByteSize = Utilities.SizeOf(indices |> Seq.toArray)
+            let indexArray:'TIndex[] = (indices|> Seq.toArray)
+            let indexBufferByteSize = Utilities.SizeOf(indexArray)
             let indexBufferLength =  (indices|> Seq.toArray).Length            
             let indexBuffer = D3DUtil.CreateDefaultBuffer(
                 device,
                 commandList,
-                indices |> Seq.toArray,
+                indexArray,
                 indexBufferByteSize,
                 &indexBufferUploader
             ) 
@@ -204,11 +208,15 @@ module MyMesh =
         // ----------------------------------------------------------------------------------------------------
         // Constructor - Index.        
         // ----------------------------------------------------------------------------------------------------
-        static member New<'TIndex when 'TIndex: struct and 'TIndex: (new:Unit -> 'TIndex) and 'TIndex:>System.ValueType>(
-            device:Device ,
-            commandList:GraphicsCommandList ,
-            indices:IEnumerable<'TIndex> ,
-            [<DefaultParameterValue("Default")>]name:string
+        static member NewIndex<
+            'TVertex, 'TIndex when 'TVertex: struct and 'TVertex: (new:Unit -> 'TVertex) and 'TVertex:>System.ValueType
+            and 'TIndex:>System.ValueType 
+            > 
+            (
+                device:Device,
+                commandList:GraphicsCommandList,
+                indices:IEnumerable<'TIndex>,
+                [<DefaultParameterValue("Default")>]name:string
             ) =            
         
             let indexArray:'TIndex[] = (indices|> Seq.toArray)
@@ -239,3 +247,27 @@ module MyMesh =
                 format <- Format.R16_UInt 
             assert(format <> Format.Unknown)
             format
+
+    let AppendMeshData(meshData:MeshData<Vertex>, vertices:List<Vertex>,  indices:List<int>) =
+    
+        //
+        // Define the SubmeshGeometry that cover different
+        // regions of the vertex/index buffers.
+        //
+
+        let submesh = 
+            new SubmeshGeometry (        
+                IndexCount = meshData.Indices.Count,
+                StartIndexLocation = indices.Count,
+                BaseVertexLocation = vertices.Count
+            )
+
+        //
+        // Extract the vertex elements we are interested in and pack the
+        // vertices and indices of all the meshes into one vertex/index buffer.
+        //
+
+        vertices.AddRange(meshData.Vertices)
+        indices.AddRange(meshData.Indices) 
+
+        submesh 
