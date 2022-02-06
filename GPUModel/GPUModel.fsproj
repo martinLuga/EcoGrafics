@@ -23,6 +23,7 @@
     <Compile Include="MyGPUInfrastructure.fs" />
     <Compile Include="MyPipelineSupport.fs" />
     <Compile Include="MyGPU.fs" />
+    <Compile Include="ModernGPU.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EcoGrafics" Version="1.0.1" />
@@ -42,6 +43,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.2" />
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
   </ItemGroup>
 </Project>

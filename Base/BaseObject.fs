@@ -24,6 +24,7 @@ module ObjectBase =
         let mutable position=position
         let mutable display = display
         let mutable name=name
+        let mutable idx=0
         let mutable changed=true
         let mutable orientation=Vector3.UnitX           // HACK , muss je nach Objekt eingestellt werden
         let mutable world = Matrix.Translation(position - Vector3.Zero)        
@@ -74,6 +75,10 @@ module ObjectBase =
         member this.Name
             with get () = name
             and set (aValue) = name <- aValue
+
+        member this.Idx
+            with get () = idx
+            and set (aValue) = idx <- aValue
 
         member this.BoundingBox =
             display.BoundingBox(this.Position) 

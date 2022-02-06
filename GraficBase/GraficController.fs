@@ -32,6 +32,7 @@ open CameraControl
 open Camera
 open Cache
 open GraficWindow
+open Structures
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  

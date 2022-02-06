@@ -22,6 +22,8 @@ open Base.Framework
 
 open DirectX.Assets
 open DirectX.D3DUtilities
+
+open MyMesh
  
 // ----------------------------------------------------------------------------------------------------
 // GPU helper classes
@@ -175,6 +177,7 @@ module MYUtils =
         let mutable vertexBufferCPU = new List<'T>()
         let mutable indexBufferCPU = new List<int>()
         let mutable ocbs = Dictionary<string,ObjectControlblock>()
+        let mutable drawArgs = Dictionary<string, SubmeshGeometry>() 
 
         interface IDisposable with 
             member this.Dispose() =  
@@ -182,6 +185,9 @@ module MYUtils =
                 vertexBufferGPU.Dispose() 
                 indexBufferUploader.Dispose() 
                 vertexBufferUploader.Dispose() 
+
+        member this.DrawArgs
+            with get() = drawArgs
 
         member this.ResetBuffers() =
             vertexBufferCPU <- new List<'T>()

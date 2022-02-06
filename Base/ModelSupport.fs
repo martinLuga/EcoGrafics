@@ -110,6 +110,7 @@ module ModelSupport =
         new() = Texture("", "", "", 0, false)  
 
         member this.Name = name
+        member this.Idx = idx
         member this.FileName = fileName
         member this.Path =
             if path <> "" then path
@@ -449,11 +450,12 @@ module ModelSupport =
  
     [<AllowNullLiteral>]
     type Part(name: string, shape: Shape, material: Material, texture: Texture, visibility: Visibility, shaders:ShaderConfiguration) =
-        let mutable name = name
-        let mutable shape = shape
-        let mutable material = material
-        let mutable texture = texture
-        let mutable visibility = visibility
+        let mutable name        = name
+        let mutable idx         = 0
+        let mutable shape       = shape
+        let mutable material    = material
+        let mutable texture     = texture
+        let mutable visibility  = visibility
         let mutable shaders = shaders
 
         new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, ShaderConfiguration.CreateNoTesselation()) 
@@ -476,6 +478,10 @@ module ModelSupport =
 
         member this.Copy() =
             new Part(name, shape, material, texture, visibility, shaders) 
+
+        member this.Idx
+            with get() = idx
+            and set(value) = idx <- value 
         
         member this.Name
             with get() = name

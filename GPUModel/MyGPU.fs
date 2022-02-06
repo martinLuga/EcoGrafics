@@ -31,13 +31,13 @@ open MyFrame
 open MyPipelineSupport
 open MYUtils
 open MyGPUInfrastructure
-
-type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>
   
 // ----------------------------------------------------------------------------------------------------
 // GPU Abstraction
 // ----------------------------------------------------------------------------------------------------
 module MyGPU = 
+
+    type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>    
 
     let TEXTUREWIDTH = 256; 
     let TEXTUREHEIGHT = 256 
@@ -105,8 +105,6 @@ module MyGPU =
         // Geometry        
         let mutable meshCache:MeshCache<Vertex> = null
         let mutable geometry:MeshGeometry = null
-        let mutable vertices:Vertex[] = [||]
-        let mutable indices:int[] = [||]
 
         // Resources     
         let mutable textures = new Dictionary<string, int>()
@@ -190,6 +188,20 @@ module MyGPU =
                 rasterizerDesc <- value
                 pipelineProvider.RasterizerDesc <- value 
 
+        member this.FrameResources = frameResources
+
+        member this.DirectFrameResource
+            with get() = directFrameResource
+            and set(value) = directFrameResource <- value
+
+        member this.DirectRecorder = directRecorder
+
+        member this.TextureHeapWrapper = textureHeapWrapper
+
+        member this.MeshCache = meshCache
+
+        member this.PipelineProvider = pipelineProvider
+
         member this.CurrFrameResource = frameResources.[currentFrameResourceIndex]
         
         member this.CurrentFenceEvent = fenceEvents.[currentFrameResourceIndex]
@@ -226,26 +238,25 @@ module MyGPU =
         // 
         // Klasse
         // 
-        member this.Initialize(graficWindow:UserControl) =
-             debugGPU("Initialize")
-             this.InitGPU(graficWindow)
-             this.Size(graficWindow.ClientSize.Width, graficWindow.ClientSize.Height)
+        member this.Initialize(form:UserControl) =
+
+            this.InitGPU(form)
+
+            clientWidth     <- form.ClientSize.Width  
+            clientHeight    <- form.ClientSize.Height 
+            clearColor      <- ToRawColor4FromDrawingColor(form.BackColor)            
+            let vp          =  new ViewportF(0.0f,  0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f) 
+            viewport        <- ToRawViewport(vp)
+            let sr          = new RectangleF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight)
+            scissorRectangels.[0] <- ToRawRectangle(sr)            
+            this.Size(form.ClientSize.Width, form.ClientSize.Height)
+
+
+
         // 
         // GPU 
         // 
         member this.InitGPU(form:UserControl) = 
-            debugGPU("InitGPU")
-
-            clientWidth     <- form.ClientSize.Width  
-            clientHeight    <- form.ClientSize.Height 
-
-            clearColor      <- ToRawColor4FromDrawingColor(form.BackColor)
-            
-            let vp          =  new ViewportF(0.0f,  0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f) 
-            viewport        <- ToRawViewport(vp)
-
-            let sr          = new RectangleF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight)
-            scissorRectangels.[0] <- ToRawRectangle(sr)
 
             // Device & Co
             InitDirect3D(form,  clientWidth, clientHeight)
@@ -562,16 +573,11 @@ module MyGPU =
         //
         // Frame resources
         //
-        member this.BuildFrameResources(itemCount:int, materialsCount:int) = 
+        abstract BuildFrameResources: int*int  -> unit
+        default this.BuildFrameResources(itemCount:int, materialsCount:int) = 
             directFrameResource <- new FrameResource(device, directRecorder, itemCount, itemLength, materialsCount, matLength, frameLength)
             frameResources.Clear()
             for  i = 0 to NUMFRAMERESOURCES - 1 do 
                 let frameRecorder = new Recorder("Recorder frame " + i.ToString(), device, commandQueue, null)
                 frameResources.Add(new FrameResource(device, frameRecorder, itemCount, itemLength, materialsCount, matLength, frameLength))
                 fenceEvents.Add(new AutoResetEvent(false))  
-        
-        // Refresh
-        member this.RefreshFrameResources(pipelineState) = 
-            for fresoure in frameResources do 
-                fresoure.Recorder.PipelineState <- pipelineState
-                fresoure.Recorder.Rewind()

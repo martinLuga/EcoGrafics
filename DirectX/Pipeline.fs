@@ -92,4 +92,3 @@ module Pipeline =
     
     let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =
         device.CreateRootSignature(new DataPointer (signatureDesc.Serialize().BufferPointer, int (signatureDesc.Serialize().BufferSize)))
-

@@ -54,6 +54,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.2" />
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
   </ItemGroup>
 </Project>
