@@ -18,7 +18,7 @@ open Base.MaterialsAndTextures
 module ModelExtension =
 
     [<AbstractClass>]
-    type DisplayFile(name: string, fileName: string, parts:Part list, material: Material, texture: Texture, size:float32, visibility: Visibility,  augmentation, quality) =
+    type DisplayFile(name: string, fileName: string, parts:Part list, material: Material, texture: Texture, size:Vector3, visibility: Visibility,  augmentation, quality) =
         inherit Display(parts, visibility, size, augmentation)
         
         let mutable name = name
@@ -34,7 +34,7 @@ module ModelExtension =
         member this.FileName
             with get() = fileName
 
-    type Geometry(name: string, parts:Part list, visibility: Visibility, size:float32, augmentation) =
+    type Geometry(name: string, parts:Part list, visibility: Visibility, size:Vector3, augmentation) =
         inherit Display(parts, visibility, size, augmentation)
         
         let mutable name = name
@@ -53,8 +53,8 @@ module ModelExtension =
                 else parts
 
         new(name, visibility, size, augmentation) = new Geometry(name, [], visibility, size, augmentation)
-        new(name, parts, visibility, augmentation) = new Geometry(name, parts, visibility, 1.0f, augmentation)
-        new(name, parts) = new Geometry(name, parts, Visibility.Opaque, 1.0f, Augmentation.None)
+        new(name, parts, visibility, augmentation) = new Geometry(name, parts, visibility, Vector3.One, augmentation)
+        new(name, parts) = new Geometry(name, parts, Visibility.Opaque, Vector3.One, Augmentation.None)
         
         member this.Name
             with get() = name

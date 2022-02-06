@@ -227,7 +227,7 @@ module ModelSupport =
 
     [<AllowNullLiteral>]
     [<AbstractClass>]
-    type Shape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, color: Color, tessFactor: float32, raster: int, size: float32, quality:Quality) =
+    type Shape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, color: Color, tessFactor: float32, raster: int, size: Vector3, quality:Quality) =
         let mutable (world: Matrix) = Matrix.Identity
         let mutable color = color
         let mutable name = name
@@ -311,7 +311,7 @@ module ModelSupport =
             with get() = Vector3.UnitX
             and set(value) = ()
 
-        abstract member resize : float32 -> unit
+        abstract member resize : Vector3 -> unit
         default this.resize(size)  = ()
 
         abstract member _Boundaries:Vector3 * Vector3
@@ -358,7 +358,7 @@ module ModelSupport =
     // ----------------------------------------------------------------------------------------------------
     [<AbstractClass>]
     [<AllowNullLiteral>]
-    type Geometry(name: string, origin: Vector3, color: Color, tessFactor: float32, raster: int, size: float32) =
+    type Geometry(name: string, origin: Vector3, color: Color, tessFactor: float32, raster: int, size: Vector3) =
         inherit Shape(name, origin, List<Vertex>(), List<int>(), color, Shape.Tesselation, Shape.Raster, size, Quality.Original)
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero
@@ -390,7 +390,7 @@ module ModelSupport =
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
     [<AbstractClass>]
-    type FileBased(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
+    type FileBased(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
         inherit Shape(name, origin, vertices, indices, Color.Transparent, Shape.Tesselation, Shape.Raster, size, quality)        
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero
@@ -433,7 +433,7 @@ module ModelSupport =
             |> Seq.map(fun v -> v.Position)
             |> Seq.toArray
             
-        override this.resize(factor:float32) =
+        override this.resize(factor:Vector3) =
             this.Size <- factor
 
         override this.CreateVertexData(visibility: Visibility) =            
@@ -537,16 +537,16 @@ module ModelSupport =
         override this.ToString() = shape.ToString() + " | " + material.ToString() + " | " + this.Texture.ToString()
 
     [<AllowNullLiteral>]
-    type Display(parts:Part list, visibility: Visibility, size:float32, augmentation) =
+    type Display(parts:Part list, visibility: Visibility, size:Vector3, augmentation) =
         let mutable size = size
         let mutable parts = parts
         let mutable visibility = visibility
         let mutable augmentation=augmentation
 
-        new() = new Display([], Visibility.Opaque, 1.0f, Augmentation.None)
-        new(parts) = new Display(parts, Visibility.Opaque, 1.0f, Augmentation.None)
-        new(parts, visibility) = new Display(parts, visibility, 1.0f, Augmentation.None)
-        new(parts, augmentation) = new Display(parts, Visibility.Opaque, 1.0f, augmentation)
+        new() = new Display([], Visibility.Opaque, Vector3.One, Augmentation.None)
+        new(parts) = new Display(parts, Visibility.Opaque, Vector3.One, Augmentation.None)
+        new(parts, visibility) = new Display(parts, visibility, Vector3.One, Augmentation.None)
+        new(parts, augmentation) = new Display(parts, Visibility.Opaque, Vector3.One, augmentation)
 
         member this.Size
             with get () = size

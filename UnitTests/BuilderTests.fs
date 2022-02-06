@@ -8,6 +8,7 @@
 
 open log4net
 open NUnit.Framework
+open SharpDX
 
 open Base.LoggingSupport 
 open Base.MeshObjects
@@ -18,7 +19,6 @@ open Base.ModelSupport
 open Base.ShaderSupport 
 
 open Builder.GlbFormat
-open Builder 
 open Builder.Glb
  
 open Initializations
@@ -128,7 +128,7 @@ module BuilderTests =
                 this.builder.Build(
                    MAT_BEIGE,
                    TEXT_HILL, 
-                   0.7f, 
+                   Vector3(0.7f,0.7f,0.7f), 
                    Visibility.Opaque,
                    Augmentation.None,
                    Quality.Medium,

@@ -64,7 +64,7 @@ module GeometricModel =
     //  Kugel
     // ---------------------------------------------------------------------------------------------------- 
     type Kugel(name: string, origin, radius: float32, color: Color) =
-        inherit Geometry(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f) 
+        inherit Geometry(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
         let mutable radius = radius
 
         new() = Kugel("Sphere", Vector3.Zero, 1.0f, Color.Gray)
@@ -85,7 +85,7 @@ module GeometricModel =
         override this.Maximum =
             Vector3(origin.X + this.Radius * 2.0f, origin.Y + this.Radius * 2.0f, origin.Z + this.Radius * 2.0f) 
 
-        override this.resize newSize = this.Radius <- this.Radius * newSize
+        override this.resize(newSize) = this.Size <- this.Radius * newSize
 
         override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " U= " + this.Origin.ToString()
         
@@ -109,7 +109,7 @@ module GeometricModel =
             colorTop: Color,
             colorBottom: Color
         ) =
-        inherit Geometry(name, ursprung, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, ursprung, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable laenge = laenge
         let mutable hoehe = hoehe
         let mutable breite = breite 
@@ -206,10 +206,10 @@ module GeometricModel =
             with get() = Vector3(base.Origin.X + this.Laenge / 2.0f, base.Origin.Y+ this.Hoehe / 2.0f, base.Origin.Z + this.Breite / 2.0f)
             and set (value) = base.Origin <- new Vector3(value.X - this.Laenge / 2.0f, value.Y - this.Hoehe / 2.0f, value.Z - this.Breite / 2.0f)
 
-        override this.resize newSize  = 
-            this.Laenge <- this.Laenge * newSize 
-            this.Breite <- this.Breite * newSize
-            this.Hoehe <- this.Hoehe * newSize
+        override this.resize(newSize) = 
+            this.Laenge <- this.Laenge * newSize.X 
+            this.Breite <- this.Breite * newSize.Z
+            this.Hoehe <- this.Hoehe * newSize.Y
 
         override this.Minimum
             with get () = this.Origin 
@@ -271,7 +271,7 @@ module GeometricModel =
     //  Box
     // ----------------------------------------------------------------------------------------------------
     type Box (name: string, width:float32,  height:float32,  depth:float32,  color, numSubdivisions:int) =
-        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable laenge = width
         let mutable hoehe = height
         let mutable breite = depth 
@@ -302,7 +302,7 @@ module GeometricModel =
     //  Die Punkte werden um das Zentrum 0,0,0 berechnet
     // ----------------------------------------------------------------------------------------------------
     type Cylinder(name: string, origin:Vector3, radius: float32, hoehe: float32, colorCone: Color, colorCap: Color, withCap: bool) =
-        inherit Geometry(name, origin, colorCone, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, origin, colorCone, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable radius = radius
         let mutable hoehe = hoehe
         let mutable colorCone = colorCone
@@ -347,8 +347,8 @@ module GeometricModel =
             and set (value) = base.Origin <- new Vector3(value.X  , value.Y - this.Hoehe / 2.0f, value.Z  )
 
         override this.resize newSize  = 
-            this.Radius <- this.Radius * newSize 
-            this.Hoehe <- this.Hoehe * newSize 
+            this.Radius <- this.Radius * newSize.X 
+            this.Hoehe <- this.Hoehe * newSize.Y 
 
         override this.Minimum
             with get () = Vector3(this.Origin.X - radius, this.Origin.Y , this.Origin.Z - radius)
@@ -363,7 +363,7 @@ module GeometricModel =
     // Pyramid
     // ----------------------------------------------------------------------------------------------------
     type Pyramide(name: string, ursprung, seitenLaenge :float32, hoehe :float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color) =
-        inherit Geometry(name, ursprung, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, ursprung, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
 
         let mutable seitenLaenge=seitenLaenge  
         let mutable hoehe =hoehe 
@@ -395,8 +395,8 @@ module GeometricModel =
             and set (value) = base.Origin <- new Vector3(value.X  , value.Y - this.Hoehe / 2.0f, value.Z  )
 
         override this.resize newSize  = 
-            this.SeitenLaenge <- this.SeitenLaenge * newSize 
-            this.Hoehe <- this.Hoehe * newSize 
+            this.SeitenLaenge <- this.SeitenLaenge * newSize.X 
+            this.Hoehe <- this.Hoehe * newSize.Y
 
         override this.ToString() = "Pyramid l=  " + this.SeitenLaenge.ToString() + " h= " + this.Hoehe.ToString()
 
@@ -424,7 +424,7 @@ module GeometricModel =
     //  Festgelegt durch 4 Eckpunkte
     // ----------------------------------------------------------------------------------------------------
     type Fläche(name: string, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3, color:Color, tessFactor:float32) =
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3
@@ -509,7 +509,7 @@ module GeometricModel =
             with get() = color
 
         override this.resize newSize  = 
-            seitenlaenge <- seitenlaenge * newSize 
+            seitenlaenge <- seitenlaenge * newSize .X
 
         override this.ToString() = "Fläche " + name + ":P1=" + p1.ToString()  + ":P2=" + p2.ToString() +  ":P3=" + p3.ToString() +  ":P4=" + p4.ToString()
 
@@ -539,7 +539,7 @@ module GeometricModel =
     // Triangle
     // ----------------------------------------------------------------------------------------------------
     type TriPatch(name: string, p1: Vector3, p2: Vector3, p3: Vector3, color:Color, tessFactor:float32) = 
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3                                  
@@ -583,7 +583,7 @@ module GeometricModel =
     //  Fläche aus Quadraten
     // ----------------------------------------------------------------------------------------------------
     type QuadPlane(name: string, seitenLaenge:float32, patchLaenge:float32, color:Color, tessFactor:float32) =
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         member this.SeitenLaenge=seitenLaenge
         member this.PatchLaenge=patchLaenge
 
@@ -673,7 +673,7 @@ module GeometricModel =
     //  Polyeder
     // ----------------------------------------------------------------------------------------------------
     type Polyeder(name: string, ursprung, radius:float32, color:Color, tessFactor:float32) =
-        inherit Geometry(name, ursprung, color, tessFactor, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, ursprung, color, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable radius=radius
 
         new (name, radius, color, tessFactor) = Polyeder(name, Vector3.Zero, radius, color, tessFactor)
@@ -697,7 +697,7 @@ module GeometricModel =
 
         override this.ToString() = this.Name 
 
-        override this.resize newSize = this.Radius <- this.Radius * newSize
+        override this.resize newSize = this.Radius <- this.Radius * newSize.X
 
         override this.Minimum
             with get () = this.Origin 
@@ -723,7 +723,7 @@ module GeometricModel =
         contour |> Array.map (fun point -> Vector3(point.X, point.Y + height, point.Z))
 
     type Corpus(name: string, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
-        inherit Geometry(name, Vector3.Zero, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
         do  
@@ -776,7 +776,7 @@ module GeometricModel =
     // Linie
     // ----------------------------------------------------------------------------------------------------
     type Linie(name:string, von:Vector3, bis:Vector3, color:Color) =
-        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable von = von
         let mutable bis = bis 
 
@@ -811,7 +811,7 @@ module GeometricModel =
     // Quadrat mit achsenparallelen Seiten
     // ----------------------------------------------------------------------------------------------------
     type Quadrat(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color) =
-        inherit Geometry(name,  p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, 1.0f)
+        inherit Geometry(name,  p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3
@@ -877,7 +877,7 @@ module GeometricModel =
             )
 
         override this.resize newSize =
-            this.SeitenLaenge <- this.SeitenLaenge * newSize
+            this.SeitenLaenge <- this.SeitenLaenge * newSize.X
 
         override this.BoundingBox(objectPosition) =
             let mutable box = BoundingBox()
@@ -898,10 +898,10 @@ module GeometricModel =
     // Beispiel: WavefrontShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type PatchShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
+    type PatchShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
         inherit FileBased(name, ursprung, vertices , indices, size, quality)     
         
-        new(name: string,  ursprung: Vector3,  size: float32, quality:Quality) =
+        new(name: string,  ursprung: Vector3,  size: Vector3, quality:Quality) =
             new PatchShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "PatchShape (x " + this.Size.ToString() + ") " + this.Name 
@@ -911,10 +911,10 @@ module GeometricModel =
     // Beispiel: SimpleShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TriangularShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: float32, quality:Quality) =
+    type TriangularShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
         inherit FileBased(name, ursprung, vertices, indices, size, quality)  
         
-        new(name: string,  ursprung: Vector3,  size: float32, quality:Quality) = 
+        new(name: string,  ursprung: Vector3,  size: Vector3, quality:Quality) = 
             new TriangularShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "TriangularShape: " + this.Name 
@@ -924,7 +924,7 @@ module GeometricModel =
     // Benutzt in DebugDraw von Physics
     // ----------------------------------------------------------------------------------------------------
     type Generic(name:string, color:Color) =
-        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), 1.0f, Quality.Original)
+        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), Vector3.One, Quality.Original)
     
         override this.ToString() = "Generic:" + this.Name  
                 

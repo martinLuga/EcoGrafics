@@ -138,7 +138,7 @@ module GlbFormat =
         let mutable gltf:Gltf = null
         let mutable loader:ResourceLoaderFromEmbedOnly = null
 
-        let mutable generalSizeFactor = 1.0f
+        let mutable size = Vector3.One
 
         let mutable fileName        = fileName 
         let mutable vertices        = new List<Vertex>()
@@ -159,7 +159,7 @@ module GlbFormat =
             with get() = indices
 
         member this.Initialize(_generalSizeFactor) =
-            generalSizeFactor <- _generalSizeFactor
+            size <- _generalSizeFactor
 
             // Node
             let gltf = store.Gltf 
@@ -208,7 +208,7 @@ module GlbFormat =
             let ueberAlleTexCoords  = alleTexCoord.GetEnumerable().GetEnumerator()
 
             while ueberAllePositionen.MoveNext() && ueberAlleNormalen.MoveNext() && ueberAlleTexCoords.MoveNext()  do
-                let pos = ueberAllePositionen.Current * generalSizeFactor
+                let pos = ueberAllePositionen.Current * size
                 let norm = ueberAlleNormalen.Current
                 let tex = ueberAlleTexCoords.Current
                 let vertex = new Vertex(pos, norm , Color4.White, tex)

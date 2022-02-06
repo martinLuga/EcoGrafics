@@ -72,18 +72,17 @@ module SimpleFormat =
         let mutable indices = new List<int>()
         let mutable isTransparent = false
         let mutable augmentation = Augmentation.None
-        let mutable generalSizeFactor = 1.0f
-        let mutable materialCount = 0
+        let mutable size = Vector3.One
         let mutable actualMaterial : Material = null
         let mutable actualTexture : Texture = null
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Meshdaten für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
-        member this. Build(material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this. Build(material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
 
             augmentation <- augment 
 
-            generalSizeFactor <- sizeFactor
+            size <- sizeFactor
 
             actualMaterial <- material
 
@@ -121,7 +120,7 @@ module SimpleFormat =
                             Convert.ToSingle(vals.[0].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture)
-                        ) * generalSizeFactor
+                        ) * size
                     let norm =
                         Vector3(
                             Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture),
@@ -155,7 +154,7 @@ module SimpleFormat =
             part <- 
                 new Part(
                     name,
-                    new TriangularShape(name, Vector3.Zero, vertices, indices, generalSizeFactor, quality),
+                    new TriangularShape(name, Vector3.Zero, vertices, indices, size, quality),
                     material,
                     texture,
                     visibility,

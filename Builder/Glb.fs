@@ -37,7 +37,7 @@ module Glb =
         let mutable part : Part = null
         let mutable materials: Dictionary<string, ModelSupport.Material> = new Dictionary<string, ModelSupport.Material>()
         let mutable textures : Dictionary<string, ModelSupport.Texture>  = new Dictionary<string, ModelSupport.Texture>()
-        let mutable generalSizeFactor = 1.0f
+        let mutable generalSizeFactor = Vector3.One
         let mutable augmentation = Augmentation.None
         let mutable isTransparent = false
         let mutable actualMaterial:ModelSupport.Material = null
@@ -49,7 +49,7 @@ module Glb =
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen des Gltf Models
         // ----------------------------------------------------------------------------------------------------
-        member this.Build(material:ModelSupport.Material, texture:ModelSupport.Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this.Build(material:ModelSupport.Material, texture:ModelSupport.Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
             augmentation        <- augment 
             generalSizeFactor   <- sizeFactor
             actualMaterial      <- material

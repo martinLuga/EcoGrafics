@@ -186,7 +186,7 @@ module Wavefront =
         let mutable part : Part = null
         let mutable geoCache = new GeoCache(50000)
         let mutable materials : Dictionary<string, Material> = new Dictionary<string, Material>()
-        let mutable generalSizeFactor = 1.0f
+        let mutable generalSizeFactor = Vector3.One
         let mutable augmentation = Augmentation.None
         let mutable isTransparent = false
 
@@ -251,7 +251,7 @@ module Wavefront =
         // Build the Displayable deep 
         // Also the MeshData
         // ----------------------------------------------------------------------------------------------------
-        member this.Build (material:Material, texture:Texture, sizeFactor: float32, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this.Build (material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
 
             augmentation <- augment 
 
