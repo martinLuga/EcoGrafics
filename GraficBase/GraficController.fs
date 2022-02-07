@@ -332,7 +332,7 @@ module GraficController =
         member this.Prepare() =
             this.SetIdle()
             myGpu.StartInstall()
-            myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList))
+            myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList), this.AnzahlParts(objects.Values |>Seq.toList))
 
             for object in objects.Values do  
                 for part in object.Display.Parts do                  

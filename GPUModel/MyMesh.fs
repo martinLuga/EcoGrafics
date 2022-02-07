@@ -27,14 +27,9 @@ module MyMesh =
     // Ein Submesh
     // ----------------------------------------------------------------------------------------------------
     type SubmeshGeometry() =
-        let mutable name = ""
         let mutable indexCount = 0
         let mutable startIndexLocation = 0
         let mutable baseVertexLocation = 0
-
-        member this.Name
-            with get() = name
-            and set(value) = name <- value
 
         member this.IndexCount
             with get() = indexCount

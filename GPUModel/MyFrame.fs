@@ -28,21 +28,18 @@ module MyFrame =
     [<AllowNullLiteralAttribute>]
     type FrameResource(device:Device, recorder:Recorder, objectCount:int, objectLength:int, materialCount:int, materialLength:int, frameLength:int) =
         let recorder = recorder 
-        let mutable vertexVB:UploadBuffer<Vertex> = null
         let mutable objectCB:FieldBuffer = null
         let mutable materialCB:FieldBuffer = null
         let mutable frameCB:FieldBuffer = null 
         let mutable fenceValue:int64 = 0L
         
         do
-            vertexVB        <-  new UploadBuffer<Vertex>(device, objectCount, false)
             objectCB        <-  new FieldBuffer(device, objectCount, objectLength)
             materialCB      <-  new FieldBuffer(device, materialCount, materialLength) 
             frameCB         <-  new FieldBuffer(device, 1, frameLength) 
 
         interface IDisposable with 
             member this.Dispose() = 
-                (vertexVB:> IDisposable).Dispose()
                 (objectCB:> IDisposable).Dispose()
                 (materialCB:> IDisposable).Dispose()
                 (frameCB:> IDisposable).Dispose()
@@ -51,9 +48,6 @@ module MyFrame =
 
         member this.Recorder  
             with get() = recorder
-
-        member this.VertexVB
-            with get() = vertexVB
 
         member this.FrameCB
             with get() = frameCB

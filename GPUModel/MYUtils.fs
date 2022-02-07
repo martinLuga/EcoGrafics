@@ -126,6 +126,7 @@ module MYUtils =
             device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube)), hDescriptor)
             this.Increment()
 
+    [<AllowNullLiteralAttribute>]
     type ObjectControlblock (StartVertices:int, StartIndices:int, EndVertices:int, EndIndices:int, IndexCount:int, Topology:PrimitiveTopology) =
         let mutable startVertices=StartVertices
         let mutable startIndices=StartIndices 

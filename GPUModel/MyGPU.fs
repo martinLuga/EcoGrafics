@@ -260,6 +260,8 @@ module MyGPU =
 
             // Device & Co
             InitDirect3D(form,  clientWidth, clientHeight)
+                        
+            frameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
             // DescriptorHeaps             
             textureHeapWrapper <- new HeapWrapper(device, srvDescriptorHeap)
@@ -287,9 +289,10 @@ module MyGPU =
             loggerGPU.Info("Start Install")   
             directRecorder.StartRecording() 
 
-        member this.PrepareInstall(anzObjects) =
+        abstract PrepareInstall:int*int->Unit
+        default this.PrepareInstall(anzObjects, anzMaterials) =
             loggerGPU.Info("Install " + anzObjects.ToString() + " objects for display ") 
-            this.BuildFrameResources(anzObjects, anzObjects)
+            this.BuildFrameResources(anzObjects, anzMaterials)
             this.resetMeshCache()
 
         member this.ExecuteInstall()=
@@ -305,13 +308,6 @@ module MyGPU =
 
         member this.InstallMesh(name, vertices, indices, topology) =
             meshCache.Append(name, vertices, indices, topology) 
-
-        member this.UpdateMesh(vertices:Vertex list) =
-            if frameResources.Count > 0 then
-                let mutable i = 0
-                for v in vertices do
-                    this.CurrFrameResource.VertexVB.CopyData(i, ref v) 
-                    i <- i + 1
 
         member this.ReplaceMesh(name, vertices) =
             this.StartInstall()
