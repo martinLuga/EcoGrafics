@@ -7,9 +7,6 @@
 
 open System
 
-open Base.VertexDefs
-open DirectX.UploadBuffer
-
 open FieldBuffer
 open MYUtils
 

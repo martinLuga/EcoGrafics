@@ -188,7 +188,9 @@ module MyGPU =
                 rasterizerDesc <- value
                 pipelineProvider.RasterizerDesc <- value 
 
-        member this.FrameResources = frameResources
+        member this.FrameResources
+            with get() =  frameResources
+            and set(value) = frameResources <- value 
 
         member this.DirectFrameResource
             with get() = directFrameResource
@@ -200,7 +202,15 @@ module MyGPU =
 
         member this.MeshCache = meshCache
 
+        member this.Viewport = viewport
+
+        member this.ScissorRectangels = scissorRectangels
+
         member this.PipelineProvider = pipelineProvider
+
+        member this.Coordinator = coordinator
+        
+        member this.CurrentFrameResourceIndex =  currentFrameResourceIndex 
 
         member this.CurrFrameResource = frameResources.[currentFrameResourceIndex]
         
@@ -261,7 +271,7 @@ module MyGPU =
             // Device & Co
             InitDirect3D(form,  clientWidth, clientHeight)
                         
-            frameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
+            this.FrameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
             // DescriptorHeaps             
             textureHeapWrapper <- new HeapWrapper(device, srvDescriptorHeap)
@@ -466,8 +476,7 @@ module MyGPU =
         //
         // DrawPerObject mit dem Pipelinestate 
         //
-        member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, textureName:string) =
-            debugDRAW("OBJECT " + objectIdx.ToString())            
+        member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, textureName:string) = 
             if frameResources.Count > 0 then
 
                 this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetCurrentPipelineState()         
@@ -494,8 +503,7 @@ module MyGPU =
             
                 commandList.DrawIndexedInstanced(meshCache.getIndexCount(geometryName), 1, 0, 0, 0) 
 
-        member this.EndDraw() =
-            infoDRAW("END")   
+        member this.EndDraw() = 
             if frameResources.Count > 0 then
                 let recorder = this.CurrFrameResource.Recorder
                 let commandList = recorder.CommandList
@@ -509,8 +517,7 @@ module MyGPU =
 
                 coordinator.AdvanceCPU()
                 this.CurrFrameResource.FenceValue <- coordinator.CpuFenceValue
-                coordinator.AdvanceGPU()
-                //Debug.Print("MYGPU INFO: End Draw\n")
+                coordinator.AdvanceGPU() 
 
         // 
         // Size

@@ -26,7 +26,6 @@ open DirectX.D3DUtilities
 open DirectX.Pipeline
 
 open GPUModel.MyGPU
-open GPUModel.MyFrame
 
 open CameraControl 
 open Camera
