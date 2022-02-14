@@ -196,7 +196,15 @@ module MyGPU =
             with get() = directFrameResource
             and set(value) = directFrameResource <- value
 
-        member this.DirectRecorder = directRecorder
+        member this.DirectRecorder 
+            with get() = directRecorder
+            and set(value) = directRecorder <- value 
+
+        member this.ClientHeight 
+            with get() = clientHeight
+
+        member this.ClientWidth
+            with get() = clientWidth
 
         member this.TextureHeapWrapper = textureHeapWrapper
 
@@ -208,7 +216,9 @@ module MyGPU =
 
         member this.PipelineProvider = pipelineProvider
 
-        member this.Coordinator = coordinator
+        member this.Coordinator         
+            with get() = coordinator
+            and set(value) = coordinator <- value
         
         member this.CurrentFrameResourceIndex =  currentFrameResourceIndex 
 
@@ -255,7 +265,7 @@ module MyGPU =
             clientWidth     <- form.ClientSize.Width  
             clientHeight    <- form.ClientSize.Height 
             clearColor      <- ToRawColor4FromDrawingColor(form.BackColor)            
-            let vp          =  new ViewportF(0.0f,  0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f) 
+            let vp          =  new ViewportF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f) 
             viewport        <- ToRawViewport(vp)
             let sr          = new RectangleF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight)
             scissorRectangels.[0] <- ToRawRectangle(sr)            
@@ -266,10 +276,13 @@ module MyGPU =
         // 
         // GPU 
         // 
-        member this.InitGPU(form:UserControl) = 
+        abstract InitGPU:UserControl-> unit
+        default this.InitGPU(form:UserControl) = 
 
             // Device & Co
-            InitDirect3D(form,  clientWidth, clientHeight)
+            InitDirect3D(form, clientWidth, clientHeight)
+
+            BuildDescriptorHeaps()
                         
             this.FrameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
@@ -296,7 +309,6 @@ module MyGPU =
         // Objects 
         // 
         member this.StartInstall()=
-            loggerGPU.Info("Start Install")   
             directRecorder.StartRecording() 
 
         abstract PrepareInstall:int*int->Unit
@@ -306,7 +318,6 @@ module MyGPU =
             this.resetMeshCache()
 
         member this.ExecuteInstall()=
-            loggerGPU.Info("FinishInstall") 
             directRecorder.StopRecording()
             directRecorder.Play()
 
@@ -419,8 +430,7 @@ module MyGPU =
             pipelineProvider.Topology           <- topology             
 
         // ----------------------------------------------------------------------------------------------------
-        // Update vor dem Zeichnen
-        // Die Daten vom Controller werden in die FrameResourcen der GPU geschrieben
+        // Vor dem Zeichnen - Umschalten auf die nächste FrameResource
         // ----------------------------------------------------------------------------------------------------
         member this.StartUpdate() =  
             if frameResources.Count > 0 then

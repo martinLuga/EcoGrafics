@@ -127,6 +127,33 @@ module MYUtils =
             this.Increment()
 
     [<AllowNullLiteralAttribute>]
+    type SamplerHeapWrapper(device:Device, heap:DescriptorHeap) =
+        let mutable device=device
+        let mutable index=0
+        let mutable cbvSrvUavDescriptorSize=0
+        let mutable hDescriptor = CpuDescriptorHandle()
+        do  
+            cbvSrvUavDescriptorSize <- device.GetDescriptorHandleIncrementSize(DescriptorHeapType.Sampler)
+            hDescriptor <- heap.CPUDescriptorHandleForHeapStart
+
+        member this.HDescriptor  
+            with get() = hDescriptor
+            and set(value) = hDescriptor <- value
+
+        member this.Reset() =
+            hDescriptor <- heap.CPUDescriptorHandleForHeapStart
+
+        member this.Increment() =
+            hDescriptor <- hDescriptor + cbvSrvUavDescriptorSize
+
+        member this.GetGpuHandle(index) =
+            heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
+
+        member this.AddResource() =
+            device.CreateSampler(samplerDescription , hDescriptor) 
+            this.Increment()
+
+    [<AllowNullLiteralAttribute>]
     type ObjectControlblock (StartVertices:int, StartIndices:int, EndVertices:int, EndIndices:int, IndexCount:int, Topology:PrimitiveTopology) =
         let mutable startVertices=StartVertices
         let mutable startIndices=StartIndices 

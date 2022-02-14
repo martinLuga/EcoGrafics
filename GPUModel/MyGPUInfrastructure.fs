@@ -39,6 +39,7 @@ module MyGPUInfrastructure =
     // Heap 
     let mutable rtvHeap:DescriptorHeap = null
     let mutable srvDescriptorHeap:DescriptorHeap = null
+    let mutable smpDescriptorHeap:DescriptorHeap = null
     let mutable dsvHeap:DescriptorHeap = null
     let mutable cbvHeap:DescriptorHeap = null
     let mutable descriptorHeaps:DescriptorHeap[] = null
@@ -84,12 +85,22 @@ module MyGPUInfrastructure =
         rtvHeap <- device.CreateDescriptorHeap(rtvHeapDesc)
 
         // Shader resource view (SRV) descriptor heap.
+        let samplerHeapDesc = 
+            new DescriptorHeapDescription(   
+                DescriptorCount = FRAMECOUNT,
+                Type =  DescriptorHeapType.Sampler,
+                Flags = DescriptorHeapFlags.ShaderVisible
+            ) 
+        smpDescriptorHeap <- device.CreateDescriptorHeap(samplerHeapDesc)       
+
+        // Shader resource view (SRV) descriptor heap.
         let srvDescriptorHeapDesc = 
             new DescriptorHeapDescription(  
                 DescriptorCount = 10,
                 Flags = DescriptorHeapFlags.ShaderVisible,
                 Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
         srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
+
         descriptorHeaps <- [|srvDescriptorHeap|]  
             
         // Describe and create a depth stencil view (DSV) descriptor heap.
@@ -132,8 +143,6 @@ module MyGPUInfrastructure =
         
         commandQueue            <- device.CreateCommandQueue(CommandQueueDescription(CommandListType.Direct)) 
         swapChain               <- createSwapChain(form.Handle, factory, clientWidth, clientHeight, commandQueue)
-                
-        BuildDescriptorHeaps()
 
     // 
     // RenderTargetViews

@@ -111,7 +111,7 @@ module ShaderSupport =
         new (typ, description) = {Type=typ; Description=description}
         override this.ToString() = "BLD->" + this.Type.ToString()
         static member Default() = 
-            new BlendDescription(BlendType.Opaque, blendStateTransparent)        
+            new BlendDescription(BlendType.Opaque, blendStateOpaque)        
         member self.asString = string self.Type 
 
     let blendDescOpaque =

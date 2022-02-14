@@ -11,7 +11,8 @@ open System.Collections.Generic
 open System.Windows.Forms
 open System.Diagnostics
 open System.Threading
-open System.Runtime.CompilerServices
+open System.Drawing
+open System.IO
 open log4net
 open LoggingSupport
 
@@ -103,6 +104,12 @@ module Framework =
         let xs = sprintf "%6.2f" v.X
         let ys = sprintf "%6.2f" v.Y
         "X:" + xs + " Y:" + ys   
+
+    let fromArray3(x:float32[]) =
+        Vector3( x.[0],   x.[1],   x.[2])
+
+    let fromArray2(x:float32[]) =
+        Vector2( x.[0], x.[1])
 
     // ----------------------------------------------------------------------------------------------------
     //  Dictionary
@@ -348,3 +355,13 @@ module Framework =
 
     let Increment(summe: byref<float32>, amount:float32) =
         summe <- summe + amount
+
+    let ByteArrayToImage (buffer: byte[], offset:int, count:int) =
+        let ms = new MemoryStream(buffer, offset, count)
+        ms.Position <- 0
+        Image.FromStream(ms , true, false)  
+
+    let ByteArrayToArray (buffer: byte[], offset:int, count:int) =
+        let ms = new MemoryStream(buffer, offset, count)
+        ms.Position <- 0
+        ms.ToArray() 

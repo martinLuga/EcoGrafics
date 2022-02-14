@@ -69,6 +69,23 @@ module Assets =
             textureDesc2D(resource)
 
     // ----------------------------------------------------------------------------------------------------
+    // Texture
+    // ----------------------------------------------------------------------------------------------------    
+    let samplerDescription=
+        new SamplerStateDescription(
+            AddressU = TextureAddressMode.Wrap,
+            AddressV = TextureAddressMode.Wrap,
+            AddressW = TextureAddressMode.Wrap,
+            BorderColor = new RawColor4(0.0f, 0.0f, 0.0f, 0.0f),
+            ComparisonFunction = Comparison.Never,
+            Filter = Filter.MinMagMipLinear,
+            MaximumAnisotropy = 16,
+            MaximumLod = Single.MaxValue,
+            MinimumLod = 0.0f,
+            MipLodBias = 0.0f
+        )
+
+    // ----------------------------------------------------------------------------------------------------
     // Depth stencil  
     // ----------------------------------------------------------------------------------------------------  
     let ff = 

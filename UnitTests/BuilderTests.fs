@@ -92,15 +92,10 @@ module BuilderTests =
 
         [<TestCase("Megalodon.glb")>]
         member this.ReadMeshes(fileName) = 
-            this.initFiles("C:\\temp\\obj\\", fileName)  
-            let meshes = GetMeshes (this.filename)  
+            this.initFiles("C:\\temp\\obj\\", fileName) 
+            let container = getGlbContainer (this.filename)             
+            let meshes = container.Gltf.Meshes  
             Assert.NotNull(meshes)
-
-        [<TestCase("Megalodon.glb")>]
-        member this.ReadNodes(fileName) = 
-            this.initFiles("C:\\temp\\obj\\", fileName)  
-            let nodes = GetNodes (this.filename)  
-            Assert.NotNull(nodes)
 
     [<TestFixture>]
     type GlbBuilding() = 
