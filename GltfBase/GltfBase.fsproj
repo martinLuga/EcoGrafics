@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework> 
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarnOn>3390;$(WarnOn)</WarnOn>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Reader.fs" />
+    <Compile Include="Gltf2Support.fs" />
+    <Compile Include="VGltfSupport.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="VertexDefs.fs" />
+    <Compile Include="MeshContainer.fs" />
+    <Compile Include="ExampleShaders.fs" />
+    <Compile Include="ModelSupport.fs" />
+    <Compile Include="GltfSupport.fs" />
+    <Compile Include="Analyzer.fs" />
+    <Compile Include="ModernGPU.fs" />
+    <Compile Include="Katalog.fs" />
+    <Compile Include="Runner.fs" />
+    <Compile Include="Deployment.fs" />
+    <Compile Include="Builder.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="VGltf" Version="0.2.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.fsproj" />
+    <ProjectReference Include="..\Builder\Builder.fsproj" />
+    <ProjectReference Include="..\Geometry\Geometry.fsproj" />
+    <ProjectReference Include="..\GraficBase\GraficBase.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+  </ItemGroup>
+</Project>
