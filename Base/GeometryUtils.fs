@@ -193,3 +193,23 @@ module GeometryUtils =
     let toPoints(ursprung:Vector3, laenge:float32, malX:int, malY:int, malZ:int) =
         let (minimum, maximum) = toBoundary(ursprung, laenge, malX, malY, malZ)
         minimum.X, maximum.X, minimum.Y, maximum.Y, minimum.Z, maximum.Z 
+
+    //-----------------------------------------------------------------------------------------------------
+    // Transform
+    //-----------------------------------------------------------------------------------------------------     
+    let createTranslationMatrix (trans: float32 []) = 
+        let tv = Vector3(trans)
+        Matrix.Translation(tv)
+
+    let createRotationMatrix (rot: float32 []) = 
+        let rot = Quaternion(rot)
+        Matrix.RotationQuaternion(rot)
+
+    let createScaleMatrix (scale: float32 []) = 
+        let sv = Vector3(scale)
+        Matrix.Scaling(sv)
+
+    let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 []) =
+        createTranslationMatrix (trans)
+        * createRotationMatrix (rot)
+        * createScaleMatrix (scale)
