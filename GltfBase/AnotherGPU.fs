@@ -1,6 +1,6 @@
-﻿namespace GPUModel
+﻿namespace GltfBase
 //
-//  MyGPU.fs
+//  AnotherGPU.fs
 //
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2018 Martin Luga. All rights reserved.
@@ -25,17 +25,21 @@ open Base.VertexDefs
 
 open DirectX.GraficUtils
 
-open DX12GameProgramming
+open DirectX.D3DUtilities 
+
+open GPUModel 
+open GPUModel.MyPipelineSupport
+open GPUModel.MYUtils
 
 open MyFrame
-open MyPipelineSupport
-open MYUtils
 open MyGPUInfrastructure
+open Common
   
 // ----------------------------------------------------------------------------------------------------
-// GPU Abstraction
+// GPU  
+// Abgeleitet von Original MyGPU
 // ----------------------------------------------------------------------------------------------------
-module MyGPU = 
+module AnotherGPU = 
 
     type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>    
 
@@ -52,25 +56,12 @@ module MyGPU =
     let loggerGPU = LogManager.GetLogger("GPU")
     let debugGPU = Debug(loggerGPU)
     let infoGPU  = Info(loggerGPU)
-    
-    let loggerUPDT = LogManager.GetLogger("GPU.UPDATE")
-    let debugUPDT = Debug(loggerUPDT)
-    let infoUPDT  = Info(loggerUPDT)
-
-    let loggerDRAW = LogManager.GetLogger("GPU.DRAW")
-    let debugDRAW  = Debug(loggerDRAW)
-    let infoDRAW   = Info(loggerDRAW)
-    let errorDRAW  = Error(loggerDRAW)
 
     // ----------------------------------------------------------------------------------------------------
     //  Class  MyGPU 
-    //      Init
-    //      Configure
-    //      Draw
-    //      Update
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>] 
-    type MasterGPU() =
+    type MyGPU() =
 
         // Window
         let mutable viewport = new RawViewportF()
@@ -91,7 +82,8 @@ module MyGPU =
         // Resources     
         let mutable textures = new Dictionary<string, int>()
         let mutable textureIdx = 0
-        let mutable textureHeapWrapper:HeapWrapper = null
+        let mutable textureHeap:HeapWrapper = null
+        let mutable samplerHeap:SamplerHeapWrapper = null
 
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
@@ -110,7 +102,7 @@ module MyGPU =
         // Synchronization objects.
         let mutable coordinator:ProcessorCoordinator = null
 
-        override this.ToString() = "MyGPU: " + pipelineProvider.ToString()
+        override this.ToString() = "AnotherGPU: " + pipelineProvider.ToString()
 
         // ----------------------------------------------------------------------------------------------------
         // Member
@@ -176,7 +168,7 @@ module MyGPU =
         member this.ClientWidth
             with get() = clientWidth
 
-        member this.TextureHeapWrapper = textureHeapWrapper
+        member this.TextureHeapWrapper = textureHeap
 
         member this.MeshCache = meshCache
 
@@ -200,14 +192,9 @@ module MyGPU =
 
         member this.CurrentPipelineConf = pipelineConfigurations.Item(currentPipelineConfigurationName)
 
-        member this.Coordinator         
-            with get() = coordinator
-            and set(value) = coordinator <- value
-
         // ----------------------------------------------------------------------------------------------------
         // Methoden
         // ----------------------------------------------------------------------------------------------------
-        
         member this.Begin() =
             infoGPU("Begin")  
             this.FlushCommandQueue()  
@@ -220,14 +207,8 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         // Initialisierungen
         // ----------------------------------------------------------------------------------------------------
-
-        // 
-        // Klasse
-        // 
         member this.Initialize(form:UserControl) =
-
             this.InitGPU(form)
-
             clientWidth     <- form.ClientSize.Width  
             clientHeight    <- form.ClientSize.Height 
             clearColor      <- ToRawColor4FromDrawingColor(form.BackColor)            
@@ -237,34 +218,23 @@ module MyGPU =
             scissorRectangels.[0] <- ToRawRectangle(sr)            
             this.Size(form.ClientSize.Width, form.ClientSize.Height)
 
-
-
-        // 
+        // ---------------------------------------------------------------------------------------------------- 
         // GPU 
-        // 
-        abstract InitGPU:UserControl-> unit
-        default this.InitGPU(form:UserControl) = 
+        // ---------------------------------------------------------------------------------------------------- 
+        member this.InitGPU(form:UserControl) = 
 
-            // Device & Co
             InitDirect3D(form, clientWidth, clientHeight)
 
             BuildDescriptorHeaps()
                         
             this.FrameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
-            // DescriptorHeaps             
-            textureHeapWrapper <- new HeapWrapper(device, srvDescriptorHeap)
+            textureHeap <- new HeapWrapper(device, srvDescriptorHeap)
+            samplerHeap <- new SamplerHeapWrapper(device, smpDescriptorHeap) 
 
-             // Recorder: Command processing     
             directRecorder <- new Recorder("Direct recording", device, commandQueue, null)
-            
-            // Coordinator: Synchronization 
             coordinator <- new ProcessorCoordinator(commandQueue, fence)
 
-            // Geometry / Vertex Cache
-            this.initializeMeshCache()
-
-            // PipelineProvider
             pipelineProvider <- new PipelineProvider(device)
 
         // ----------------------------------------------------------------------------------------------------
@@ -281,61 +251,21 @@ module MyGPU =
         default this.PrepareInstall(anzObjects, anzMaterials) =
             loggerGPU.Info("Install " + anzObjects.ToString() + " objects for display ") 
             this.BuildFrameResources(anzObjects, anzMaterials)
-            this.resetMeshCache()
 
         member this.ExecuteInstall()=
             directRecorder.StopRecording()
             directRecorder.Play()
 
         // ----------------------------------------------------------------------------------------------------
-        // MeshData<Vertex>
-        // ----------------------------------------------------------------------------------------------------        
-        member this.hasMesh(name) =
-            meshCache.Contains(name) 
-
-        member this.InstallMesh(name, vertices, indices, topology) =
-            meshCache.Append(name, vertices, indices, topology) 
-
-        member this.ReplaceMesh(name, vertices) =
-            this.StartInstall()
-            meshCache.Replace(name, vertices)  
-            this.FinalizeMeshCache()
-            this.ExecuteInstall()
-
-        member this.ResetAllMeshes() =
-            directRecorder.StartRecording()
-            this.resetMeshCache()
-            directRecorder.StopRecording()
-            directRecorder.Play()
-
-        member this.initializeMeshCache() =
-            meshCache <- new MeshCache<Vertex>(device)
-
-        member this.resetMeshCache() =
-            meshCache.Reset()
-
-        member this.FinalizeMeshCache() =
-            meshCache.createBuffers(directRecorder.CommandList)
-
-        // ----------------------------------------------------------------------------------------------------
         // Texture
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool) =
-            if textureName <> null then
-                if not (textures.ContainsKey(textureName)) && not (textureName = "") then
-                    if textureFilename.EndsWith("jpg") then
-                        let  resource = TextureUtilities.CreateTextureFromBitmap(device, textureFilename)
-                        textureHeapWrapper.AddResource(resource, isCube)
-                        textures.Add(textureName, textureIdx)
-                        textureIdx <- textureIdx + 1
-                    else
-                        if textureFilename.EndsWith("dds") then 
-                            let resource = TextureUtilities.CreateTextureFromDDS(device, textureFilename)
-                            textureHeapWrapper.AddResource(resource, isCube)
-                            textures.Add(textureName, textureIdx)
-                            textureIdx <- textureIdx + 1
-                        else 
-                            raise (new System.Exception("Texture file-type?"))
+        member this.InstallTexture(_texture:MyTexture) =  
+            let bitmap = _texture.Image :?> System.Drawing.Bitmap
+            let texture = CreateTextureFromBitmap(device, bitmap) 
+            
+            textureHeap.AddResource(texture, _texture.Cube) 
+
+            samplerHeap.AddResource() 
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 
@@ -425,7 +355,7 @@ module MyGPU =
         // Draw
         // ----------------------------------------------------------------------------------------------------
         member this.StartDraw() = 
-            debugDRAW("START")
+            debugGPU("START")
             if frameResources.Count > 0 then
             
                 this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.InitialPipelineState
@@ -475,7 +405,7 @@ module MyGPU =
                 if textureName <> "" then  
                     let rootTexturParmIdx = 0
                     let textureIdx = textures.Item(textureName)
-                    commandList.SetGraphicsRootDescriptorTable(rootTexturParmIdx, textureHeapWrapper.GetGpuHandle(textureIdx)) 
+                    commandList.SetGraphicsRootDescriptorTable(rootTexturParmIdx, textureHeap.GetGpuHandle(textureIdx)) 
             
                 commandList.DrawIndexedInstanced(meshCache.getIndexCount(geometryName), 1, 0, 0, 0) 
 
@@ -560,3 +490,4 @@ module MyGPU =
                 let frameRecorder = new Recorder("Recorder frame " + i.ToString(), device, commandQueue, null)
                 frameResources.Add(new FrameResource(device, frameRecorder, itemCount, itemLength, materialsCount, matLength, frameLength))
                 fenceEvents.Add(new AutoResetEvent(false))  
+

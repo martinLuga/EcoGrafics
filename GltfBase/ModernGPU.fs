@@ -23,18 +23,16 @@ open Base.ShaderSupport
 
 open DirectX.Assets
 
-open GPUModel.MYUtils
-open GPUModel.FieldBuffer
+open GPUModel.MYUtils 
 open GPUModel.MyGPUInfrastructure
 open GPUModel.MyGPU
 open GPUModel.MyPipelineStore
 
-open DirectX.D3DUtilities
+open DirectX.D3DUtilities 
 
-open VGltf.Types
+open Common 
+open MyFrame
 
-open Common
-open GltfSupport
 
 // ----------------------------------------------------------------------------------------------------
 // GPU Abstraction Gltf style
@@ -44,58 +42,18 @@ module ModernGPU =
     let loggerProvider = LogManager.GetLogger("ModernGPU")    
     let logFatal = Fatal(loggerProvider)
 
-    [<AllowNullLiteralAttribute>]
-    type FrameResource(device:Device, recorder:Recorder, objectCount:int, objectLength:int, materialCount:int, materialLength:int, frameLength:int) =
-        let recorder = recorder 
-        let mutable viewCB:FieldBuffer = null
-        let mutable frameCB:FieldBuffer = null 
-        let mutable materialCB:FieldBuffer = null
-
-        let mutable fenceValue:int64 = 0L
-        
-        do
-            viewCB          <-  new FieldBuffer(device, objectCount, objectLength)
-            frameCB         <-  new FieldBuffer(device, 1, frameLength) 
-            materialCB      <-  new FieldBuffer(device, materialCount, materialLength) 
-
-        interface IDisposable with 
-            member this.Dispose() = 
-                (viewCB:> IDisposable).Dispose()
-                (materialCB:> IDisposable).Dispose()
-                (frameCB:> IDisposable).Dispose()
-
-        override this.ToString() = "MyFrameResource-" + recorder.ToString()
-
-        member this.Recorder  
-            with get() = recorder
-
-        member this.FrameCB
-            with get() = frameCB
-
-        member this.MaterialCB
-            with get() = materialCB
-
-        member this.ViewCB
-            with get() = viewCB
-
-        // Fence value to mark commands up to this fence point.  This lets us
-        // check if these frame resources are still in use by the GPU.
-        member this.FenceValue
-            with get() = fenceValue
-            and set(value) = fenceValue <- value
-
     // 
     // Create descriptor heaps
     // 
     let BuildDescriptorHeaps() =
         // Constant buffer view (CBV) descriptor heap.
-        let cbvHeapDesc = 
-            new DescriptorHeapDescription(  
-                DescriptorCount = 1,
-                Flags = DescriptorHeapFlags.ShaderVisible,
-                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView,
-                NodeMask = 0)
-        cbvHeap <- device.CreateDescriptorHeap(cbvHeapDesc)
+        //let cbvHeapDesc = 
+        //    new DescriptorHeapDescription(  
+        //        DescriptorCount = 1,
+        //        Flags = DescriptorHeapFlags.ShaderVisible,
+        //        Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView,
+        //        NodeMask = 0)
+        //cbvHeap <- device.CreateDescriptorHeap(cbvHeapDesc)
 
         // Render target view (RTV) descriptor heap.
         let rtvHeapDesc = 
@@ -104,25 +62,9 @@ module ModernGPU =
                 Flags = DescriptorHeapFlags.None,
                 Type = DescriptorHeapType.RenderTargetView)
         rtvHeap <- device.CreateDescriptorHeap(rtvHeapDesc)
-
-        // Shader resource view (SRV) descriptor heap.
-        let  samplerHeapDesc = 
-            new DescriptorHeapDescription(   
-                DescriptorCount = FRAMECOUNT,
-                Type =  DescriptorHeapType.Sampler,
-                Flags = DescriptorHeapFlags.ShaderVisible
-            )   
-        smpDescriptorHeap <- device.CreateDescriptorHeap(samplerHeapDesc)
-
-        // Shader resource view (SRV) descriptor heap.
-        let srvDescriptorHeapDesc = 
-            new DescriptorHeapDescription(  
-                DescriptorCount = 10,
-                Flags = DescriptorHeapFlags.ShaderVisible,
-                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
-        srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
-            
+        
         // Describe and create a depth stencil view (DSV) descriptor heap.
+        // Für das Render Target
         let dsvHeapDesc = 
             new DescriptorHeapDescription( 
                 DescriptorCount = DSVDESCRIPTORCOUNT,
@@ -130,18 +72,33 @@ module ModernGPU =
             )
         dsvHeap <- device.CreateDescriptorHeap(dsvHeapDesc) 
 
+        // Shader resource view (SRV) descriptor heap.
+        // Für Texturen
+        let srvDescriptorHeapDesc = 
+            new DescriptorHeapDescription(  
+                DescriptorCount = 8,
+                Flags = DescriptorHeapFlags.ShaderVisible,
+                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
+        srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
+
+        // Shader resource view (SRV) descriptor heap.
+        // Dyn Sampler der Texturen
+        let  samplerHeapDesc = 
+            new DescriptorHeapDescription(   
+                DescriptorCount = 8,
+                Type =  DescriptorHeapType.Sampler,
+                Flags = DescriptorHeapFlags.ShaderVisible
+            )   
+        smpDescriptorHeap <- device.CreateDescriptorHeap(samplerHeapDesc)
+
         descriptorHeaps <- [|srvDescriptorHeap; smpDescriptorHeap|]  
 
     // ----------------------------------------------------------------------------------------------------
     //  Class MyModernGPU  
-    //      Init
-    //      Configure
-    //      Draw
-    //      Update
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>] 
-    type MyModernGPU() = 
-        inherit MyGPU() 
+    type MyGPU() = 
+        inherit MasterGPU() 
         
         let mutable currentPipelineState:PipelineState=null
         let mutable currentRootSignature:RootSignature=null

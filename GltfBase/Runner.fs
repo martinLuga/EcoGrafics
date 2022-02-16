@@ -26,7 +26,7 @@ open GraficBase.Camera
 
 open DirectX.D3DUtilities
 
-open ModernGPU
+open AnotherGPU
 open Katalog
 open ExampleShaders
 open GltfSupport
@@ -55,7 +55,7 @@ module Running =
         let mutable timer = new GameTimer()
         let mutable objects = new Dictionary<string, Objekt>()
         let mutable status = RunnerStatus.New
-        let mutable gpu:MyModernGPU = new MyModernGPU()
+        let mutable gpu:MyGPU = new MyGPU()
 
         let mutable noc:NodeKatalog = null
         let mutable mec:MeshKatalog = null
@@ -90,6 +90,9 @@ module Running =
             _graficWindow.Renderer <- instance.GPU
             instance
 
+        // ----------------------------------------------------------------------------------------------------
+        // Client
+        // ----------------------------------------------------------------------------------------------------   
         static member AddObject(objekt:Objekt) =
             instance.AddObject(objekt)
 
@@ -109,55 +112,46 @@ module Running =
         static member InitLight(dir:Vector3, color: Color)  =
             instance.initLight(dir, color)
 
+        member this.initLight(dir:Vector3, color: Color) = 
+            lightDir <- Vector3.Transform(dir, Matrix.Identity)
+            frameLight <- new DirectionalLight(color.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
+
         // ----------------------------------------------------------------------------------------------------
         // Configuration
         // ----------------------------------------------------------------------------------------------------  
         member this.Configure() = 
-            defaultInputLayoutDesc      <- inputLayoutDescription
-            defaultRootSignatureDesc    <- rootSignatureGltfDesc
-            defaultVertexShaderDesc     <- vertexShaderPBRDesc
-            defaultPixelShaderDesc      <- pixelShaderPBRDesc
-            defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
-            defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
-            defaultSampleDesc           <- SampleDescription(1, 0)
-            defaultRasterizerDesc       <- RasterizerDescription.Default()
-            defaultBlendDesc            <- BlendDescription.Default()
-            defaultTopologyType         <- PrimitiveTopologyType.Triangle
-      
-            gpu.FrameLength             <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
-            gpu.MatLength               <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
-            gpu.ItemLength              <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
 
-            gpu.Initialize(_graficWindow)
-
-            gpu.InstallPipelineState(
-                defaultInputLayoutDesc ,      
-                defaultRootSignatureDesc  , 
-                defaultVertexShaderDesc ,
-                defaultPixelShaderDesc ,  
-                defaultDomainShaderDesc ,
-                defaultHullShaderDesc  ,
-                defaultSampleDesc  ,      
-                defaultBlendDesc ,   
-                defaultRasterizerDesc , 
-                defaultTopologyType     
-            )
+            this.ConfigureGPU()
 
             mec <- new MeshKatalog(gpu.Device)
             mac <- new MaterialKatalog(gpu.Device)
             tec <- new TextureKatalog(gpu)
             noc <- new NodeKatalog(gpu)
 
+        // ----------------------------------------------------------------------------------------------------
+        // GPU
+        // ----------------------------------------------------------------------------------------------------  
         member this.ConfigureGPU() =
+
             gpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
             gpu.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
             gpu.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ViewConstants>()
-            gpu.Initialize(_graficWindow)
-        
-        member this.initLight(dir:Vector3, color: Color) = 
-            lightDir <- Vector3.Transform(dir, Matrix.Identity)
-            frameLight <- new DirectionalLight(color.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
 
+            gpu.Initialize(_graficWindow)
+
+            gpu.InstallPipelineProvider(
+                inputLayoutDescription,
+                rootSignatureGltfDesc,
+                vertexShaderPBRDesc,
+                pixelShaderPBRDesc,
+                ShaderDescription.CreateNotRequired(ShaderType.Domain),
+                ShaderDescription.CreateNotRequired(ShaderType.Hull),
+                SampleDescription(1, 0),
+                BlendDescription.Default() ,
+                RasterizerDescription.Default(),
+                PrimitiveTopologyType.Triangle   
+            )
+        
         // ----------------------------------------------------------------------------------------------------
         // Member
         // ---------------------------------------------------------------------------------------------------- 
@@ -205,13 +199,15 @@ module Running =
                 0
             else
                 objekte
-                |> List.map (fun obj -> obj.NodeCount)
+                |> List.map (fun obj -> obj.LeafesCount)
                 |> List.reduce (fun len1 len2 -> len1 + len2)
 
         member this.Prepare() =
             gpu.StartInstall()
-            let objectvals = objects.Values |> Seq.toList
-            gpu.PrepareInstall(this.AnzahlNodes(objectvals), mac.Count()) 
+            let anzObjects = objects.Values |> Seq.toList
+            let anzahlNodes = this.AnzahlNodes(anzObjects)
+            let anzMaterials = mac.Count()
+            gpu.PrepareInstall(anzahlNodes, anzMaterials) 
             mec.ToGPU(gpu.DirectRecorder.CommandList) 
             tec.ToGPU() 
             gpu.ExecuteInstall() 
@@ -221,8 +217,11 @@ module Running =
             mec.Reset()
             tec.Reset()
 
+        // ----------------------------------------------------------------------------------------------------
+        // Run Grafic App
+        // ---------------------------------------------------------------------------------------------------- 
         member this.Run() = 
-            logInfo("Run") 
+
             this.GPU.Begin()
             this.SetRunning()
             this.Timer.Reset()
@@ -236,45 +235,45 @@ module Running =
                     this.Timer.Tick()
                     this.GPU.StartUpdate()
                     this.updatePerFrame() 
-                    this.GPU.StartDraw()                 
+                    this.GPU.StartDraw()  
+                    let mutable nodeIdx = 0                 
                     for objekt in objekts do 
-                        logInfo("Object " + objekt.Name)
+                        logDebug("Object " + objekt.Name)
                         objekt.GlobalTransforms()
-                        let nodes = objekt.LeafNodes()  
-                        for adapter in nodes do 
-                            logDebug("Node " + adapter.Node.Name)                            
-                            this.updateView(adapter) 
-                            if adapter.Node.Mesh.HasValue then
-                                let mesh = mec.Mesh(objekt.Name, adapter.Node.Mesh.Value) 
-                                this.updatePerMaterial(objekt.Name, mesh.Material)
-                                this.drawPerObject(objekt.Name, adapter, mesh.Mesh, mesh.Material, PrimitiveTopology.TriangleList, tec.GetTextures()) 
+                        let nodes = objekt.LeafNodes()
+                        for node in nodes do 
+                            logDebug("Node " + node.Node.Name)                            
+                            this.updatePerObject(node, nodeIdx)  
+                            this.updatePerMaterial(objekt.Name, node)
+                            this.drawPerNode(objekt.Name, nodeIdx, node) 
+                            nodeIdx <- nodeIdx + 1
                     this.GPU.EndDraw()
-            logInfo("Terminated")  
 
-        member this.updateView(adapter:NodeAdapter) =
-            let node = adapter.Node 
-            let transMatrix = createTranslationMatrix(node.Translation) 
-            let rotMatrix = createRotationMatrix(node.Rotation)
-            let scaleMatrix = createScaleMatrix(node.Scale)
+        member this.updatePerObject(adapter:NodeAdapter, partIdx) =
 
-
-            let world = transMatrix * rotMatrix * scaleMatrix 
+            let world = Matrix(adapter.Node.Matrix )
 
             let _world          = world
+            let _invWorld       = Matrix.Invert(_world)
+
             let _view           = Camera.Instance.View
-            let _proj           = Camera.Instance.Proj
             let _invView        = Matrix.Invert(_view)
+
+            let _proj           = Camera.Instance.Proj
             let _invProj        = Matrix.Invert(_proj) 
+
             let _viewProj       = _view * _proj
             let _invViewProj    = Matrix.Invert(_viewProj) 
+
             let _eyePos         = Camera.Instance.EyePosition
+
             let viewConstants = 
                 new ViewConstants(  
                     model=_world,       
-                    view= _invView ,
-                    projection=_invProj
+                    view= _view ,
+                    projection=_proj
                 )
-            gpu.UpdateView(adapter.Idx, ref viewConstants)
+            gpu.UpdateView(partIdx, ref viewConstants)
 
          member this.updatePerFrame() =
             let frameConst = 
@@ -283,19 +282,24 @@ module Running =
                 )
             gpu.UpdateFrame(ref frameConst)
         
-        member this.updatePerMaterial(_objectName, idx:Nullable<int>) = 
-            if idx.HasValue && idx.Value >= 0 then
-                let material = mac.GetMaterial(_objectName, idx.Value)  
-                if material <> null then
-                    logDebug("Material " + idx.ToString() + " " + material.Name)                
-                    let matConst = new MaterialConstants(material)
-                    gpu.UpdateMaterial(idx.Value, ref matConst)
+        member this.updatePerMaterial(_objectName, node:NodeAdapter) =         
+            let mesh = mec.Mesh(_objectName, node.Node.Mesh.Value)
+            let myMaterial = mac.GetMaterial(_objectName, mesh.Material)  
+            let material = myMaterial.Material
+            if material <> null then
+                logDebug("Material " + mesh.Material.ToString() + " " + material.Name)                
+                let matConst = new MaterialConstants(material)
+                gpu.UpdateMaterial(myMaterial.Index, ref matConst)
           
-        member this.drawPerObject(_objectName, _adapter:NodeAdapter, _mesh, _material, _topology, _textures) =             
+        member this.drawPerNode(_objectName, _Idx:int, _node:NodeAdapter) =         
+            let mesh = mec.Mesh(_objectName, _node.Node.Mesh.Value)
+            let material = mesh.Material 
+            let topology = PrimitiveTopology.TriangleList
+            let textures = tec.GetTextures(_objectName, material)
 
-            let vBuffer = mec.GetVertexBuffer(_objectName, _mesh) 
-            let iBuffer = mec.GetIndexBuffer(_objectName, _mesh)
-            let iCount  = mec.getIndexCount(_objectName, _mesh)
+            let vBuffer = mec.GetVertexBuffer(_objectName, _node.Node.Mesh.Value) 
+            let iBuffer = mec.GetIndexBuffer(_objectName, _node.Node.Mesh.Value)
+            let iCount  = mec.getIndexCount(_objectName, _node.Node.Mesh.Value)
             
-            gpu.DrawPerObject(iCount, _adapter.Idx, _material, vBuffer , iBuffer, _topology, _textures)
+            gpu.DrawPerObject(iCount, _Idx, material, vBuffer , iBuffer, topology, textures)
 

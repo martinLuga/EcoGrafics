@@ -19,6 +19,17 @@ open VGltf.Types
  
 module Common = 
 
+    // ----------------------------------------------------------------------------------------------------
+    // Helper Classes
+    // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>]
+    type MyMaterial(_index:int, _mat:Material) =
+        let mutable index    = _index
+        let mutable material = _mat 
+
+        member this.Index    = index
+        member this.Material = material 
+
     [<AllowNullLiteral>]
     type MyTexture(_index:int, _kind:TextureInfoKind, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable index   = _index
@@ -37,6 +48,9 @@ module Common =
         member this.Info    = info
         member this.Cube    = cube
 
+    // ----------------------------------------------------------------------------------------------------
+    //  NestedDicts
+    // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteralAttribute>]
     type NestedDict4<'TYP1, 'TYP2, 'TYP3, 'TYP4, 'RESULT when 'TYP1:equality and 'TYP2:equality and 'TYP3:equality and 'TYP4:equality and 'RESULT:equality and 'RESULT:null> () =
         let mutable key1Dict  = Dictionary<'TYP1,   Dictionary<'TYP2,  Dictionary<'TYP3,  Dictionary<'TYP4, 'RESULT>>>>()
@@ -72,6 +86,8 @@ module Common =
 
         member this.Item(o1: 'TYP1, o2: 'TYP2, o3: 'TYP3) = key1Dict.Item(o1).Item(o2).Item(o3)
 
+        member this.Items(o1: 'TYP1, o2: 'TYP2 ) = key1Dict.Item(o1).Item(o2).Values |> Seq.toList
+
         member this.ContainsKey(o1: 'TYP1, o2: 'TYP2, o3: 'TYP3) = this.Item(o1, o2, o3) <> null
 
         member this.Clear() = key1Dict.Clear()
@@ -100,19 +116,24 @@ module Common =
 
         member this.Item(o1: 'TYP1, o2: 'TYP2) = key1Dict.Item(o1).Item(o2)
 
+        member this.Items(o1: 'TYP1) = key1Dict.Item(o1).Values
+
         member this.ContainsKey(o1: 'TYP1, o2: 'TYP2) = this.Item(o1, o2) <> null
 
         member this.Clear() = key1Dict.Clear()
 
-        member this.Items =
+        member this.AllItems =
                 key1Dict.Values
                     |> Seq.toList
                     |> Seq.concat
                     |> Seq.map(fun kp -> kp.Value)
                     |> Seq.toList
 
-        member this.Count = this.Items.Length
+        member this.Count = this.AllItems.Length
 
+    // ----------------------------------------------------------------------------------------------------
+    // NodeAdapter
+    // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteralAttribute>]
     type NodeAdapter(_gltf:Gltf, _idx:int) =
         let gltf = _gltf
@@ -140,6 +161,8 @@ module Common =
         member this.AllNodes()      = this.Nodes(this.Idx) |> Seq.toList
 
         member this.Count           = this.AllItems().Length
+
+        member this.LeafesCount     = (this.LeafAdapters() ).Length
 
         member this.instantiate() = 
             if node = null then 
@@ -179,17 +202,17 @@ module Common =
         // All nodes!! as Node recursively
         member this.Nodes(idx)  = 
             let mynode = gltf.Nodes[ idx ]
-            if node.Children <> null then
-                node.Children |> Seq.map (fun i -> gltf.Nodes[i])
+            if mynode.Children <> null then
+                mynode.Children |> Seq.map (fun i -> gltf.Nodes[i])
                 |> Seq.append (                   
-                    node.Children
+                    mynode.Children
                     |> Seq.collect (fun i  -> this.Nodes(i))                
                 )
             else
                 [ mynode ]
 
         // All Adapter (leafes only) recursively
-        member this.LeafAdapters()  =  
+        member this.LeafAdapters():NodeAdapter list  =  
             this.instantiate()
             if this.Children.Length > 0 then                 
                 this.Children
@@ -209,8 +232,12 @@ module Common =
             else
                 [this]
 
-        member this.UpdatePositionsDeep(_parentMatrix:Matrix) =
-            this.UpdatePos (this.Idx, _parentMatrix)
+        member this.WithIdx(_idx)  =  
+            this.Adapters()
+                |> List.find (fun ada -> ada.Idx = _idx)
+
+        member this.UpdatePositionsDeep(objectWorld) =
+            this.UpdatePos (this.Idx, objectWorld)
 
         member this.UpdatePos (idx, _parentMatrix:Matrix) =
             let mynode = gltf.Nodes[ idx ]
@@ -222,6 +249,9 @@ module Common =
                 mynode.Children 
                     |> Seq.iter (fun i -> this.UpdatePos(i, newMatrix))
 
+    // ----------------------------------------------------------------------------------------------------
+    // Conversions
+    // ----------------------------------------------------------------------------------------------------
     let myMaterial(mat:Material) = 
         let a = mat.EmissiveFactor.[0]
         new ModelSupport.Material(

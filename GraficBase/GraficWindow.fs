@@ -24,7 +24,7 @@ module GraficWindow =
     type MyWindow() =
         inherit UserControl()
         let mutable clearColor = Color.Black
-        let mutable myGpu : MyGPU = null
+        let mutable myGpu : MasterGPU = null
 
         member this.Boundery
             with set (value: int * int * int * int) =

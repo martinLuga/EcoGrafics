@@ -1,6 +1,6 @@
-﻿namespace GPUModel
+﻿namespace GltfBase
 //
-//  MyGPU.fs
+//  MyGPUInfrastructure.fs
 //
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2018 Martin Luga. All rights reserved.
@@ -19,7 +19,7 @@ open SharpDX.DXGI
 
 open DirectX.Assets
 open DirectX.D3DUtilities
-open MYUtils
+open GPUModel.MYUtils
   
 // ----------------------------------------------------------------------------------------------------
 // GPU Infrastructure
@@ -60,19 +60,21 @@ module MyGPUInfrastructure =
     let mutable fence = new Fence(nativeint 0)
     let mutable fenceEvents = new List<AutoResetEvent>(NUMFRAMERESOURCES)
 
+    // Debug
+    let mutable debugController1:Debug1 = null  
 
-    // 
-    // Create descriptor heaps
-    // 
+    // ----------------------------------------------------------------------------------------------------
+    // Descriptor heaps
+    // ----------------------------------------------------------------------------------------------------     
     let BuildDescriptorHeaps() =
         // Constant buffer view (CBV) descriptor heap.
-        let cbvHeapDesc = 
-            new DescriptorHeapDescription(  
-                DescriptorCount = 1,
-                Flags = DescriptorHeapFlags.ShaderVisible,
-                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView,
-                NodeMask = 0)
-        cbvHeap <- device.CreateDescriptorHeap(cbvHeapDesc)
+        //let cbvHeapDesc = 
+        //    new DescriptorHeapDescription(  
+        //        DescriptorCount = 1,
+        //        Flags = DescriptorHeapFlags.ShaderVisible,
+        //        Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView,
+        //        NodeMask = 0)
+        //cbvHeap <- device.CreateDescriptorHeap(cbvHeapDesc)
 
         // Render target view (RTV) descriptor heap.
         let rtvHeapDesc = 
@@ -81,33 +83,36 @@ module MyGPUInfrastructure =
                 Flags = DescriptorHeapFlags.None,
                 Type = DescriptorHeapType.RenderTargetView)
         rtvHeap <- device.CreateDescriptorHeap(rtvHeapDesc)
-
-        // Shader resource view (SRV) descriptor heap.
-        let samplerHeapDesc = 
-            new DescriptorHeapDescription(   
-                DescriptorCount = FRAMECOUNT,
-                Type =  DescriptorHeapType.Sampler,
-                Flags = DescriptorHeapFlags.ShaderVisible
-            ) 
-        smpDescriptorHeap <- device.CreateDescriptorHeap(samplerHeapDesc)       
-
-        // Shader resource view (SRV) descriptor heap.
-        let srvDescriptorHeapDesc = 
-            new DescriptorHeapDescription(  
-                DescriptorCount = 10,
-                Flags = DescriptorHeapFlags.ShaderVisible,
-                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
-        srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
-
-        descriptorHeaps <- [|srvDescriptorHeap|]  
-            
+        
         // Describe and create a depth stencil view (DSV) descriptor heap.
+        // Für das Render Target
         let dsvHeapDesc = 
             new DescriptorHeapDescription( 
                 DescriptorCount = DSVDESCRIPTORCOUNT,
                 Type = DescriptorHeapType.DepthStencilView
             )
         dsvHeap <- device.CreateDescriptorHeap(dsvHeapDesc) 
+
+        // Shader resource view (SRV) descriptor heap.
+        // Für Texturen
+        let srvDescriptorHeapDesc = 
+            new DescriptorHeapDescription(  
+                DescriptorCount = 8,
+                Flags = DescriptorHeapFlags.ShaderVisible,
+                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
+        srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
+
+        // Shader resource view (SRV) descriptor heap.
+        // Dyn Sampler der Texturen
+        let  samplerHeapDesc = 
+            new DescriptorHeapDescription(   
+                DescriptorCount = 8,
+                Type =  DescriptorHeapType.Sampler,
+                Flags = DescriptorHeapFlags.ShaderVisible
+            )   
+        smpDescriptorHeap <- device.CreateDescriptorHeap(samplerHeapDesc)
+
+        descriptorHeaps <- [|srvDescriptorHeap; smpDescriptorHeap|]  
 
     // 
     // Device & Co
@@ -173,3 +178,4 @@ module MyGPUInfrastructure =
                 Dimension = viewDimension(IS_4X_MSAA_ENABLED),
                 Format = DEPTHSTENCILFORMAT)
         device.CreateDepthStencilView(depthStencilBuffer, Nullable depthStencilViewDesc, dsvHeap.CPUDescriptorHandleForHeapStart)
+

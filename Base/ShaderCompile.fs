@@ -36,7 +36,7 @@ module ShaderCompile =
         Path.Combine(mapPath.FullName, filePath)
 
     let logger = LogManager.GetLogger("ShaderCompile")
-    let mutable PRECOMPILED = false
+    let mutable PRECOMPILED = true
     let mutable byteCode:D3DCompiler.ShaderBytecode = null
     exception ShaderError of string
 

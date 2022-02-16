@@ -210,6 +210,6 @@ module GeometryUtils =
         Matrix.Scaling(sv)
 
     let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 []) =
-        createTranslationMatrix (trans)
+        createScaleMatrix (scale)
         * createRotationMatrix (rot)
-        * createScaleMatrix (scale)
+        * createTranslationMatrix (trans)

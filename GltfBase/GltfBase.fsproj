@@ -7,10 +7,13 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Infrastructure.fs" />
+    <Compile Include="MyFrame.fs" />
+    <Compile Include="AnotherGPU.fs" />
     <Compile Include="Reader.fs" />
     <Compile Include="Gltf2Support.fs" />
     <Compile Include="VGltfSupport.fs" />
-    <Compile Include="Common.fs" />
     <Compile Include="VertexDefs.fs" />
     <Compile Include="MeshContainer.fs" />
     <Compile Include="ExampleShaders.fs" />

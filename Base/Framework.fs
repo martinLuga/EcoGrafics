@@ -51,19 +51,14 @@ module Framework =
     // ----------------------------------------------------------------------------------------------------
     //  String
     // ----------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------
+    
     // Char aus String entfernen
-    // ----------------------------------------------------------------------------
     let stripchars chars str =
         Seq.fold (fun (str: string) chr -> str.Replace(chr |> Char.ToUpper |> string, "").Replace(chr |> Char.ToLower |> string, ""))
             str chars
 
     let stripcharsnl str =
         str |> stripchars System.Environment.NewLine 
-
-    let mutable keyToggles = new Dictionary<Keys, bool>() 
-    keyToggles.Item(Keys.Z) <- false
-    keyToggles.Item(Keys.F) <- false
 
     let everyNth n elements =
         elements
@@ -73,9 +68,8 @@ module Framework =
     // ----------------------------------------------------------------------------------------------------
     //  Tuple
     // ----------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------
-    // First, second,.. for a 4-Tuple
-    // ---------------------------------------------------------------------------- 
+    
+    // First, second,..  4-Tuple
     let first  (c, _, _, _) = c
     let secnd  (_, c, _, _) = c
     let third  (_, _, c, _) = c
@@ -85,9 +79,9 @@ module Framework =
         let chunkSize = 3
         List.chunkBySize chunkSize list
 
-     // 
-    // Pretty print list
-    // 
+    // ----------------------------------------------------------------------------------------------------
+    //  Pretty print
+    // ----------------------------------------------------------------------------------------------------
     let printList(list:float32 list) =
         List.fold (fun rstring (litem:float32) -> rstring + litem.ToString()) "" list
 
@@ -206,6 +200,9 @@ module Framework =
     let approximatelySame (a:Vector3, b:Vector3) =
         Vector3.Distance (a,b) < 0.1f
 
+    //-----------------------------------------------------------------------------------------------------
+    // Clock
+    //-----------------------------------------------------------------------------------------------------  
     type Clock() =    
         let mutable _physicsTimer = new Stopwatch()
         let mutable _renderTimer = new Stopwatch() 
@@ -231,6 +228,10 @@ module Framework =
                     (float)(_renderTimer.ElapsedTicks / Stopwatch.Frequency)
                     / (float) (this.FrameCount * 1000 )  
 
+
+    //-----------------------------------------------------------------------------------------------------
+    // Interval
+    //-----------------------------------------------------------------------------------------------------  
     type Dimensions = | XZ | XY | YZ
 
     type Interval =
@@ -312,6 +313,9 @@ module Framework =
         // Wait for delay end and continue main task
         delayTask.Join()
 
+    // ----------------------------------------------------------------------------------------------------
+    // In sequence finden
+    // ----------------------------------------------------------------------------------------------------
     // Alle gleich i
     let ForAll seq i =
        if Seq.forall(fun num -> num = i) seq then true

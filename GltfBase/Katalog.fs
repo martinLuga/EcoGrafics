@@ -16,7 +16,7 @@ open SharpDX.Direct3D
 open Common
 open VertexDefs
 open MyMesh
-open ModernGPU
+open AnotherGPU
 
 type Resource = VGltf.Resource
 
@@ -86,40 +86,43 @@ module Katalog =
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
     type MaterialKatalog(device) =
-        let mutable objectMaterials = new NestedDict2<string, int, Material>()
 
-        member this.AddMaterial(_objectName, idx, material: Material) =
-            objectMaterials.Add(_objectName, idx, material)
+        let mutable objectMaterials = new NestedDict2<string, int, MyMaterial>()
+
+        member this.Add(_objectName, idx, material: Material) =
+            let myMaterial  = new MyMaterial(idx , material) 
+            objectMaterials.Add(_objectName, idx, myMaterial)
 
         member this.GetMaterial(name, idx) = objectMaterials.Item(name, idx)
 
         member this.Count() = objectMaterials.Count
 
         member this.ToGPU(commandList) = ()
+
     // ----------------------------------------------------------------------------------------------------
     // Register all textures of an object
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TextureKatalog(gpu:MyModernGPU) = 
+    type TextureKatalog(gpu:MyGPU) = 
         
-        let mutable textureCache = new NestedDict2<string,  TextureInfoKind, MyTexture >()
+        let mutable textureCache = new NestedDict3<string, int, int, MyTexture >()
 
         let mutable idx  = 0
 
-        member this.GetTextures() =
-            textureCache.Items 
+        member this.GetTextures(objectName, _material) =
+            textureCache.Items (objectName, _material)
 
-        member this.Add(objectName:string, _kind: TextureInfoKind, sampler: Sampler, image: System.Drawing.Image, data:byte[], info:Image, _cube:bool ) =
+        member this.Add(objectName:string, _material:int, _kind: TextureInfoKind, sampler: Sampler, image: System.Drawing.Image, data:byte[], info:Image, _cube:bool ) =
             let myTexture  = new MyTexture(idx, _kind, sampler, image, data, info, _cube) 
             idx <- idx + 1
-            textureCache.Add(objectName, _kind, myTexture)
+            textureCache.Add(objectName, _material, idx, myTexture)
 
-        member this.Get(objectName:string, _kind: TextureInfoKind) = 
-            textureCache.Item(objectName, _kind)  
+        member this.Get(objectName, _material , _text) = 
+            textureCache.Item(objectName, _material, _text)  
 
         member this.ToGPU() =
-            for texture in this.GetTextures() do
-                gpu.InstallTexture(texture)
+            for texture in textureCache.Items() do
+                gpu.InstallTexture(texture) 
 
         member this.Reset() = 
-            textureCache <- new NestedDict2<string,  TextureInfoKind, MyTexture >()
+            textureCache <- new NestedDict3<string,  int, int, MyTexture >()

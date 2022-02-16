@@ -71,15 +71,16 @@ module ModelSupport =
         member this.NodeCount =
             tree.Count 
 
+        member this.LeafesCount =
+            tree.LeafesCount 
+
         member this.Indexe() =
             tree.AllItems() 
 
         member this.World = Matrix.Multiply(rotation, Matrix.Translation(position))
 
         member this.GlobalTransforms() = 
-            let node = tree.Node            
-            let transform = createLocalTransform (node.Translation , node.Rotation,  node.Scale)
-            tree.UpdatePositionsDeep(transform)
+            tree.UpdatePositionsDeep(this.World) 
 
         member this.Direction
             with get () = direction
@@ -93,8 +94,11 @@ module ModelSupport =
         member this.Node(idx) =
             _gltf.Nodes[idx]
 
+        member this.Adapter(idx) =
+            tree.WithIdx(idx) 
+
     // ----------------------------------------------------------------------------------------------------
-    //  Scene -
+    //  Scene - (Future Use)
     //      enthält Objekte
     //      lesen und speichern des Modells 
     // ----------------------------------------------------------------------------------------------------
@@ -113,7 +117,7 @@ module ModelSupport =
             and set (value) = name <- value
 
     // ----------------------------------------------------------------------------------------------------
-    //  Model -
+    //  Modell - (Future Use)
     //      enthält Scenes
     //      lesen und speichern des Modells
     // ----------------------------------------------------------------------------------------------------

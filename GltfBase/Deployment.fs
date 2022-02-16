@@ -107,10 +107,10 @@ module Deployment =
                 node.Node.Translation <- correctNode.Translation
                 node.Node.Rotation <- correctNode.Rotation
 
-        member this.DeployNode(_objektName, _adapter )=
-            let node    = _adapter.Node  
-            nodeKatalog.Add(node.Name, _adapter.Idx,  node) 
-            this.DeployMesh(_objektName, node.Mesh )
+        member this.DeployNode(_objektName, _adapter) =
+            let node = _adapter.Node
+            nodeKatalog.Add(node.Name, _adapter.Idx, node)
+            this.DeployMesh(_objektName, node.Mesh)
 
         member this.DeployMesh(_objektName, _mesh ) =
             if _mesh.HasValue then
@@ -120,60 +120,32 @@ module Deployment =
                 this.DeployMaterial(_objektName, matIdx, material )
 
         member this.DeployMaterial(_objectName, _material, material) =
-            materialKatalog.AddMaterial(_objectName, _material, material)
+            materialKatalog.Add(_objectName, _material, material)
 
             let textures = material.GetTextures()
             for text in textures do 
-                this.DeployTexture(_objectName, material, text)
+                this.DeployTexture(_objectName, _material, material, text)
 
-        member this.DeployTexture(_objectName, _material, text) =
-            
+        member this.DeployTexture(_objectName, _matIdx, _material, text) =            
             if text <> null then
-                match text.Kind with
+                let texture   =
+                    match text.Kind with
+                    | TextureInfoKind.BaseColor -> gltf.Textures[_material.PbrMetallicRoughness.BaseColorTexture.Index]
 
-                | TextureInfoKind.BaseColor ->  
-                    let texture             = gltf.Textures[_material.PbrMetallicRoughness.BaseColorTexture.Index]
-                    let sampler             = gltf.Samplers[texture.Sampler.Value] 
-                    let imageInfo           = gltf.Images[texture.Source.Value]
-                    let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
-                    let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    textureKatalog.Add(_objectName, text.Kind, sampler, image, imageBytes, imageInfo, false)
-
-                | TextureInfoKind.Emissive ->  
-                    let texture             = gltf.Textures[_material.EmissiveTexture.Index]
-                    let sampler             = gltf.Samplers[texture.Sampler.Value] 
-                    let imageInfo           = gltf.Images[texture.Source.Value]
-                    let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
-                    let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    textureKatalog.Add(_objectName, text.Kind, sampler, image, imageBytes, imageInfo, false)
+                    | TextureInfoKind.Emissive ->  gltf.Textures[_material.EmissiveTexture.Index] 
             
-                | TextureInfoKind.Normal -> 
-                    let texture             = gltf.Textures[_material.NormalTexture.Index]
-                    let sampler             = gltf.Samplers[texture.Sampler.Value] 
-                    let imageInfo           = gltf.Images[texture.Source.Value]
-                    let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
-                    let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    textureKatalog.Add(_objectName, text.Kind, sampler, image, imageBytes, imageInfo, false)
+                    | TextureInfoKind.Normal ->   gltf.Textures[_material.NormalTexture.Index] 
             
-                | TextureInfoKind.Occlusion ->  
-                    let texture             = gltf.Textures[_material.OcclusionTexture.Index]
-                    let sampler             = gltf.Samplers[texture.Sampler.Value] 
-                    let imageInfo           = gltf.Images[texture.Source.Value]
-                    let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
-                    let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    textureKatalog.Add(_objectName, text.Kind, sampler, image, imageBytes, imageInfo, false)
+                    | TextureInfoKind.Occlusion -> gltf.Textures[_material.OcclusionTexture.Index] 
 
-                | TextureInfoKind.MetallicRoughness ->  
-                    let texture             = gltf.Textures[_material.PbrMetallicRoughness.MetallicRoughnessTexture.Index]
-                    let sampler             = gltf.Samplers[texture.Sampler.Value] 
-                    let imageInfo           = gltf.Images[texture.Source.Value]
-                    let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
-                    let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                    textureKatalog.Add(_objectName, text.Kind, sampler, image, imageBytes, imageInfo, false)
+                    | TextureInfoKind.MetallicRoughness -> gltf.Textures[_material.PbrMetallicRoughness.MetallicRoughnessTexture.Index] 
 
-                | _ ->  raise (new Exception("TextureInfoKind"))
+                    | _ ->  raise (new Exception("TextureInfoKind"))
+            
+                let sampler             = gltf.Samplers[texture.Sampler.Value] 
+                let imageInfo           = gltf.Images[texture.Source.Value]
+                let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
+                let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
+                let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
+
+                textureKatalog.Add(_objectName, _matIdx, text.Kind, sampler, image, imageBytes, imageInfo, false) 

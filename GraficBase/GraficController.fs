@@ -42,7 +42,7 @@ open Structures
 //  renderLoop
 // ----------------------------------------------------------------------------------------------------
 module GraficController =
-
+ 
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // Steuerung der Grafic, Versorgung der Gpu, Entgegennehmen der Abbildungsinformationen
@@ -83,7 +83,7 @@ module GraficController =
         let mutable graficWindow = graficWindow
         let mutable status = ControllerStatus.New
         let mutable lightDir = Vector4.Zero
-        let mutable myGpu = new MyGPU()
+        let mutable myGpu = new MasterGPU()
         let mutable rasterizationFactor = 8.0f
         let mutable tessellationFactor = 8.0f
         let mutable rasterizerDesc = RasterizerDescription.Default()
