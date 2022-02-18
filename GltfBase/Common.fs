@@ -31,9 +31,10 @@ module Common =
         member this.Material = material 
 
     [<AllowNullLiteral>]
-    type MyTexture(_index:int, _kind:TextureInfoKind, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
+    type MyTexture(_index:int, _kind:TextureInfoKind, _samplerIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable index   = _index
         let mutable kind    = _kind
+        let mutable samplerIdx = _samplerIdx
         let mutable sampler = _sampler 
         let mutable image   = _image
         let mutable data    = _data
@@ -42,6 +43,7 @@ module Common =
 
         member this.Index   = index
         member this.Kind    = kind
+        member this.SamplerIdx = samplerIdx 
         member this.Sampler = sampler 
         member this.Image   = image
         member this.Data    = data

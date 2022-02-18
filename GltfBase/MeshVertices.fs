@@ -16,31 +16,30 @@ open VGltf.Types
 
 open Base.Framework
 
-open VertexDefs
+open Base.VertexDefs
 open Common
 
 // ----------------------------------------------------------------------------------------------------
 // Support für das Deploy auf die GPU
 // ---------------------------------------------------------------------------------------------------- 
-module Analyzer = 
+module MeshVertices = 
 
     // ----------------------------------------------------------------------------------------------------
     // Analyze Mesh
     // ---------------------------------------------------------------------------------------------------- 
-    let CreateSubmesh(mesh:Mesh, store:ResourcesStore) =
+    let CreateMeshData(mesh:Mesh, store:ResourcesStore) =
     
         let primitive = mesh.Primitives[0]
 
         let gltf = store.Gltf
 
-        // Vertex
-        let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
-        let normalen = normalBuffer.GetEntity<float32, Vector3> (fromArray3) 
-        let ueberAlleNormalen  = normalen.GetEnumerable().GetEnumerator()
-
         let posBuffer  = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["POSITION"])
         let positionen = posBuffer.GetEntity<float32, Vector3> (fromArray3) 
         let ueberAllePositionen  = positionen.GetEnumerable().GetEnumerator()
+
+        let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
+        let normalen = normalBuffer.GetEntity<float32, Vector3> (fromArray3) 
+        let ueberAlleNormalen  = normalen.GetEnumerable().GetEnumerator()
 
         let texCoordBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["TEXCOORD_0"])
         let alleTexCoord = texCoordBuffer.GetEntity<float32, Vector2> (fromArray2) 
@@ -52,7 +51,7 @@ module Analyzer =
             let pos  = ueberAllePositionen.Current
             let norm = ueberAlleNormalen.Current
             let tex  = ueberAlleTexCoords.Current
-            let vertex = new Vertex(pos, norm, tex)
+            let vertex = new Vertex(pos, norm, Color4.White, tex)
             meshVertices.Add(vertex)
 
         // Index

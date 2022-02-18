@@ -1,6 +1,6 @@
 ﻿namespace GltfBase
 //
-//  MYUtils.fs
+//  MyMesh.fs
 //
 //  Created by Martin Luga on 08.02.18.
 //  Copyright © 2018 Martin Luga. All rights reserved.

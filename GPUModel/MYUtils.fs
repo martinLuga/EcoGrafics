@@ -149,8 +149,8 @@ module MYUtils =
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
 
-        member this.AddResource() =
-            device.CreateSampler(samplerDescription , hDescriptor) 
+        member this.AddResource(samplerDescription) =
+            device.CreateSampler(samplerDescription, hDescriptor) 
             this.Increment()
 
     [<AllowNullLiteralAttribute>]

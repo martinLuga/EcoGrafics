@@ -212,4 +212,4 @@ module GeometryUtils =
     let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 []) =
         createScaleMatrix (scale)
         * createRotationMatrix (rot)
-        * createTranslationMatrix (trans)
+        * createTranslationMatrix (trans)  

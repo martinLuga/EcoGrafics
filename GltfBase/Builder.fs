@@ -10,8 +10,6 @@ open SharpDX
 
 open Deployment
 
-open Gltf2Support
-
 // ----------------------------------------------------------------------------------------------------
 // Support für das Einlesen von glb-Files mit VGltf
 // ---------------------------------------------------------------------------------------------------- 
@@ -21,8 +19,11 @@ module Build =
     open VGltf.Types
     
     open VGltfReader
+    open Gltf2Reader
     open ModelSupport
     open Running
+
+    let correctorGltf(path) = getGltf (path)
 
     [<AllowNullLiteral>]
     type Builder() = 
@@ -43,17 +44,17 @@ module Build =
                 instance
             and set(value) = instance <- value
 
-        static member Build(_objectName, _path:string, _position:Vector3) =
-            Builder.Instance.Build(_objectName, _path, _position)
+        static member Build(_objectName, _path:string, _position:Vector3, _scale:Vector3) =
+            Builder.Instance.Build(_objectName, _path, _position, _scale)
 
         static member Reset() =
             Builder.Instance.Initialize()
             Runner.Reset()
 
-        member this.Build( _objectName, _path:string, _position:Vector3) =  
+        member this.Build( _objectName, _path:string, _position:Vector3, _scale:Vector3) =  
             let correctorGtlf = correctorGltf(_path)
             store <- Builder.Instance.Read(_objectName, _path)
-            objekt <- new Objekt(objectName, store.Gltf, _position)  
+            objekt <- new Objekt(objectName, store.Gltf, _position, _scale)  
             // Objekt ist durch gltf initialisiert
             Deployer.Deploy(objekt, store, correctorGtlf)
             Runner.AddObject(objekt)

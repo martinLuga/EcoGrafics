@@ -374,4 +374,3 @@ module D3DUtilities =
 
     let CreateSampler(_device:Device, _samplerDesc, _hdl) =
         _device.CreateSampler(_samplerDesc, _hdl) 
-

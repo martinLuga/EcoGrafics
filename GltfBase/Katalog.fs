@@ -8,13 +8,8 @@
 
 open VGltf.Types
 
-open System
-open System.Collections.Generic
-
-open SharpDX.Direct3D
-
 open Common
-open VertexDefs
+open Base.VertexDefs
 open MyMesh
 open AnotherGPU
 
@@ -48,15 +43,16 @@ module Katalog =
 
     [<AllowNullLiteral>]
     type MeshKatalog(device) =
-
+    
+        // Mesh-Information to objectName/mesh
         let meshRegister = new NestedDict2<string, int, RegistryEntry>()
 
-        // Find Meshdata to objectName/mesh
+        // Find Vertexdata to objectName/mesh
         let mutable meshContainer = new MeshContainer<Vertex>(device)
 
         // Register one mesh of an object
-        member this.AddMesh(_object, _mesh, _vertices, _indices, topology: PrimitiveTopology, _material:int) =
-            meshContainer.Append(_object, _mesh, _vertices, _indices, topology)
+        member this.AddMesh(_object, _mesh, _vertices, _indices, _topology, _material:int) =
+            meshContainer.Append(_object, _mesh, _vertices, _indices, _topology)
             meshRegister.Add(_object, _mesh, new RegistryEntry(_mesh, _material))
 
         member this.GetVertexBuffer(objectName, mesh) =
@@ -112,8 +108,8 @@ module Katalog =
         member this.GetTextures(objectName, _material) =
             textureCache.Items (objectName, _material)
 
-        member this.Add(objectName:string, _material:int, _kind: TextureInfoKind, sampler: Sampler, image: System.Drawing.Image, data:byte[], info:Image, _cube:bool ) =
-            let myTexture  = new MyTexture(idx, _kind, sampler, image, data, info, _cube) 
+        member this.Add(objectName:string, _material:int, _kind: TextureInfoKind, samplerIdx:int, sampler: Sampler, image: System.Drawing.Image, data:byte[], info:Image, _cube:bool ) =
+            let myTexture  = new MyTexture(idx, _kind, samplerIdx, sampler, image, data, info, _cube) 
             idx <- idx + 1
             textureCache.Add(objectName, _material, idx, myTexture)
 

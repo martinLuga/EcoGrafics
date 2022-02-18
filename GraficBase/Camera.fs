@@ -46,7 +46,7 @@ module Camera =
     let Matrix_Perspective (fovY, aspectRatio, zNear, zFar) =
         match ACTUAL_COORD_RULE with
         | CoordinatRule.RIGHT_HANDED -> persRightHanded (fovY, aspectRatio, zNear, zFar)
-        | CoordinatRule.LEFT_HANDED -> Matrix.PerspectiveFovLH(fovY, aspectRatio, zNear, zFar)
+        | CoordinatRule.LEFT_HANDED  -> persLeftHanded(fovY, aspectRatio, zNear, zFar)
 
     type Camera() =
         

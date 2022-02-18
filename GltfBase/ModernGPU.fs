@@ -183,7 +183,7 @@ module ModernGPU =
             
             textureHeap.AddResource(texture, _texture.Cube) 
 
-            samplerHeap.AddResource() 
+            //samplerHeap.AddResource() 
 
         // ----------------------------------------------------------------------------------------------------
         // Update in cycle

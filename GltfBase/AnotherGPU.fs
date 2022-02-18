@@ -2,8 +2,8 @@
 //
 //  AnotherGPU.fs
 //
-//  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Created by Martin Luga on 08.02.22.
+//  Copyright © 2022 Martin Luga. All rights reserved.
 // 
 
 open log4net
@@ -20,20 +20,18 @@ open SharpDX.Direct3D12
 open SharpDX.DXGI
 
 open Base.LoggingSupport
-open Base.ShaderSupport
-open Base.VertexDefs
+open Base.ShaderSupport 
 
 open DirectX.GraficUtils
-
 open DirectX.D3DUtilities 
-
-open GPUModel 
+ 
 open GPUModel.MyPipelineSupport
 open GPUModel.MYUtils
 
 open MyFrame
 open MyGPUInfrastructure
 open Common
+open GltfSupport
   
 // ----------------------------------------------------------------------------------------------------
 // GPU  
@@ -41,17 +39,18 @@ open Common
 // ----------------------------------------------------------------------------------------------------
 module AnotherGPU = 
 
-    type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>    
+    let FRAMECOUNT              = 2 
+    let NUMFRAMERESOURCES       = 5 
+    let SWAPCHAINBUFFERCOUNT    = 2 
+    let DSVDESCRIPTORCOUNT      = 1
+    let BACKBUFFERFORMAT        = Format.R8G8B8A8_UNorm  
+    let RTVDESCRIPTORCOUNT      = SWAPCHAINBUFFERCOUNT 
 
-    let TEXTUREWIDTH = 256; 
-    let TEXTUREHEIGHT = 256 
-    let TEXTUREPIXELSIZE = 4    // The number of bytes used to represent a pixel in the texture.
-    let FRAMECOUNT = 2 
-    let NUMFRAMERESOURCES = 5 
-    let SWAPCHAINBUFFERCOUNT = 2 
-    let DSVDESCRIPTORCOUNT = 1
-    let BACKBUFFERFORMAT = Format.R8G8B8A8_UNorm  
-    let RTVDESCRIPTORCOUNT = SWAPCHAINBUFFERCOUNT 
+    let ROOT_PARM_IDX_OBJECT    = 0
+    let ROOT_PARM_IDX_FRAME     = 1
+    let ROOT_PARM_IDX_MATERIAL  = 2
+    let ROOT_PARM_IDX_TEXTURE   = 3
+    let ROOT_PARM_IDX_SAMPLER   = 5
 
     let loggerGPU = LogManager.GetLogger("GPU")
     let debugGPU = Debug(loggerGPU)
@@ -74,10 +73,6 @@ module AnotherGPU =
         let mutable pipelineConfigurations=new Dictionary<string, ShaderConfiguration>() 
         let mutable currentPipelineConfigurationName="Basic"
         let mutable pixelShaderDesc:ShaderDescription=null
-
-        // Geometry        
-        let mutable meshCache:MeshCache<Vertex> = null
-        let mutable geometry:MeshGeometry = null
 
         // Resources     
         let mutable textures = new Dictionary<string, int>()
@@ -116,9 +111,6 @@ module AnotherGPU =
 
         member this.Device
             with get() = device
-
-        member this.Geometry
-            with get() = geometry
 
         member this.ItemLength
             with get() = itemLength
@@ -170,7 +162,6 @@ module AnotherGPU =
 
         member this.TextureHeapWrapper = textureHeap
 
-        member this.MeshCache = meshCache
 
         member this.Viewport = viewport
 
@@ -261,11 +252,12 @@ module AnotherGPU =
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(_texture:MyTexture) =  
             let bitmap = _texture.Image :?> System.Drawing.Bitmap
-            let texture = CreateTextureFromBitmap(device, bitmap) 
-            
+            let texture = CreateTextureFromBitmap(device, bitmap)             
             textureHeap.AddResource(texture, _texture.Cube) 
 
-            samplerHeap.AddResource() 
+            let sampler = _texture.Sampler
+            let sDesc   = DynamicSamplerDesc(sampler) 
+            samplerHeap.AddResource(sDesc) 
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 
@@ -335,9 +327,9 @@ module AnotherGPU =
         
         // Update Objekt-Eigenschaften (World, WorldView, ...)
         // Parameter ConstantBufferView ObjectCB = reg(b0) ites Element
-        member this.UpdateObject(i, bytes) =  
+        member this.UpdateView(i, bytes) =  
             if frameResources.Count > 0 then
-                this.CurrFrameResource.ObjectCB.CopyData(i, bytes)
+                this.CurrFrameResource.ViewCB.CopyData(i, bytes)
 
         // Update Frame-Eigenschaften (Camera-Position, Light,...)
         // Parameter ConstantBufferView FrameCB = reg(b1) ites Element   
@@ -359,7 +351,6 @@ module AnotherGPU =
             if frameResources.Count > 0 then
             
                 this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.InitialPipelineState
-                //this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetCurrentPipelineState()
                 this.CurrFrameResource.Recorder.StartRecording()
 
                 let commandList = this.CurrFrameResource.Recorder.CommandList
@@ -376,38 +367,34 @@ module AnotherGPU =
                 commandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps)
 
                 // Frame Daten
-                let rootFrameParmIdx = 2
-                commandList.SetGraphicsRootConstantBufferView(rootFrameParmIdx, this.CurrFrameResource.FrameCB.ElementAdress(0)) 
+                commandList.SetGraphicsRootConstantBufferView(ROOT_PARM_IDX_FRAME, this.CurrFrameResource.FrameCB.ElementAdress(0)) 
+    
+        // ----------------------------------------------------------------------------------------------------
+        // DrawPerObject  
+        // ----------------------------------------------------------------------------------------------------
+        member this.DrawPerObject(_instanceCount, _bufferIdx, _vertexBuffer, _indexBuffer, _topology:PrimitiveTopology, _textures:MyTexture list) =
+         
+            this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetCurrentPipelineState()        
+            let commandList = this.CurrFrameResource.Recorder.CommandList 
 
-        //
-        // DrawPerObject mit dem Pipelinestate 
-        //
-        member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, textureName:string) = 
-            if frameResources.Count > 0 then
+            // Geometrie
+            commandList.SetVertexBuffer(0, _vertexBuffer )
+            commandList.SetIndexBuffer(Nullable (_indexBuffer ))
+            commandList.PrimitiveTopology <- _topology
+                        
+            commandList.SetGraphicsRootConstantBufferView(ROOT_PARM_IDX_OBJECT, this.CurrFrameResource.ViewCB.ElementAdress(_bufferIdx))
 
-                this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetCurrentPipelineState()         
-                let commandList = this.CurrFrameResource.Recorder.CommandList 
+            commandList.SetGraphicsRootConstantBufferView(ROOT_PARM_IDX_MATERIAL, this.CurrFrameResource.MaterialCB.ElementAdress(_bufferIdx)) 
 
-                // Geometrie
-                commandList.SetVertexBuffer(0, meshCache.getVertexBuffer(geometryName))
-                commandList.SetIndexBuffer(Nullable (meshCache.getIndexBuffer(geometryName)))
-                commandList.PrimitiveTopology <- topology
-
-                // Objekt Eigenschaften 
-                let rootObjectParmIdx = 1
-                commandList.SetGraphicsRootConstantBufferView(rootObjectParmIdx, this.CurrFrameResource.ObjectCB.ElementAdress(objectIdx))
-
-                // Material Eigenschaften
-                let rootMaterialParmIdx = 3
-                commandList.SetGraphicsRootConstantBufferView(rootMaterialParmIdx, this.CurrFrameResource.MaterialCB.ElementAdress(materialIdx)) 
-
-                // Textur (wenn vorhanden)    
-                if textureName <> "" then  
-                    let rootTexturParmIdx = 0
-                    let textureIdx = textures.Item(textureName)
-                    commandList.SetGraphicsRootDescriptorTable(rootTexturParmIdx, textureHeap.GetGpuHandle(textureIdx)) 
+            this.DrawTextures(commandList, _textures)
             
-                commandList.DrawIndexedInstanced(meshCache.getIndexCount(geometryName), 1, 0, 0, 0) 
+            commandList.DrawIndexedInstanced(_instanceCount, 1, 0, 0, 0) 
+
+        member this.DrawTextures (_commandList, _textures) =
+            
+            for texture in _textures do 
+                _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_TEXTURE, textureHeap.GetGpuHandle(texture.Index)) 
+                _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_SAMPLER, samplerHeap.GetGpuHandle(texture.SamplerIdx)) 
 
         member this.EndDraw() = 
             if frameResources.Count > 0 then

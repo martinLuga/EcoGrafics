@@ -7,7 +7,6 @@
 //
 
 open System.Collections.Generic 
-open System
 
 open log4net
 
@@ -19,9 +18,7 @@ open SharpDX.Windows
 
 open Base.GameTimer
 open Base.LoggingSupport
-open Base.ShaderSupport
-open Base.GeometryUtils
-open GraficBase.GraficWindow
+open Base.ShaderSupport 
 open GraficBase.Camera
 
 open DirectX.D3DUtilities
@@ -31,6 +28,7 @@ open Katalog
 open ExampleShaders
 open GltfSupport
 open Common
+open GraficWindow
 
 // ----------------------------------------------------------------------------------------------------
 // Runner Prozess über der GPU
@@ -67,14 +65,15 @@ module Running =
         
         let mutable defaultInputLayoutDesc:InputLayoutDescription = inputLayoutDescription
         let mutable defaultRootSignatureDesc:RootSignatureDescription = rootSignatureGltfDesc
-        let mutable defaultVertexShaderDesc : ShaderDescription = null
-        let mutable defaultPixelShaderDesc : ShaderDescription = null
-        let mutable defaultDomainShaderDesc : ShaderDescription = null
-        let mutable defaultHullShaderDesc : ShaderDescription = null
+        let mutable defaultVertexShaderDesc : ShaderDescription = vertexShaderDesc
+        let mutable defaultPixelShaderDesc : ShaderDescription = pixelShaderDepthDesc
+        let mutable defaultDomainShaderDesc : ShaderDescription = ShaderDescription.CreateNotRequired(ShaderType.Domain)
+        let mutable defaultHullShaderDesc : ShaderDescription = ShaderDescription.CreateNotRequired(ShaderType.Hull)
         let mutable defaultRasterizerDesc = new RasterizerDescription(RasterType.Wired, rasterizerStateWired)
-        let mutable defaultBlendDesc = BlendDescription.Default()
-        let mutable defaultSampleDesc = SampleDescription()
+        let mutable defaultBlendDesc =  new BlendDescription(BlendType.Opaque, blendStateOpaque)
+        let mutable defaultSampleDesc = new SampleDescription(1, 0)
         let mutable defaultTopologyType = PrimitiveTopologyType.Triangle
+        let mutable defaultTopology  = PrimitiveTopology.TriangleList
 
         // ----------------------------------------------------------------------------------------------------
         // Singleton
@@ -140,23 +139,23 @@ module Running =
             gpu.Initialize(_graficWindow)
 
             gpu.InstallPipelineProvider(
-                inputLayoutDescription,
-                rootSignatureGltfDesc,
-                vertexShaderPBRDesc,
-                pixelShaderPBRDesc,
-                ShaderDescription.CreateNotRequired(ShaderType.Domain),
-                ShaderDescription.CreateNotRequired(ShaderType.Hull),
-                SampleDescription(1, 0),
-                BlendDescription.Default() ,
-                RasterizerDescription.Default(),
-                PrimitiveTopologyType.Triangle   
+                defaultInputLayoutDesc,
+                defaultRootSignatureDesc,
+                defaultVertexShaderDesc,
+                defaultPixelShaderDesc,
+                defaultDomainShaderDesc,
+                defaultHullShaderDesc,
+                defaultSampleDesc,
+                defaultBlendDesc,
+                defaultRasterizerDesc,
+                defaultTopologyType
             )
         
         // ----------------------------------------------------------------------------------------------------
         // Member
         // ---------------------------------------------------------------------------------------------------- 
         member this.GPU
-            with get() = gpu
+            with get() = gpu 
 
         member this.NodeKatalog
             with get() = noc 
@@ -231,47 +230,34 @@ module Running =
             let loop = new RenderLoop(_graficWindow)
             while loop.NextFrame() &&  this.isRunning() do                     
                 if this.notIdle() then
-                    logError("Step") 
+                    logInfo("Step") 
                     this.Timer.Tick()
                     this.GPU.StartUpdate()
                     this.updatePerFrame() 
                     this.GPU.StartDraw()  
-                    let mutable nodeIdx = 0                 
+                    let mutable bufferIdx = 0                 
                     for objekt in objekts do 
                         logDebug("Object " + objekt.Name)
                         objekt.GlobalTransforms()
                         let nodes = objekt.LeafNodes()
-                        for node in nodes do 
-                            logDebug("Node " + node.Node.Name)                            
-                            this.updatePerObject(node, nodeIdx)  
-                            this.updatePerMaterial(objekt.Name, node)
-                            this.drawPerNode(objekt.Name, nodeIdx, node) 
-                            nodeIdx <- nodeIdx + 1
+                        for node in nodes do                             
+                            this.updatePerObject(node, bufferIdx)  
+                            this.updatePerMaterial(objekt.Name, node, bufferIdx)
+                            this.drawPerNode(objekt.Name, bufferIdx, node) 
+                            bufferIdx <- bufferIdx + 1
                     this.GPU.EndDraw()
 
         member this.updatePerObject(adapter:NodeAdapter, partIdx) =
 
             let world = Matrix(adapter.Node.Matrix )
-
-            let _world          = world
-            let _invWorld       = Matrix.Invert(_world)
-
-            let _view           = Camera.Instance.View
-            let _invView        = Matrix.Invert(_view)
-
-            let _proj           = Camera.Instance.Proj
-            let _invProj        = Matrix.Invert(_proj) 
-
-            let _viewProj       = _view * _proj
-            let _invViewProj    = Matrix.Invert(_viewProj) 
-
-            let _eyePos         = Camera.Instance.EyePosition
+            let view  = Camera.Instance.View
+            let proj  = Camera.Instance.Proj 
 
             let viewConstants = 
                 new ViewConstants(  
-                    model=_world,       
-                    view= _view ,
-                    projection=_proj
+                    model=world,       
+                    view= view,
+                    projection=proj
                 )
             gpu.UpdateView(partIdx, ref viewConstants)
 
@@ -282,16 +268,17 @@ module Running =
                 )
             gpu.UpdateFrame(ref frameConst)
         
-        member this.updatePerMaterial(_objectName, node:NodeAdapter) =         
+        member this.updatePerMaterial(_objectName, node:NodeAdapter, _bufferIdx) =         
             let mesh = mec.Mesh(_objectName, node.Node.Mesh.Value)
             let myMaterial = mac.GetMaterial(_objectName, mesh.Material)  
             let material = myMaterial.Material
-            if material <> null then
-                logDebug("Material " + mesh.Material.ToString() + " " + material.Name)                
-                let matConst = new MaterialConstants(material)
-                gpu.UpdateMaterial(myMaterial.Index, ref matConst)
+            if material <> null then               
+                let mutable matConst = new MaterialConstants(material)
+                matConst.camera <- Camera.Instance.EyePosition
+                matConst.normalScale <- 5.0f
+                gpu.UpdateMaterial(_bufferIdx, ref matConst)
           
-        member this.drawPerNode(_objectName, _Idx:int, _node:NodeAdapter) =         
+        member this.drawPerNode(_objectName, _bufferIdx:int, _node:NodeAdapter) = 
             let mesh = mec.Mesh(_objectName, _node.Node.Mesh.Value)
             let material = mesh.Material 
             let topology = PrimitiveTopology.TriangleList
@@ -300,6 +287,32 @@ module Running =
             let vBuffer = mec.GetVertexBuffer(_objectName, _node.Node.Mesh.Value) 
             let iBuffer = mec.GetIndexBuffer(_objectName, _node.Node.Mesh.Value)
             let iCount  = mec.getIndexCount(_objectName, _node.Node.Mesh.Value)
+
+            this.UpdatePipeline()
+
+            logDebug ("DRAW Object     " + _objectName)
+            logDebug ("DRAW IDX        " + _bufferIdx.ToString())
+            logDebug ("DRAW Node       " + _node.Node.Name)
+            logDebug ("DRAW Mesh       " + mesh.Mesh.ToString())
+            logDebug ("DRAW Material   " + mesh.Material.ToString())
+            logDebug ("DRAW Vertex anz " + iCount.ToString())
+            logInfo ("  ")
             
-            gpu.DrawPerObject(iCount, _Idx, material, vBuffer , iBuffer, topology, textures)
+            gpu.DrawPerObject(iCount, _bufferIdx, vBuffer , iBuffer, topology, textures)
+
+
+        member this.UpdatePipeline() =
+            gpu.UpdatePipeline(
+                defaultInputLayoutDesc,
+                defaultRootSignatureDesc ,
+                defaultVertexShaderDesc ,
+                defaultPixelShaderDesc,
+                defaultDomainShaderDesc,
+                defaultHullShaderDesc,
+                defaultSampleDesc,
+                defaultTopologyType,
+                defaultTopology,
+                defaultRasterizerDesc,
+                defaultBlendDesc  
+            )
 

@@ -16,7 +16,7 @@ open Base.Framework
 
 open ModelSupport
 open Running
-open Analyzer
+open MeshVertices
 
 // ----------------------------------------------------------------------------------------------------
 // Support für das Deploy auf die GPU
@@ -92,10 +92,10 @@ module Deployment =
             assert (rootNodes.Length = 1)
             let rootNode:Node = rootNodes.Item(0) 
 
-            let allLeafNodes = _objekt.LeafNodes()
-
             let allNodes = _objekt.Nodes()
             this.Correct(allNodes, correctorGtlf)
+
+            let allLeafNodes = allNodes |> List.filter(fun node -> node.Node.Children=null)
 
             for adapter in allLeafNodes do
                 this.DeployNode(_objekt.Name, adapter )            
@@ -115,7 +115,7 @@ module Deployment =
         member this.DeployMesh(_objektName, _mesh ) =
             if _mesh.HasValue then
                 let mesh = gltf.Meshes[_mesh.Value] 
-                let name, vertices, indices, topology, material, matIdx = CreateSubmesh(mesh, store)
+                let name, vertices, indices, topology, material, matIdx = CreateMeshData(mesh, store)
                 meshKatalog.AddMesh(_objektName, _mesh.Value, vertices, indices, topology, matIdx)                
                 this.DeployMaterial(_objektName, matIdx, material )
 
@@ -142,10 +142,11 @@ module Deployment =
 
                     | _ ->  raise (new Exception("TextureInfoKind"))
             
-                let sampler             = gltf.Samplers[texture.Sampler.Value] 
+                let samplerIdx          = texture.Sampler.Value
+                let sampler             = gltf.Samplers[samplerIdx] 
                 let imageInfo           = gltf.Images[texture.Source.Value]
                 let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
                 let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
 
-                textureKatalog.Add(_objectName, _matIdx, text.Kind, sampler, image, imageBytes, imageInfo, false) 
+                textureKatalog.Add(_objectName, _matIdx, text.Kind, samplerIdx, sampler, image, imageBytes, imageInfo, false) 

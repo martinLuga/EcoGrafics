@@ -8,18 +8,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Common.fs" />
+    <Compile Include="GltfSupport.fs" />
+    <Compile Include="VertexDefs.fs" />
+    <Compile Include="MeshVertices.fs" />
+    <Compile Include="MeshContainer.fs" />
     <Compile Include="Infrastructure.fs" />
     <Compile Include="MyFrame.fs" />
     <Compile Include="AnotherGPU.fs" />
+    <Compile Include="GraficWindow.fs" />
     <Compile Include="Reader.fs" />
-    <Compile Include="Gltf2Support.fs" />
-    <Compile Include="VGltfSupport.fs" />
-    <Compile Include="VertexDefs.fs" />
-    <Compile Include="MeshContainer.fs" />
     <Compile Include="ExampleShaders.fs" />
     <Compile Include="ModelSupport.fs" />
-    <Compile Include="GltfSupport.fs" />
-    <Compile Include="Analyzer.fs" />
     <Compile Include="ModernGPU.fs" />
     <Compile Include="Katalog.fs" />
     <Compile Include="Runner.fs" />

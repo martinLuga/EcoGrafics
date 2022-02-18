@@ -7,8 +7,8 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open Base.GeometryUtils
 open Common 
+open Base.GeometryUtils
 open SharpDX
 open System
 open System.Collections.Generic
@@ -30,15 +30,16 @@ module ModelSupport =
     //  Node ist ein Teil davon (Räder , Flossen...) vorher Part
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type Objekt(_name: string, _gltf:Gltf, _position: Vector3, _direction: Vector3, _velocity:float32, _moveRandom:bool) =
+    type Objekt(_name: string, _gltf:Gltf, _position: Vector3, _scale:Vector3, _direction: Vector3, _velocity:float32, _moveRandom:bool) =
 
         let mutable name = _name 
         let mutable idx=0
         let mutable position=_position
         let mutable direction=_direction
+        let mutable scale:float32[] =_scale.ToArray()
         let mutable velocity=_velocity
-        let mutable rotation = Matrix.Identity
-        let mutable translation = Matrix.Translation(position)
+        let mutable rotation:float32[] = [|0.0f;0.0f;0.0f;0.0f|]
+        let mutable translation = position.ToArray()
 
         let mutable tree:NodeAdapter = null
 
@@ -48,7 +49,8 @@ module ModelSupport =
             let root = node.Children[0]             
             tree <- new NodeAdapter(_gltf, root)
 
-        new (objectName, gltf, position ) = new Objekt(objectName, gltf, position, Vector3.Zero, 0.0f,false ) 
+        new (objectName, gltf, position, scale) = new Objekt(objectName, gltf, position, scale, Vector3.Zero, 0.0f, false ) 
+        new (objectName, gltf, position) = new Objekt(objectName, gltf, position, Vector3.One, Vector3.Zero, 0.0f,false )
        
         member this.Name
             with get() = name
@@ -77,7 +79,11 @@ module ModelSupport =
         member this.Indexe() =
             tree.AllItems() 
 
-        member this.World = Matrix.Multiply(rotation, Matrix.Translation(position))
+        member this.World = 
+             this.LocalTransform()
+
+        member this.LocalTransform() =
+            createLocalTransform (translation, rotation, scale) 
 
         member this.GlobalTransforms() = 
             tree.UpdatePositionsDeep(this.World) 
