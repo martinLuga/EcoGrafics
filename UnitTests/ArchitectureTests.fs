@@ -42,7 +42,7 @@ module Architecture =
 
         [<DefaultValue>] val mutable logger: ILog
         [<DefaultValue>] val mutable myWindow:MyWindow
-        [<DefaultValue>] val mutable myGpu:MyGPU
+        [<DefaultValue>] val mutable myGpu:MasterGPU
 
         [<OneTimeSetUp>]
         member this.setUp() =
@@ -59,8 +59,7 @@ module Architecture =
             
         [<OneTimeTearDownAttribute>]
         member this.tearDown() =
-             (this.myGpu:> IDisposable).Dispose()
-             this.logger.Info("ArchitectureTests cleaned up ")
+            this.logger.Info("ArchitectureTests cleaned up ")
 
 
         member this.RunApp() =

@@ -32,7 +32,7 @@ module Hardware =
 
         [<DefaultValue>] val mutable logger : ILog
         [<DefaultValue>] val mutable graficWindow : MyWindow
-        [<DefaultValue>] val mutable myGpu:MyGPU  
+        [<DefaultValue>] val mutable myGpu:MasterGPU  
         [<DefaultValue>] val mutable debugController:Debug1 
 
         [<SetUp>]
