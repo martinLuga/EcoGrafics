@@ -23,7 +23,7 @@ open SharpDX.Mathematics.Interop
 module Structures =
 
     [<type: StructLayout(LayoutKind.Sequential, Pack = 4)>]
-    type ObjectConstants =
+    type ObjectConstantsPBR =
         struct
             val mutable Model: Matrix
             val mutable View: Matrix
@@ -50,8 +50,15 @@ module Structures =
             new(color) = DirectionalLight(color, Vector3.Zero)
         end
 
+    [<StructLayout(LayoutKind.Sequential, Pack = 4)>]
+    type FrameConstants =
+        struct
+            val mutable Light: DirectionalLight
+            new(light) = { Light = light }
+        end
+
     [<type: StructLayout(LayoutKind.Sequential, Pack = 4)>]
-    type MaterialConstants =
+    type MaterialConstantsPBR =
         struct
             val mutable normalScale: float32
             val mutable emissiveFactor: float32[]
@@ -74,13 +81,6 @@ module Structures =
                 }
         end
 
-    [<StructLayout(LayoutKind.Sequential, Pack = 4)>]
-    type FrameConstants =
-        struct
-            val mutable Light: DirectionalLight
-            new(light) = { Light = light }
-        end
-
     // TODO
     // Wrap Filter etc konvertieren
     let DynamicSamplerDesc(sampler:Sampler) =
@@ -97,16 +97,6 @@ module Structures =
                 MipLodBias = 0.0f
             ) 
 
-// ----------------------------------------------------------------------------------------------------
-// Material für Gltf 
-// ----------------------------------------------------------------------------------------------------
-module MaterialPBR =
-    open VGltf
-    open VGltf.Types
-    open VGltf.Types  
-    open VGltf.Ext
-    open VGltf.Glb
-    
     type Roughness() =
         let mutable BaseColorFactor: float32[] = [|0.0f; 0.0f|]        
         let mutable BaseColorTexture: Material.BaseColorTextureInfoType = null       

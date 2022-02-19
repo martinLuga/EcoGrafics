@@ -29,10 +29,10 @@ open Structures
 open Common
 open GraficWindow
 
-type ObjectConstants = GraficBase.Structures.ObjectConstants
-type MaterialConstants = GraficBase.Structures.MaterialConstants
-type FrameConstants = GraficBase.Structures.FrameConstants
-type DirectionalLight = GraficBase.Structures.DirectionalLight
+type ObjectConstants    = GraficBase.Structures.ObjectConstants
+type MaterialConstants  = GltfBase.Structures.MaterialConstantsPBR
+type FrameConstants     = GltfBase.Structures.FrameConstants
+type DirectionalLight   = GltfBase.Structures.DirectionalLight
 
 // ----------------------------------------------------------------------------------------------------
 // Runner Prozess über der GPU
@@ -318,10 +318,8 @@ module Running =
 
         member this.updatePerFrame() =
             let frameConst = 
-                new FrameConstants(
-                    TessellationFactor = tessellationFactor, 
-                    Light = frameLight,
-                    CameraPosition  = Camera.Instance.EyePosition    
+                new FrameConstants( 
+                    Light = frameLight 
                 )
             gpu.UpdateFrame(ref frameConst)
 
@@ -331,17 +329,7 @@ module Running =
             let material = myMaterial.Material
 
             if material <> null then
-                let mutable matConst =
-                    new MaterialConstants(
-                        Ambient = Color4.White,
-                        Diffuse = Color4.White,
-                        Specular = Color4.White,
-                        SpecularPower = 1.0f,
-                        Emissive = Color4.White,
-                        HasTexture = false,
-                        UVTransform = Matrix.Identity
-                    )
-
+                let mutable matConst = new MaterialConstants(material)
                 gpu.UpdateMaterial(_bufferIdx, ref matConst)
 
         member this.drawPerNode(_objectName, _bufferIdx: int, _node: NodeAdapter) =

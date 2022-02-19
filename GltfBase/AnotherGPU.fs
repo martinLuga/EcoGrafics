@@ -46,9 +46,9 @@ module AnotherGPU =
     let BACKBUFFERFORMAT        = Format.R8G8B8A8_UNorm  
     let RTVDESCRIPTORCOUNT      = SWAPCHAINBUFFERCOUNT 
 
-    let ROOT_PARM_IDX_OBJECT    = 1
-    let ROOT_PARM_IDX_FRAME     = 2
-    let ROOT_PARM_IDX_MATERIAL  = 3
+    let ROOT_PARM_IDX_OBJECT    = 0
+    let ROOT_PARM_IDX_FRAME     = 1
+    let ROOT_PARM_IDX_MATERIAL  = 2
     let ROOT_PARM_IDX_TEXTURE   = 3
     let ROOT_PARM_IDX_SAMPLER   = 5
 
@@ -386,15 +386,15 @@ module AnotherGPU =
 
             commandList.SetGraphicsRootConstantBufferView(ROOT_PARM_IDX_MATERIAL, this.CurrFrameResource.MaterialCB.ElementAdress(_bufferIdx)) 
 
-            //this.DrawTextures(commandList, _textures)
+            this.DrawTextures(commandList, _textures)
             
             commandList.DrawIndexedInstanced(_instanceCount, 1, 0, 0, 0) 
 
-        //member this.DrawTextures (_commandList, _textures) =
+        member this.DrawTextures (_commandList, _textures) =
             
-        //    for texture in _textures do 
-        //        _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_TEXTURE, textureHeap.GetGpuHandle(texture.Index)) 
-        //        _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_SAMPLER, samplerHeap.GetGpuHandle(texture.SamplerIdx)) 
+            for texture in _textures do 
+                _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_TEXTURE, textureHeap.GetGpuHandle(texture.Index)) 
+                _commandList.SetGraphicsRootDescriptorTable(ROOT_PARM_IDX_SAMPLER, samplerHeap.GetGpuHandle(texture.SamplerIdx)) 
 
         member this.EndDraw() = 
             if frameResources.Count > 0 then

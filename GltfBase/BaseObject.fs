@@ -28,7 +28,7 @@ module BaseObject =
     //  Node ist ein Teil davon (Räder , Flossen...) vorher Part
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type Objekt(_name: string, _gltf:Gltf, _position: Vector3, _scale:Vector3, _direction: Vector3, _velocity:float32, _moveRandom:bool) =
+    type Objekt(_name: string, _gltf:Gltf, _position: Vector3, _rotation:Vector4, _scale:Vector3, _direction: Vector3, _velocity:float32, _moveRandom:bool) =
 
         let mutable name = _name 
         let mutable idx=0
@@ -36,7 +36,7 @@ module BaseObject =
         let mutable direction=_direction
         let mutable scale:float32[] =_scale.ToArray()
         let mutable velocity=_velocity
-        let mutable rotation:float32[] = [|0.0f;0.0f;0.0f;0.0f|]
+        let mutable rotation:float32[] = _rotation.ToArray() 
         let mutable translation = position.ToArray()
 
         let mutable tree:NodeAdapter = null
@@ -47,8 +47,9 @@ module BaseObject =
             let root = node.Children[0]             
             tree <- new NodeAdapter(_gltf, root)
 
-        new (objectName, gltf, position, scale) = new Objekt(objectName, gltf, position, scale, Vector3.Zero, 0.0f, false ) 
-        new (objectName, gltf, position) = new Objekt(objectName, gltf, position, Vector3.One, Vector3.Zero, 0.0f,false )
+        new (objectName, gltf, position, rotation, scale) = new Objekt(objectName, gltf, position, rotation, scale, Vector3.Zero, 0.0f, false ) 
+        new (objectName, gltf, position, rotation) = new Objekt(objectName, gltf, position, rotation, Vector3.One, Vector3.Zero, 0.0f,false )
+        new (objectName, gltf, position) = new Objekt(objectName, gltf, position, Vector4.Zero, Vector3.One, Vector3.Zero, 0.0f,false )
        
         member this.Name
             with get() = name
