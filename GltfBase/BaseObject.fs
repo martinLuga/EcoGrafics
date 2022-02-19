@@ -10,8 +10,6 @@
 open Common 
 open Base.GeometryUtils
 open SharpDX
-open System
-open System.Collections.Generic
 open VGltf.Types
 
 // ----------------------------------------------------------------------------------------------------
@@ -20,7 +18,7 @@ open VGltf.Types
 //      und Bullet Physics 
 // 
 // ----------------------------------------------------------------------------------------------------
-module ModelSupport =
+module BaseObject =
 
     exception ObjectDuplicateException of string 
 
@@ -102,51 +100,3 @@ module ModelSupport =
 
         member this.Adapter(idx) =
             tree.WithIdx(idx) 
-
-    // ----------------------------------------------------------------------------------------------------
-    //  Scene - (Future Use)
-    //      enthält Objekte
-    //      lesen und speichern des Modells 
-    // ----------------------------------------------------------------------------------------------------
-    [<AllowNullLiteral>]
-    type Szene(name) =
-        let mutable name = name
-
-        let mutable objects:Objekt list = []
-
-        override this.ToString() = "Scene: " + this.Name
-
-        member this.Name = name
-                
-        member this.Objects
-            with get () = name
-            and set (value) = name <- value
-
-    // ----------------------------------------------------------------------------------------------------
-    //  Modell - (Future Use)
-    //      enthält Scenes
-    //      lesen und speichern des Modells
-    // ----------------------------------------------------------------------------------------------------
-    [<AllowNullLiteral>]
-    type Modell(name: string) =
-        let mutable name=name
-        let mutable scenes=new Dictionary<string,Szene>()
-
-        member this.Name = name
-        
-        member this.Scenes 
-            with get() = scenes 
-
-        member this.SceneWithName(name)= 
-            scenes.TryGetValue(name)
-
-        member this.AddSceneWithName(name, scene)= 
-            scenes.Add(name, scene)
-
-        member this.Load(name)=
-            raise (new Exception("Not implemented"))
-
-        member this.Save(name)=
-            raise (new Exception("Not implemented"))
- 
-        override this.ToString() = "Model " + this.Name

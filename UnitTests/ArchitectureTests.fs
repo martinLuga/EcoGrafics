@@ -21,6 +21,8 @@ open SharpDX
 open System
 open System.IO
 open DX12GameProgramming
+open ExampleShaders
+open DirectX.Pipeline
 
 module Architecture =
 
@@ -51,7 +53,7 @@ module Architecture =
 
             WindowLayout.Setup("TEST")
 
-            MyController.CreateInstance(this.myWindow)             
+            MyController.CreateInstance(this.myWindow, inputLayoutDescription, rootSignatureDesc, vertexShaderDesc, pixelShaderPhongDesc)   |> ignore           
             MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
             // Camera  

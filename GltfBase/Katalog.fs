@@ -8,8 +8,9 @@
 
 open VGltf.Types
 
-open Common
 open Base.VertexDefs
+
+open Common
 open MyMesh
 open AnotherGPU
 

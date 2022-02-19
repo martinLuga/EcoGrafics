@@ -155,32 +155,70 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Construct
         // ----------------------------------------------------------------------------------------------------
-        static member CreateInstance(graficWindow: MyWindow) =
-            MyController.Instance <- MyController.newForConfiguration(graficWindow) 
+        static member CreateInstance
+            (
+                graficWindow: MyWindow,
+                inputLayoutDescription:InputLayoutDescription,
+                rootSignatureDesc:RootSignatureDescription,
+                vertexShaderDesc:ShaderDescription,
+                pixelShaderDepthDesc:ShaderDescription
+            ) =
+            MyController.Instance <- MyController(graficWindow)
+            graficWindow.Renderer <- MyController.Instance.GPU
 
-        static member newForConfiguration(graficWindow: MyWindow) =
-            let instance = MyController(graficWindow)
-            graficWindow.Renderer <- instance.GPU
-            instance.Configure()
+            instance.Configure(
+
+                inputLayoutDescription,
+                rootSignatureDesc,
+                vertexShaderDesc,
+                pixelShaderDepthDesc
+            )
+
             instance
 
         // ----------------------------------------------------------------------------------------------------
         // Initialize (Default Configuration)
         // ----------------------------------------------------------------------------------------------------
-        member this.Configure() = 
-            defaultInputLayoutDesc      <- inputLayoutDescription
-            defaultRootSignatureDesc    <- rootSignatureDesc
-            defaultVertexShaderDesc     <- ShaderDescription(ShaderType.Vertex, "shaders","VS","VSMain","vs_5_1", rootSignatureDesc, ShaderUsage.Required)
-            defaultPixelShaderDesc      <- ShaderDescription(ShaderType.Pixel, "shaders", "PhongPS","PSMain","ps_5_1", rootSignatureDesc, ShaderUsage.Required)
-            defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
-            defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
-            defaultSampleDesc           <- SampleDescription(1, 0)
-            defaultRasterizerDesc       <- RasterizerDescription.Default()
-            defaultBlendDesc            <- BlendDescription.Default()
-            defaultTopologyType         <- PrimitiveTopologyType.Triangle
-      
-            this.ConfigureGPU()  
-            
+        member this.Configure
+            (
+                _inputLayoutDescription,
+                _rootSignatureDesc,
+                _vertexShaderDescription,
+                _pixelShaderDescription
+            ) =
+            defaultInputLayoutDesc <- inputLayoutDescription
+            defaultRootSignatureDesc <- rootSignatureDesc
+            defaultVertexShaderDesc <-
+                ShaderDescription(
+                    ShaderType.Vertex,
+                    "shader",
+                    "VS",
+                    "VSMain",
+                    "vs_5_1",
+                    rootSignatureDesc,
+                    ShaderUsage.Required
+                )
+
+            defaultPixelShaderDesc <-
+                ShaderDescription(
+                    ShaderType.Pixel,
+                    "shader",
+                    "PhongPS",
+                    "PSMain",
+                    "ps_5_1",
+                    rootSignatureDesc,
+                    ShaderUsage.Required
+                )
+
+            defaultDomainShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
+            defaultHullShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
+            defaultSampleDesc <- SampleDescription(1, 0)
+            defaultRasterizerDesc <- RasterizerDescription.Default()
+            defaultBlendDesc <- BlendDescription.Default()
+            defaultTopologyType <- PrimitiveTopologyType.Triangle
+
+            this.ConfigureGPU()
+
             myGpu.Initialize(graficWindow)
 
             myGpu.InstallPipelineProvider(

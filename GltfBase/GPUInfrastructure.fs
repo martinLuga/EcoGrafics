@@ -19,12 +19,13 @@ open SharpDX.DXGI
 
 open DirectX.Assets
 open DirectX.D3DUtilities
+
 open GPUModel.MYUtils
   
 // ----------------------------------------------------------------------------------------------------
 // GPU Infrastructure
 // ----------------------------------------------------------------------------------------------------
-module MyGPUInfrastructure =
+module GPUInfrastructure =
         
     // Multisampling 
     // Funktioniert nicht in DirectX 

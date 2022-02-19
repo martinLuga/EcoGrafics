@@ -27,10 +27,10 @@ module GameTimer =
             Debug.Assert(Stopwatch.IsHighResolution, "System does not support high-resolution performance counter")
             _secondsPerCount <- 0.0
             _deltaTime <- -1.0
-            _baseTime <- 0
-            _pausedTime <- 0
-            _prevTime <- 0
-            _currTime <- 0
+            _baseTime <- 0L
+            _pausedTime <- 0L
+            _prevTime <- 0L
+            _currTime <- 0L
             _stopped <- false
             let countsPerSec = double Stopwatch.Frequency
             let inv = 1.0 / countsPerSec
@@ -50,7 +50,7 @@ module GameTimer =
             let curTime = Stopwatch.GetTimestamp()
             _baseTime <- curTime
             _prevTime <- curTime
-            _stopTime <- 0
+            _stopTime <- 0L
             _stopped <- false        
 
          member this.Start() =        
@@ -58,7 +58,7 @@ module GameTimer =
             if (_stopped) then            
                 _pausedTime <- _pausedTime + (startTime - _stopTime)
                 _prevTime <- startTime
-                _stopTime <- 0
+                _stopTime <- 0L
                 _stopped <- false
 
           member this. Stop() =        

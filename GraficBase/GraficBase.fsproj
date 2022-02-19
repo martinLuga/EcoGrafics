@@ -11,7 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Structures.fs" />
-    <Compile Include="Material.fs" />
     <Compile Include="ShaderCache.fs" />
     <Compile Include="Camera.fs" />
     <Compile Include="CameraControl.fs" />

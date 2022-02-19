@@ -20,7 +20,7 @@ module Build =
     
     open VGltfReader
     open Gltf2Reader
-    open ModelSupport
+    open BaseObject
     open Running
 
     let correctorGltf(path) = getGltf (path)

@@ -14,9 +14,9 @@ open VGltf.Types
 
 open Base.Framework
 
-open ModelSupport
+open BaseObject
 open Running
-open MeshVertices
+open MeshBuild
 
 // ----------------------------------------------------------------------------------------------------
 // Support für das Deploy auf die GPU
@@ -45,7 +45,6 @@ module Deployment =
     // ---------------------------------------------------------------------------------------------------- 
     [<AllowNullLiteral>]
     type Deployer() =
-
         let mutable store:ResourcesStore = null
         let mutable gltf:VGltf.Types.Gltf = null     
         let mutable nodeKatalog     = Runner.Instance.NodeKatalog

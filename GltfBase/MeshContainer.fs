@@ -2,7 +2,7 @@
 //
 //  MyMesh.fs
 //
-//  Created by Martin Luga on 08.02.18.
+//  Created by Martin Luga on 08.02.22.
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //  
 
@@ -15,6 +15,10 @@ open System
 open System.Collections.Generic
 open System.Linq
  
+// ----------------------------------------------------------------------------------------------------
+// Container für Meshes unter Objektnamen und Teil-Nummer
+// Ausserdem Hochladen Mesh zur GPU
+// ---------------------------------------------------------------------------------------------------- 
 module MyMesh =
 
     [<AllowNullLiteralAttribute>]

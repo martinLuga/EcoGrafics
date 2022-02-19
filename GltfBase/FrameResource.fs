@@ -16,7 +16,7 @@ open GPUModel.FieldBuffer
 //  Pro Frame
 //  Pro Material
 // ----------------------------------------------------------------------------
-module MyFrame = 
+module FrameResource = 
     type Device = SharpDX.Direct3D12.Device 
     type Resource = SharpDX.Direct3D12.Resource 
 

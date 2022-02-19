@@ -362,10 +362,10 @@ module Framework =
 
     let ByteArrayToImage (buffer: byte[], offset:int, count:int) =
         let ms = new MemoryStream(buffer, offset, count)
-        ms.Position <- 0
+        ms.Position <- 0L
         Image.FromStream(ms , true, false)  
 
     let ByteArrayToArray (buffer: byte[], offset:int, count:int) =
         let ms = new MemoryStream(buffer, offset, count)
-        ms.Position <- 0
+        ms.Position <- 0L
         ms.ToArray() 

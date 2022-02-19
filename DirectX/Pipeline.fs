@@ -11,7 +11,6 @@ open System.Collections.Generic
 
 open SharpDX.DXGI
 open SharpDX.Direct3D12
-open SharpDX.Mathematics.Interop
 open SharpDX 
 
 open D3DUtilities
@@ -50,16 +49,9 @@ module Pipeline =
     let isRootSignatureDescEmpty(rs:RootSignatureDescription) =
         rs.Parameters = null || rs.Parameters.Length = 0
 
-    let defaultInputElementsDescriptionNew = 
-        new InputLayoutDescription(
-            [| 
-                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0);
-                new InputElement("NORMAL",   0, Format.R32G32B32_Float, 12, 0);
-                new InputElement("COLOR",    0, Format.R32G32B32A32_Float, 24, 0);    
-                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0)
-            |]
-        )
-
+    // ----------------------------------------------------------------------------------------------------
+    // PipelineStateObjects Descriptions Classic
+    // ----------------------------------------------------------------------------------------------------
     let inputLayoutDescription =
         new InputLayoutDescription(
             [| 
@@ -71,10 +63,6 @@ module Pipeline =
                 new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
             |]
         ) 
-
-    // ----------------------------------------------------------------------------------------------------
-    // Root signature descriptions
-    // ----------------------------------------------------------------------------------------------------
 
     let rootSignatureDesc =
         let slotRootParameters =
@@ -92,3 +80,63 @@ module Pipeline =
     
     let createRootSignature(device:Device, signatureDesc:RootSignatureDescription) =
         device.CreateRootSignature(new DataPointer (signatureDesc.Serialize().BufferPointer, int (signatureDesc.Serialize().BufferSize)))
+
+    // ----------------------------------------------------------------------------------------------------
+    // PipelineStateObjects Descriptions PBR
+    // ----------------------------------------------------------------------------------------------------
+    let inputLayoutDescriptionPBR =
+        new InputLayoutDescription(
+            [| new InputElement("NORMAL",   0, Format.R32G32B32_Float, 0, 0)
+               new InputElement("POSITION", 0, Format.R32G32B32_Float, 12, 0)
+               new InputElement("TEXCOORD", 0, Format.R32G32_Float, 24, 0) |]
+        )
+
+    let rootSignatureDescPBR =
+        let slotRootParameters =
+            [| new RootParameter(ShaderVisibility.Vertex,   new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : ModelViewProjectionConstantBuffer
+               new RootParameter(ShaderVisibility.All,      new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : Frame, Light
+               new RootParameter(ShaderVisibility.All,      new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : Object, Material
+
+               new RootParameter(ShaderVisibility.Pixel,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 0))  // t0 : textures
+               new RootParameter(ShaderVisibility.Pixel,    new DescriptorRange(DescriptorRangeType.ShaderResourceView, 3, 8))  // t8 : textures 
+               new RootParameter(ShaderVisibility.Pixel,    new DescriptorRange(DescriptorRangeType.Sampler, 5, 0))             // s0 : samplers 
+               new RootParameter(ShaderVisibility.Pixel,    new DescriptorRange(DescriptorRangeType.Sampler, 3, 8))             // s8 : samplers 
+            |]
+
+        new RootSignatureDescription(
+            RootSignatureFlags.AllowInputAssemblerInputLayout,
+            slotRootParameters
+        )
+
+    // ----------------------------------------------------------------------------------------------------
+    // PipelineStateObjects Descriptions - Eigene Entwicklung
+    // Der bisherige Vertex-Shader
+    // Danach der PBR Shader
+    // ----------------------------------------------------------------------------------------------------
+    let inputLayoutDescriptionNT =
+        new InputLayoutDescription(
+            [| 
+                new InputElement("SV_POSITION",     0, Format.R32G32B32_Float,       0, 0);
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);
+                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   24, 0);    
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         40, 0);
+                new InputElement("BLENDINDICES",    0, Format.R32G32B32A32_UInt,    48, 0); 
+                new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
+            |]
+        ) 
+    let rootSignatureDescNT =
+        let slotRootParameters =
+            [|
+                new RootParameter(ShaderVisibility.All,     new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : per Object
+                new RootParameter(ShaderVisibility.All,     new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : per Frame
+                new RootParameter(ShaderVisibility.All,     new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : per Material
+                new RootParameter(ShaderVisibility.All,     new RootDescriptor(3, 0), RootParameterType.ConstantBufferView)     // b3 : per Armature
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 0))  // t0 : textures
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 3, 8))  // t8 : textures 
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 5, 0))             // s0 : samplers 
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 3, 8))             // s8 : samplers 
+            |]
+        new RootSignatureDescription(
+            RootSignatureFlags.AllowInputAssemblerInputLayout,
+            slotRootParameters
+        )  

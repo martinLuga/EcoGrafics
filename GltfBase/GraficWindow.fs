@@ -2,7 +2,7 @@
 //
 //  MyGraphicWindow.fs
 //
-//  Created by Martin Luga on 08.02.18.
+//  Created by Martin Luga on 08.02.22.
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
@@ -15,6 +15,7 @@ open AnotherGPU
   
 // ----------------------------------------------------------------------------------------------------
 // Graphic Window
+// Doppelt, weil AnotherGPU nicht mit erstem GraficWindow
 // ----------------------------------------------------------------------------------------------------
 module GraficWindow =
 
