@@ -6,10 +6,9 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
+open SharpDX.Direct3D
 open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
-
-open log4net
 
 // ----------------------------------------------------------------------------------------------------
 // Eigene Typen für Shaders  
@@ -22,6 +21,19 @@ module ShaderSupport =
     type ShaderType     = | Vertex = 1    | Pixel = 2           | Domain = 3   | Hull = 4   
     type ShaderUsage    = | Required = 0  | NotRequired = 1     | ToBeFilledIn = 2
 
+    let  one = "1" 
+
+    [<AllowNullLiteral>] 
+    type ShaderDefineMacros(_macros:string list) =
+        let mutable macros:ShaderMacro[] = [||]
+        do
+            macros <-
+                _macros|> List.map (fun m -> new ShaderMacro(m, one))|> List.toArray
+
+        member this.Defines = macros
+        override this.ToString() = macros|> Array.map(fun m -> m.Name) |> Seq.fold(fun s result -> result + s) ""
+ 
+
     [<AllowNullLiteral>] 
     // ----------------------------------------------------------------------------------------------------
     // Shaderdescription
@@ -32,10 +44,12 @@ module ShaderSupport =
         val File:string
         val Entry:string
         val Mode:string
+        val Defines:string list
         val Use:ShaderUsage
         val RootSignature:RootSignatureDescription
-        new (klass, directory, file, entry, mode, rootSignature, usage) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode ;RootSignature=rootSignature; Use=usage}
-        new (klass, usage) = {Klass=klass; Directory=""; File=""; Entry=""; Mode=""; RootSignature=new RootSignatureDescription();Use=usage}
+        new (klass, directory, file, entry, mode, defines, usage, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; Defines=defines; Use=usage ;RootSignature=rootSignature}
+        new (klass, directory, file, entry, mode, usage, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; Defines=[]; Use=usage ;RootSignature=rootSignature}
+        new (klass, usage) = {Klass=klass; Directory=""; File=""; Entry=""; Mode=""; Defines=[]; RootSignature=new RootSignatureDescription();Use=usage}
         override this.ToString() = this.Klass.ToString() + "->" + this.Entry
         member self.NotRequired() = self.Use=ShaderUsage.NotRequired
         member self.ToBeFilledIn() = self.Use=ShaderUsage.ToBeFilledIn

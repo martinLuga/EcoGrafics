@@ -23,32 +23,53 @@ module Common =
     // Helper Classes
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type MyMaterial(_index:int, _mat:Material) =
-        let mutable index    = _index
-        let mutable material = _mat 
+    type MyMaterial
+        (
+            _index: int,
+            _material: Material,
+            _baseColourFactor: float32 [],
+            _emissiveFactor: float32 [],
+            _metallicRoughnessValues: float32 []
+        ) =
+        let mutable index = _index
+        let mutable material = _material        
+        let mutable baseColourFactor =_baseColourFactor  
+        let mutable emissiveFactor =_emissiveFactor 
+        let mutable metallicRoughnessValues =_metallicRoughnessValues 
 
-        member this.Index    = index
+        member this.Index = index
         member this.Material = material 
+        member this.BaseColourFactor = baseColourFactor  
+        member this.EmissiveFactor = emissiveFactor 
+        member this.MetallicRoughnessValues = metallicRoughnessValues 
 
     [<AllowNullLiteral>]
-    type MyTexture(_index:int, _kind:TextureInfoKind, _samplerIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
-        let mutable index   = _index
+    type MyTexture(_objName:string, _name:string, _indx:int, _kind:TextureInfoKind, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
+        let mutable objName = _objName
+        let mutable indx    = _indx
+        let mutable name    = _name
         let mutable kind    = _kind
-        let mutable samplerIdx = _samplerIdx
+        let mutable matIdx  = _matIdx
+        let mutable smpIdx  = _smpIdx
         let mutable sampler = _sampler 
         let mutable image   = _image
         let mutable data    = _data
         let mutable info    = _info
         let mutable cube    = _cube
 
-        member this.Index   = index
+        member this.ObjectName = objName
+        member this.Name    = name
+        member this.Index   = indx
         member this.Kind    = kind
-        member this.SamplerIdx = samplerIdx 
+        member this.MaterialIdx = matIdx
+        member this.SamplerIdx = smpIdx 
         member this.Sampler = sampler 
         member this.Image   = image
         member this.Data    = data
         member this.Info    = info
         member this.Cube    = cube
+
+        override this.ToString() = "MyTexture (" + _kind.ToString() + ") : " + name + " : " + indx.ToString()
 
     // ----------------------------------------------------------------------------------------------------
     //  NestedDicts
@@ -88,9 +109,16 @@ module Common =
 
         member this.Item(o1: 'TYP1, o2: 'TYP2, o3: 'TYP3) = key1Dict.Item(o1).Item(o2).Item(o3)
 
-        member this.Items(o1: 'TYP1, o2: 'TYP2 ) = key1Dict.Item(o1).Item(o2).Values |> Seq.toList
+        member this.Items(o1: 'TYP1, o2: 'TYP2 ) = 
+            try
+                key1Dict.Item(o1).Item(o2).Values |> Seq.toList
+            with :? KeyNotFoundException -> []
 
-        member this.ContainsKey(o1: 'TYP1, o2: 'TYP2, o3: 'TYP3) = this.Item(o1, o2, o3) <> null
+        member this.ContainsKey(o1: 'TYP1, o2: 'TYP2, o3: 'TYP3) = 
+            try
+                this.Item(o1, o2, o3) |> ignore
+                true
+            with :? KeyNotFoundException -> false
 
         member this.Clear() = key1Dict.Clear()
 
@@ -250,6 +278,11 @@ module Common =
             if mynode.Children <> null then
                 mynode.Children 
                     |> Seq.iter (fun i -> this.UpdatePos(i, newMatrix))
+
+        member this.Mesh = 
+            if node.Mesh.HasValue then 
+                gltf.Meshes[node.Mesh.Value] 
+            else null
 
     // ----------------------------------------------------------------------------------------------------
     // Conversions

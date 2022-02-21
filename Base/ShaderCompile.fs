@@ -23,8 +23,10 @@ open Base.ShaderSupport
 // ----------------------------------------------------------------------------------------------------  
 module ShaderCompile = 
     
-    let mutable PRECOMPILED = true
-    
+    let mutable PRECOMPILED = false
+
+    let logger = LogManager.GetLogger("ShaderCompile")
+        
     //
     // File im Projekt richtig adressieren
     // 
@@ -37,7 +39,6 @@ module ShaderCompile =
         let filePath = project + sep + path + sep + name
         Path.Combine(mapPath.FullName, filePath)
 
-    let logger = LogManager.GetLogger("ShaderCompile")
     let mutable byteCode:D3DCompiler.ShaderBytecode = null
     exception ShaderError of string
 
@@ -89,10 +90,11 @@ module ShaderCompile =
             byteCode <- loadCompiled(desc)
         with :? ShaderError  -> 
             let fileName = fileNameHere desc.Directory desc.File + ".hlsl" 
-            logger.Warn("Compiling shader named: " + fileName + "_" + desc.Entry)
             let dirName = dirNameHere desc.Directory  
+            let myDefines = ShaderDefineMacros(desc.Defines)
             let includeHandler = new IncludeFX(dirName)
-            let compResult = ShaderBytecode.CompileFromFile(fileName, desc.Entry, desc.Mode, ShaderFlags.OptimizationLevel3, EffectFlags.None, null, includeHandler) 
+            logger.Warn("Compiling shader named: " + fileName + "_" + desc.Entry  + "_" + myDefines.ToString())
+            let compResult = ShaderBytecode.CompileFromFile(fileName, desc.Entry, desc.Mode, ShaderFlags.OptimizationLevel3, EffectFlags.None, myDefines.Defines, includeHandler) 
             if compResult.Bytecode <> null then
                 byteCode <- compResult.Bytecode
                 storeCompiled(byteCode, desc)

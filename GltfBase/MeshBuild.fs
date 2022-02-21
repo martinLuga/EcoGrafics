@@ -59,5 +59,4 @@ module MeshBuild =
         let meshIndices = indGltf.GetPrimitivesAsCasted<int>() 
 
         let topology    = myTopology(primitive.Mode)
-        let material    = gltf.Materials[primitive.Material.Value]
-        mesh.Name, meshVertices, meshIndices, topology, material, primitive.Material.Value 
+        mesh.Name, meshVertices, meshIndices, topology, primitive.Material.Value 

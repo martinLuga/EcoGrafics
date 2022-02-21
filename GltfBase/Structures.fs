@@ -17,6 +17,8 @@ open System
 
 open SharpDX.Mathematics.Interop
 
+open Common
+
 // ----------------------------------------------------------------------------------------------------
 // Ein Scene stellt eine graphische Ausgangssituation her
 // ----------------------------------------------------------------------------------------------------
@@ -68,14 +70,14 @@ module Structures =
             val mutable baseColorFactor: float32[]
             val mutable camera: Vector3
             val mutable padding2: float32
-            new(material: Material) =
+            new(material: MyMaterial) =
                 {
                     normalScale=1.0f
                     emissiveFactor=material.EmissiveFactor
-                    occlusionStrength=if material.OcclusionTexture = null then 0.0f else material.OcclusionTexture.Strength
-                    metallicRoughnessValues=if material.PbrMetallicRoughness= null then [||] else [|material.PbrMetallicRoughness.RoughnessFactor; 0.0f|]
+                    occlusionStrength=1.0f
+                    metallicRoughnessValues= material.MetallicRoughnessValues
                     padding1=0.0f
-                    baseColorFactor=material.PbrMetallicRoughness.BaseColorFactor
+                    baseColorFactor=material.BaseColourFactor
                     camera=Vector3.One
                     padding2=0.0f
                 }

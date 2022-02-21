@@ -46,7 +46,8 @@ module Deployment =
     [<AllowNullLiteral>]
     type Deployer() =
         let mutable store:ResourcesStore = null
-        let mutable gltf:VGltf.Types.Gltf = null     
+        let mutable gltf:VGltf.Types.Gltf = null 
+        let mutable correctorGtlf:glTFLoader.Schema.Gltf = null 
         let mutable nodeKatalog     = Runner.Instance.NodeKatalog
         let mutable meshKatalog     = Runner.Instance.MeshKatalog
         let mutable materialKatalog = Runner.Instance.MaterialKatalog
@@ -65,9 +66,9 @@ module Deployment =
             Deployer.Instance <- new Deployer()
             Deployer.Instance.Initialize()
 
-        static member Deploy(_object:Objekt, _store:ResourcesStore, correctorGtlf:glTFLoader.Schema.Gltf) =
+        static member Deploy(_object:Objekt, _store:ResourcesStore, _correctorGtlf:glTFLoader.Schema.Gltf) =
             instance.Initialize()
-            instance.Deploy(_object, _store, correctorGtlf)
+            instance.Deploy(_object, _store, _correctorGtlf)
         
         member this.Initialize() =  
             materialCount <- 0 
@@ -81,10 +82,11 @@ module Deployment =
         // ----------------------------------------------------------------------------------------------------
         // Deploy 1 Gltf
         // ----------------------------------------------------------------------------------------------------   
-        member this.Deploy(_objekt:Objekt, _store:ResourcesStore, correctorGtlf:glTFLoader.Schema.Gltf) =
+        member this.Deploy(_objekt:Objekt, _store:ResourcesStore, _correctorGtlf:glTFLoader.Schema.Gltf) =
             
-            store   <- _store
-            gltf    <- _store.Gltf  
+            store           <- _store
+            gltf            <- _store.Gltf 
+            correctorGtlf   <- _correctorGtlf 
 
              // Node
             let rootNodes = gltf.RootNodes |> Seq.toList
@@ -92,7 +94,7 @@ module Deployment =
             let rootNode:Node = rootNodes.Item(0) 
 
             let allNodes = _objekt.Nodes()
-            this.Correct(allNodes, correctorGtlf)
+            this.Correct(allNodes, _correctorGtlf)
 
             let allLeafNodes = allNodes |> List.filter(fun node -> node.Node.Children=null)
 
@@ -114,32 +116,47 @@ module Deployment =
         member this.DeployMesh(_objektName, _mesh ) =
             if _mesh.HasValue then
                 let mesh = gltf.Meshes[_mesh.Value] 
-                let name, vertices, indices, topology, material, matIdx = CreateMeshData(mesh, store)
-                meshKatalog.AddMesh(_objektName, _mesh.Value, vertices, indices, topology, matIdx)                
+                let meshName, vertices, indices, topology, matIdx = CreateMeshData(mesh, store)
+                meshKatalog.AddMesh(_objektName, _mesh.Value, vertices, indices, topology, matIdx)                 
+                
+                let material        = gltf.Materials[matIdx]
+                let corrMaterial    = correctorGtlf.Materials[matIdx]
+
                 this.DeployMaterial(_objektName, matIdx, material )
 
         member this.DeployMaterial(_objectName, _material, material) =
-            materialKatalog.Add(_objectName, _material, material)
+            //materialKatalog.Add(_objectName, _material, material)
 
             let textures = material.GetTextures()
             for text in textures do 
                 this.DeployTexture(_objectName, _material, material, text)
 
-        member this.DeployTexture(_objectName, _matIdx, _material, text) =            
-            if text <> null then
-                let texture   =
-                    match text.Kind with
-                    | TextureInfoKind.BaseColor -> gltf.Textures[_material.PbrMetallicRoughness.BaseColorTexture.Index]
-
-                    | TextureInfoKind.Emissive ->  gltf.Textures[_material.EmissiveTexture.Index] 
+        member this.DeployTexture(_objectName, _matIdx, _material, _text) =         
             
-                    | TextureInfoKind.Normal ->   gltf.Textures[_material.NormalTexture.Index] 
+            if _text <> null then
+
+                let mutable texture:Texture = null
+                let mutable baseColourFactor:float32[] = [||]
+                let mutable emissiveFactor:float32[] = [||]
+                let mutable metallicRoughnessValues:float32[] = [|0.0f;0.0f|]
+
+                match _text.Kind with
+                | TextureInfoKind.BaseColor -> 
+                    texture <- gltf.Textures[_material.PbrMetallicRoughness.BaseColorTexture.Index]
+
+                | TextureInfoKind.Emissive  ->  
+                    texture    <- gltf.Textures[_material.EmissiveTexture.Index] 
             
-                    | TextureInfoKind.Occlusion -> gltf.Textures[_material.OcclusionTexture.Index] 
+                | TextureInfoKind.Normal    ->   
+                    texture    <- gltf.Textures[_material.NormalTexture.Index] 
+            
+                | TextureInfoKind.Occlusion -> 
+                    texture    <- gltf.Textures[_material.OcclusionTexture.Index] 
 
-                    | TextureInfoKind.MetallicRoughness -> gltf.Textures[_material.PbrMetallicRoughness.MetallicRoughnessTexture.Index] 
+                | TextureInfoKind.MetallicRoughness -> 
+                    texture    <- gltf.Textures[_material.PbrMetallicRoughness.MetallicRoughnessTexture.Index] 
 
-                    | _ ->  raise (new Exception("TextureInfoKind"))
+                | _ ->  raise (new Exception("TextureInfoKind"))
             
                 let samplerIdx          = texture.Sampler.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
@@ -148,4 +165,11 @@ module Deployment =
                 let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
 
-                textureKatalog.Add(_objectName, _matIdx, text.Kind, samplerIdx, sampler, image, imageBytes, imageInfo, false) 
+                textureKatalog.Add(_objectName, _matIdx, texture.Name, _text.Kind, samplerIdx, sampler, image, imageBytes, imageInfo, false)
+                
+                baseColourFactor            <- _material.PbrMetallicRoughness.BaseColorFactor
+                emissiveFactor              <- _material.EmissiveFactor
+                metallicRoughnessValues[0]  <- _material.PbrMetallicRoughness.MetallicFactor
+                metallicRoughnessValues[1]  <- _material.PbrMetallicRoughness.RoughnessFactor 
+
+                materialKatalog.Add(_objectName, _matIdx, _material, baseColourFactor, emissiveFactor, metallicRoughnessValues)

@@ -194,9 +194,9 @@ module GraficController =
                     "shader",
                     "VS",
                     "VSMain",
-                    "vs_5_1",
-                    rootSignatureDesc,
-                    ShaderUsage.Required
+                    "vs_5_1", 
+                    ShaderUsage.Required,
+                    rootSignatureDesc
                 )
 
             defaultPixelShaderDesc <-
@@ -206,8 +206,8 @@ module GraficController =
                     "PhongPS",
                     "PSMain",
                     "ps_5_1",
-                    rootSignatureDesc,
-                    ShaderUsage.Required
+                    ShaderUsage.Required,
+                    rootSignatureDesc 
                 )
 
             defaultDomainShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Domain)

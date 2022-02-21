@@ -6,6 +6,8 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
+open System.Collections.Generic
+
 open VGltf.Types
 
 open Base.VertexDefs
@@ -86,8 +88,16 @@ module Katalog =
 
         let mutable objectMaterials = new NestedDict2<string, int, MyMaterial>()
 
-        member this.Add(_objectName, idx, material: Material) =
-            let myMaterial  = new MyMaterial(idx , material) 
+        member this.Add
+            (
+                _objectName,
+                idx,
+                material: Material,
+                baseColourFactor: float32 [],
+                emissiveFactor: float32 [],
+                metallicRoughnessValues: float32 []
+            ) =
+            let myMaterial = new MyMaterial(idx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
             objectMaterials.Add(_objectName, idx, myMaterial)
 
         member this.GetMaterial(name, idx) = objectMaterials.Item(name, idx)
@@ -100,26 +110,53 @@ module Katalog =
     // Register all textures of an object
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TextureKatalog(gpu:MyGPU) = 
-        
-        let mutable textureCache = new NestedDict3<string, int, int, MyTexture >()
+    type TextureKatalog(gpu: MyGPU) =
 
-        let mutable idx  = 0
+        let mutable textureCache = new NestedDict3<string, int, string, MyTexture>()
+        let textureRegister      = new NestedDict3<string, TextureInfoKind, string, MyTexture >()
+
+        
+        let mutable myTexture:MyTexture = null 
+        let mutable textureIdx   = 0
 
         member this.GetTextures(objectName, _material) =
-            textureCache.Items (objectName, _material)
+            textureCache.Items(objectName, _material)
 
-        member this.Add(objectName:string, _material:int, _kind: TextureInfoKind, samplerIdx:int, sampler: Sampler, image: System.Drawing.Image, data:byte[], info:Image, _cube:bool ) =
-            let myTexture  = new MyTexture(idx, _kind, samplerIdx, sampler, image, data, info, _cube) 
-            idx <- idx + 1
-            textureCache.Add(objectName, _material, idx, myTexture)
+        member this.Add
+            (
+                objectName: string,
+                _materialIdx: int,
+                _textureName: string,
+                _kind: TextureInfoKind,
+                _samplerIdx: int,
+                _sampler: Sampler,
+                _image: System.Drawing.Image,
+                _data: byte [],
+                _info: Image,
+                _cube: bool
+            ) =
 
-        member this.Get(objectName, _material , _text) = 
-            textureCache.Item(objectName, _material, _text)  
+            if textureRegister.Items(objectName, _kind).Length = 0 then                 // Noch keiner zu dem Kind
+                textureIdx <- 0                                                         // Ersten anlegen
+                myTexture <- new MyTexture(objectName, _textureName, textureIdx, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
+                textureRegister.Add(objectName, _kind, _textureName, myTexture)
+                textureCache.Add(objectName, _materialIdx, _textureName, myTexture)
+            else 
+                if textureRegister.ContainsKey(objectName, _kind, _textureName) then    // Schon da
+                    ()                                                                  // Nichts tun
+                else 
+                    let anz = textureRegister.Items(objectName, _kind).Length           // Neu anlegen
+                    textureIdx <- anz                                                   // Nummer hochzählen
+                    myTexture <- new MyTexture(objectName, _textureName, textureIdx, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
+                    textureRegister.Add(objectName, _kind, _textureName, myTexture)
+                    textureCache.Add(objectName, _materialIdx, _textureName, myTexture)
+
+        member this.Get(objectName, _material, _textName) =
+            textureCache.Item(objectName, _material, _textName)
 
         member this.ToGPU() =
             for texture in textureCache.Items() do
-                gpu.InstallTexture(texture) 
+                gpu.InstallTexture(texture)
 
-        member this.Reset() = 
-            textureCache <- new NestedDict3<string,  int, int, MyTexture >()
+        member this.Reset() =
+            textureCache <- new NestedDict3<string, int, string, MyTexture>()

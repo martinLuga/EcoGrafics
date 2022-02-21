@@ -25,9 +25,9 @@ open DirectX.D3DUtilities
 
 open AnotherGPU
 open Katalog
-open Structures
 open Common
 open GraficWindow
+open BaseObject
 
 type ObjectConstants    = GraficBase.Structures.ObjectConstants
 type MaterialConstants  = GltfBase.Structures.MaterialConstantsPBR
@@ -38,8 +38,6 @@ type DirectionalLight   = GltfBase.Structures.DirectionalLight
 // Runner Prozess über der GPU
 // ----------------------------------------------------------------------------------------------------
 module Running =
-
-    open BaseObject
 
     let logger = LogManager.GetLogger("Runner")
     let logDebug = Debug(logger)
@@ -70,8 +68,7 @@ module Running =
         let mutable tec: TextureKatalog = null
 
         let mutable lightDir = Vector4.Zero
-        let mutable frameLight: DirectionalLight = DirectionalLight(Color4.White)        
-        let mutable tessellationFactor = 8.0f
+        let mutable frameLight: DirectionalLight = DirectionalLight(Color4.White) 
 
         let mutable defaultInputLayoutDesc: InputLayoutDescription = null
         let mutable defaultRootSignatureDesc: RootSignatureDescription = null
@@ -329,7 +326,9 @@ module Running =
             let material = myMaterial.Material
 
             if material <> null then
-                let mutable matConst = new MaterialConstants(material)
+                let mutable matConst = new MaterialConstants(myMaterial)
+                matConst.baseColorFactor[0] <- matConst.baseColorFactor[0] * 40.0f
+
                 gpu.UpdateMaterial(_bufferIdx, ref matConst)
 
         member this.drawPerNode(_objectName, _bufferIdx: int, _node: NodeAdapter) =
@@ -340,7 +339,7 @@ module Running =
 
             let vBuffer = mec.GetVertexBuffer(_objectName, _node.Node.Mesh.Value)
             let iBuffer = mec.GetIndexBuffer(_objectName, _node.Node.Mesh.Value)
-            let iCount = mec.getIndexCount (_objectName, _node.Node.Mesh.Value)
+            let iCount  = mec.getIndexCount (_objectName, _node.Node.Mesh.Value)
 
             this.UpdatePipeline()
 
