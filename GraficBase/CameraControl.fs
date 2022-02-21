@@ -21,7 +21,8 @@ module CameraControl =
     let DEFAULT_ROT_VERTICAL   = MathUtil.TwoPi / 200.0f           // Scrollamount vertical
     let DEFAULT_CAMERA_POS     = new Vector3(0.0f, 5.0f, -20.0f)   // Default Viewpoint
     let DEFAULT_TARGET_POS     = Vector3.Zero                      // Default Target
-    let DEFAULT_STRENGTH       = 1.0f                              // Default rotation strength 
+    let DEFAULT_ROT_STRENGTH   = 1.0f                              // Default rotation strength 
+    let DEFAULT_ZOOM_STRENGTH  = 5.0f                              // Default zoom strength
     let DEFAULT_ASPECT_RATIO   = 1.0f                              // Default aspect ratio 
 
     [<AllowNullLiteral>]
@@ -49,11 +50,11 @@ module CameraControl =
         //  <param name="rotVertical">Einheit bei vertikaler Drehung</param> 
         //  <param name="rotStrength">Stärke der Drehung</param> 
         // ----------------------------------------------------------------------------------------------------
-        member this.ConfigureCamera(cameraPosition, cameraTarget, aspectRatio, rotHorizontal, rotVertical, rotStrength) = 
+        member this.ConfigureCamera(cameraPosition, cameraTarget, aspectRatio, rotHorizontal, rotVertical, rotStrength, zoomStrength) = 
             startCameraPosition <- cameraPosition
             startCameraTarget   <- cameraTarget
             startAspectRatio    <- aspectRatio
-            Camera.Instance.Init(cameraPosition, cameraTarget, aspectRatio, rotHorizontal, rotVertical, rotStrength) 
+            Camera.Instance.Init(cameraPosition, cameraTarget, aspectRatio, rotHorizontal, rotVertical, rotStrength, zoomStrength)
 
         // ----------------------------------------------------------------------------------------------------    
         //  Initialisierung der Camera-Klasse        

@@ -49,13 +49,13 @@ module Build =
 
         static member Reset() =
             Builder.Instance.Initialize()
+            Deployer.Instance.Initialize()
             Runner.Reset()
 
         member this.Build( _objectName, _path:string, _position:Vector3, _rotation:Vector4, _scale:Vector3) =  
             let correctorGtlf = correctorGltf(_path)
             store <- Builder.Instance.Read(_objectName, _path)
-            objekt <- new Objekt(objectName, store.Gltf, _position, _rotation, _scale)  
-            // Objekt ist durch gltf initialisiert
+            objekt <- new Objekt(objectName, store.Gltf, _position, _rotation, _scale)   // Objekt ist durch gltf initialisiert
             Deployer.Deploy(objekt, store, correctorGtlf)
             Runner.AddObject(objekt)
 

@@ -35,7 +35,7 @@ module Katalog =
     [<AllowNullLiteral>]
     type NodeKatalog(device) =
 
-        let nodeRegister = new NestedDict2<string, int, Node>()
+        let mutable nodeRegister = new NestedDict2<string, int, Node>()
 
         // Register one node of an object
         member this.Add(objectName, nodeIdx, node) =
@@ -43,6 +43,8 @@ module Katalog =
 
         // Register one node of an object
         member this.Get(objectName, nodeIdx) = nodeRegister.Item(objectName, nodeIdx)
+
+        member this.Reset() = nodeRegister <-  NestedDict2<string, int, Node>()
 
     [<AllowNullLiteral>]
     type MeshKatalog(device) =
@@ -105,6 +107,8 @@ module Katalog =
         member this.Count() = objectMaterials.Count
 
         member this.ToGPU(commandList) = ()
+
+        member this.Reset() = objectMaterials <- new NestedDict2<string, int, MyMaterial>()
 
     // ----------------------------------------------------------------------------------------------------
     // Register all textures of an object

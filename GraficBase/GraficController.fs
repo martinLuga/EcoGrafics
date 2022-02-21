@@ -249,7 +249,7 @@ module GraficController =
                 this.AddObject(ground) 
 
         member this.ConfigureCamera(position:Vector3, target:Vector3) = 
-            CameraController.Instance.ConfigureCamera( position, target, graficWindow.AspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_STRENGTH)  
+            CameraController.Instance.ConfigureCamera( position, target, graficWindow.AspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_ROT_STRENGTH, DEFAULT_ZOOM_STRENGTH)  
 
         member this.InitDefaultCamera() =
             this.ConfigureCamera(DEFAULT_CAMERA_POS, DEFAULT_TARGET_POS)
@@ -258,7 +258,7 @@ module GraficController =
             this.initLight(DEFAULT_LIGHT_DIR, DEFAULT_LIGHT_COLOR)
 
         member this.ConfigVision(newCameraPosition:Vector3, lightDirection:Vector3, lightColor) =
-            CameraController.Instance.ConfigureCamera(newCameraPosition, startCameraTarget, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_STRENGTH) 
+            CameraController.Instance.ConfigureCamera(newCameraPosition, startCameraTarget, aspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_ROT_STRENGTH, DEFAULT_ZOOM_STRENGTH) 
             this.initLight(lightDirection, lightColor) 
 
         member this.initLight(dir:Vector3, color: Color) = 

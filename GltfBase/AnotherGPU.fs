@@ -305,23 +305,23 @@ module AnotherGPU =
             
             match _texture.Kind with 
             | TextureInfoKind.BaseColor -> 
-                baseColourTextureHeap.AddResource(texture, _texture.Cube)
+                baseColourTextureHeap.AddResource(texture, false)
                 baseColourSamplerHeap.AddResource(sDesc) 
 
             | TextureInfoKind.Emissive  -> 
-                emissionTextureHeap.AddResource(texture, _texture.Cube) 
+                emissionTextureHeap.AddResource(texture, false) 
                 emissionSamplerHeap.AddResource(sDesc) 
             
             | TextureInfoKind.Normal    -> 
-                normalTextureHeap.AddResource(texture, _texture.Cube)
+                normalTextureHeap.AddResource(texture, false)
                 normalSamplerHeap.AddResource(sDesc)  
             
             | TextureInfoKind.Occlusion -> 
-                occlusionTextureHeap.AddResource(texture, _texture.Cube)
+                occlusionTextureHeap.AddResource(texture, false)
                 occlusionSamplerHeap.AddResource(sDesc) 
 
             | TextureInfoKind.MetallicRoughness -> 
-                metallicRoughnessTextureHeap.AddResource(texture, _texture.Cube) 
+                metallicRoughnessTextureHeap.AddResource(texture, false) 
                 metallicRoughnessSamplerHeap.AddResource(sDesc) 
 
             | _ ->  raise (new Exception("TextureInfoKind"))

@@ -76,6 +76,7 @@ module Camera =
         let mutable rotAmountHorizontal = 0.0f   
         let mutable rotAmountVertical   = 0.0f
         let mutable rotationStrength    = 0.0f
+        let mutable zoomStrength        = 1.0f
     
         do 
             fovY  <- MathUtil.PiOverFour  
@@ -211,8 +212,12 @@ module Camera =
     
             viewDirty <- true 
             
-        member this.Zoom (delta:float32) = 
-            radius <- radius + delta
+        member this.Zoom (near:bool) = 
+            if near then
+                radius <- radius - zoomStrength
+            else            
+                radius <- radius + zoomStrength
+
             this.ToCartesian()
             this.View <-  Matrix_lookAt(eyePosition, this.Target, Vector3.Up)
 
@@ -267,13 +272,14 @@ module Camera =
             phi   <- p
             theta <- t
 
-        member this.Init(cameraPosition, cameraTarget, aspectRatio, horizontal, vertical, stren) = 
-            this.LookAt(cameraPosition, cameraTarget, Vector3.Up)
-            this.SetLens(MathUtil.PiOverFour, aspectRatio, 1.0f, 1000.0f)
+        member this.Init(_cameraPosition, _cameraTarget, _aspectRatio, _horizontalAmount, _verticalAmount, _rotStrength, _zoomStrength) = 
+            this.LookAt(_cameraPosition, _cameraTarget, Vector3.Up)
+            this.SetLens(MathUtil.PiOverFour, _aspectRatio, 1.0f, 1000.0f)
             this.View <- Matrix_lookAt(eyePosition, target, Vector3.Up)
-            rotAmountHorizontal <- horizontal
-            rotAmountVertical <- vertical
-            rotationStrength <- stren
+            rotAmountHorizontal <- _horizontalAmount
+            rotAmountVertical <- _verticalAmount
+            rotationStrength <- _rotStrength
+            zoomStrength <- _zoomStrength
             this.InitRadians()
             logInfo("Initialized \n" + this.Log())
 

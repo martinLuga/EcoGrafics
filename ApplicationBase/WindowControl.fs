@@ -104,8 +104,8 @@ module WindowControl =
     //  Key movements
     // ---------------------------------------------------------------------------------------------------- 
     let addStandardKeyMovements(form:MyWindow) =
-        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageDown  then Camera.Instance.Zoom -zoomFactor)
-        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageUp    then Camera.Instance.Zoom  zoomFactor)
+        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageDown  then Camera.Instance.Zoom true)
+        form.KeyDown.Add(fun e -> if e.KeyCode = Keys.PageUp    then Camera.Instance.Zoom false)
 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Up    then Camera.Instance.RotateVertical  (true)) 
         form.KeyDown.Add(fun e -> if e.KeyCode = Keys.Down  then Camera.Instance.RotateVertical  (false))
@@ -147,7 +147,10 @@ module WindowControl =
 
     let onMouseWheel(evt:MouseEventArgs) = 
         let deltaDistance = (float32)evt.Delta  * 0.005f 
-        Camera.Instance.Zoom deltaDistance
+        if deltaDistance > 0.0f then 
+            Camera.Instance.Zoom true
+        else         
+            Camera.Instance.Zoom false
         
     // ----------------------------------------------------------------------------------------------------    
     //  Mouse Events
@@ -193,8 +196,8 @@ module WindowControl =
         let zoomOutMenuItem = new ToolStripMenuItem("&Zoom Out")
         zoomMenuItem.DropDownItems.Add(zoomInMenuItem)|>ignore
         zoomMenuItem.DropDownItems.Add(zoomOutMenuItem)|>ignore
-        zoomInMenuItem.Click.Add(fun _  -> Camera.Instance.Zoom -zoomFactor)
-        zoomOutMenuItem.Click.Add(fun _ -> Camera.Instance.Zoom zoomFactor)
+        zoomInMenuItem.Click.Add(fun _  -> Camera.Instance.Zoom true)
+        zoomOutMenuItem.Click.Add(fun _ -> Camera.Instance.Zoom false)
         zoomMenuItem
 
     let viewSubmenueStandard =

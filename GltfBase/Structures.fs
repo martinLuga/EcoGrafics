@@ -83,14 +83,12 @@ module Structures =
                 }
         end
 
-    // TODO
-    // Wrap Filter etc konvertieren
+    // Wrap Filter 
     let DynamicSamplerDesc(sampler:Sampler) =
         new SamplerStateDescription (
                 AddressU = TextureAddressMode.Wrap,
                 AddressV = TextureAddressMode.Wrap,
                 AddressW = TextureAddressMode.Wrap,
-                BorderColor = new RawColor4(0.0f, 0.0f, 0.0f, 0.0f),
                 ComparisonFunction = Comparison.Never,
                 Filter = Filter.MinMagMipLinear,
                 MaximumAnisotropy = 16,

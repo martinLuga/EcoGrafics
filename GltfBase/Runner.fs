@@ -160,7 +160,7 @@ module Running =
             defaultDomainShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
             defaultHullShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
             defaultSampleDesc <- SampleDescription(1, 0)
-            defaultRasterizerDesc <- rasterWiredDescription
+            defaultRasterizerDesc <- rasterSolidDescription
             defaultBlendDesc <- BlendDescription.Default()
             defaultTopologyType <- PrimitiveTopologyType.Triangle
 
@@ -246,7 +246,9 @@ module Running =
         member this.Reset() =
             objects.Clear()
             mec.Reset()
-            tec.Reset()
+            tec.Reset() 
+            mac.Reset()  
+            noc.Reset() 
 
         // ----------------------------------------------------------------------------------------------------
         // Run Grafic App
@@ -269,15 +271,13 @@ module Running =
                     this.updatePerFrame ()
                     this.GPU.StartDraw()
                     let mutable bufferIdx = 0
-
                     for objekt in objekts do
                         logDebug ("Object " + objekt.Name)
                         objekt.GlobalTransforms()
                         let nodes = objekt.LeafNodes()
-
                         for node in nodes do
                             this.updatePerObject (node, bufferIdx)
-                            this.updatePerMaterial (objekt.Name, node, bufferIdx)
+                            this.updatePerMaterial (objekt.Name, bufferIdx, node)
                             this.drawPerNode (objekt.Name, bufferIdx, node)
                             bufferIdx <- bufferIdx + 1
 
@@ -320,16 +320,12 @@ module Running =
                 )
             gpu.UpdateFrame(ref frameConst)
 
-        member this.updatePerMaterial(_objectName, node: NodeAdapter, _bufferIdx) =
+        member this.updatePerMaterial(_objectName, _bufferIdx, node: NodeAdapter) =
             let mesh = mec.Mesh(_objectName, node.Node.Mesh.Value)
             let myMaterial = mac.GetMaterial(_objectName, mesh.Material)
-            let material = myMaterial.Material
-
-            if material <> null then
-                let mutable matConst = new MaterialConstants(myMaterial)
-                matConst.baseColorFactor[0] <- matConst.baseColorFactor[0] * 40.0f
-
-                gpu.UpdateMaterial(_bufferIdx, ref matConst)
+            let mutable matConst = new MaterialConstants(myMaterial)
+            matConst.camera  <- Camera.Instance.EyePosition
+            gpu.UpdateMaterial(_bufferIdx, ref matConst)
 
         member this.drawPerNode(_objectName, _bufferIdx: int, _node: NodeAdapter) =
             let mesh = mec.Mesh(_objectName, _node.Node.Mesh.Value)
@@ -349,7 +345,7 @@ module Running =
             logDebug ("DRAW Mesh       " + mesh.Mesh.ToString())
             logDebug ("DRAW Material   " + mesh.Material.ToString())
             logDebug ("DRAW Vertex anz " + iCount.ToString())
-            logInfo ("  ")
+            logInfo  ("  ")
 
             gpu.DrawPerObject(iCount, _bufferIdx, vBuffer, iBuffer, topology, textures)
 
