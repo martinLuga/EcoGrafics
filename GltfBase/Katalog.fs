@@ -6,7 +6,7 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
-open System.Collections.Generic
+open System 
 
 open VGltf.Types
 
@@ -54,6 +54,10 @@ module Katalog =
 
         // Find Vertexdata to objectName/mesh
         let mutable meshContainer = new MeshContainer<Vertex>(device)
+
+        interface IDisposable with 
+            member this.Dispose() =  
+                (meshContainer:>IDisposable).Dispose()  
 
         // Register one mesh of an object
         member this.AddMesh(_object, _mesh, _vertices, _indices, _topology, _material:int) =
@@ -116,9 +120,8 @@ module Katalog =
     [<AllowNullLiteral>]
     type TextureKatalog(gpu: MyGPU) =
 
-        let mutable textureCache = new NestedDict3<string, int, string, MyTexture>()
-        let textureRegister      = new NestedDict3<string, TextureInfoKind, string, MyTexture >()
-
+        let mutable textureCache        = new NestedDict3<string, int, string, MyTexture>()
+        let mutable textureRegister     = new NestedDict3<string, string, string, MyTexture >()
         
         let mutable myTexture:MyTexture = null 
         let mutable textureIdx   = 0
@@ -131,7 +134,7 @@ module Katalog =
                 objectName: string,
                 _materialIdx: int,
                 _textureName: string,
-                _kind: TextureInfoKind,
+                _kind: string,
                 _samplerIdx: int,
                 _sampler: Sampler,
                 _image: System.Drawing.Image,
@@ -163,4 +166,5 @@ module Katalog =
                 gpu.InstallTexture(texture)
 
         member this.Reset() =
-            textureCache <- new NestedDict3<string, int, string, MyTexture>()
+            textureCache    <- new NestedDict3<string, int, string, MyTexture>()
+            textureRegister <-new NestedDict3<string, string, string, MyTexture >()

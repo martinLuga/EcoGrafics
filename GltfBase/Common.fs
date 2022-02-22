@@ -44,7 +44,7 @@ module Common =
         member this.MetallicRoughnessValues = metallicRoughnessValues 
 
     [<AllowNullLiteral>]
-    type MyTexture(_objName:string, _name:string, _indx:int, _kind:TextureInfoKind, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
+    type MyTexture(_objName:string, _name:string, _indx:int, _kind:string, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable objName = _objName
         let mutable indx    = _indx
         let mutable name    = _name

@@ -47,11 +47,6 @@ module Build =
         static member Build(_objectName, _path:string, _position:Vector3, _rotation:Vector4, _scale:Vector3) =
             Builder.Instance.Build(_objectName, _path, _position, _rotation, _scale)
 
-        static member Reset() =
-            Builder.Instance.Initialize()
-            Deployer.Instance.Initialize()
-            Runner.Reset()
-
         member this.Build( _objectName, _path:string, _position:Vector3, _rotation:Vector4, _scale:Vector3) =  
             let correctorGtlf = correctorGltf(_path)
             store <- Builder.Instance.Read(_objectName, _path)

@@ -6,7 +6,8 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
-open System.Collections.Generic
+open System
+open System.Collections.Generic 
 
 open log4net
 
@@ -19,7 +20,9 @@ open SharpDX.Windows
 open Base.GameTimer
 open Base.LoggingSupport
 open Base.ShaderSupport
+
 open GraficBase.Camera
+open GraficBase.CameraControl
 
 open DirectX.D3DUtilities
 
@@ -126,11 +129,24 @@ module Running =
 
         static member Reset() = instance.Reset()
 
-        static member InitLight(dir: Vector3, color: Color) = instance.initLight (dir, color)
+        static member InitLight(dir: Vector3, color: Color) = instance.InitLight (dir, color)
 
-        member this.initLight(dir: Vector3, color: Color) =
+        static member InitCamera(cameraPosition, cameraTarget) = instance.InitCamera(cameraPosition, cameraTarget)
+
+        interface IDisposable with 
+            member this.Dispose() =  
+                (gpu:> IDisposable).Dispose() 
+
+        member this.InitLight(dir: Vector3, color: Color) =
             lightDir <- Vector3.Transform(dir, Matrix.Identity)
             frameLight <- new DirectionalLight(color.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
+
+        member this.InitCamera(cameraPosition, cameraTarget) =
+            CameraController.Instance.ConfigureCamera( 
+                cameraPosition, cameraTarget, 
+                float32 gpu.AspectRatio, 
+                DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_ROT_STRENGTH, DEFAULT_ZOOM_STRENGTH
+            ) 
 
         // ----------------------------------------------------------------------------------------------------
         // Toggle Displayable Properties
