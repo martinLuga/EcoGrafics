@@ -16,7 +16,7 @@ open VGltf.Types
 
 open Base.Framework
 
-open Base.VertexDefs
+open Structures
 open Common
 
 // ----------------------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ module MeshBuild =
         let gltf = store.Gltf
 
         let posBuffer  = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["POSITION"])
-        let positionen = posBuffer.GetEntity<float32, Vector3> (fromArray3) 
+        let positionen = posBuffer.GetEntity<float32, Vector4> (toArray4fromArray3) 
         let ueberAllePositionen  = positionen.GetEnumerable().GetEnumerator()
 
         let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
@@ -46,12 +46,15 @@ module MeshBuild =
         let ueberAlleTexCoords  = alleTexCoord.GetEnumerable().GetEnumerator()
 
         // Vertex
-        let meshVertices  = new List<Vertex>()
-        while ueberAllePositionen.MoveNext() && ueberAlleNormalen.MoveNext() && ueberAlleTexCoords.MoveNext()  do
-            let pos  = ueberAllePositionen.Current
+        let meshVertices = new List<Vertex>()
+
+        while ueberAllePositionen.MoveNext()
+              && ueberAlleNormalen.MoveNext()
+              && ueberAlleTexCoords.MoveNext() do
+            let pos = ueberAllePositionen.Current
             let norm = ueberAlleNormalen.Current
-            let tex  = ueberAlleTexCoords.Current
-            let vertex = new Vertex(pos, norm, Color4.White, tex)
+            let tex = ueberAlleTexCoords.Current
+            let vertex = new Vertex(pos, norm, tex)
             meshVertices.Add(vertex)
 
         // Index

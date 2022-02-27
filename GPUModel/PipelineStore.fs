@@ -26,24 +26,29 @@ open DirectX.Pipeline
 // ----------------------------------------------------------------------------------------------------
 module MyPipelineStore = 
 
+    let loggerProvider = LogManager.GetLogger("Pipeline.Store")
+    let logDebug = Debug(loggerProvider)
+    let logInfo  = Info(loggerProvider)
+    let logError = Error(loggerProvider)
+
     exception PipelineCreateError of string
     exception PipelineStateNotFoundException of string
 
     type Device = SharpDX.Direct3D12.Device 
     type Resource = SharpDX.Direct3D12.Resource 
 
-    let psoDesc(device, inputLayoutDesc:InputLayoutDescription, rootSignatureDesc:RootSignatureDescription, vertexShaderDesc:ShaderDescription, pixelShaderDesc:ShaderDescription, domainShaderDesc:ShaderDescription, hullShaderDesc:ShaderDescription, blendStateDesc , rasterizerStateDesc, topologyType, sampleDescription:SampleDescription) =        
+    let psoDesc(device, inputLayoutDesc:InputLayoutDescription, rootSignatureDesc:RootSignatureDescription, vertexShaderDesc:ShaderDescription, pixelShaderDesc:ShaderDescription, domainShaderDesc:ShaderDescription, hullShaderDesc:ShaderDescription, blendStateDesc , rasterizerStateDesc, topologyType, sampleDescription:SampleDescription) =  
         let mutable psoDesc = emptyPsoDesc() 
         psoDesc.InputLayout             <- inputLayoutDesc
         psoDesc.RootSignature           <- createRootSignature(device, rootSignatureDesc) 
         if vertexShaderDesc.IsSet()  then
-            psoDesc.VertexShader        <- shaderFromFile(vertexShaderDesc)  
+            psoDesc.VertexShader        <- shaderFromDescription(vertexShaderDesc)  
         if  pixelShaderDesc.IsSet()  then 
-            psoDesc.PixelShader         <- shaderFromFile(pixelShaderDesc)   
+            psoDesc.PixelShader         <- shaderFromDescription(pixelShaderDesc)   
         if  domainShaderDesc.IsSet()  then
-            psoDesc.DomainShader        <- shaderFromFile(domainShaderDesc) 
+            psoDesc.DomainShader        <- shaderFromDescription(domainShaderDesc) 
         if  hullShaderDesc.IsSet()  then  
-            psoDesc.HullShader          <- shaderFromFile(hullShaderDesc) 
+            psoDesc.HullShader          <- shaderFromDescription(hullShaderDesc) 
         psoDesc.BlendState              <- blendStateDesc   
         psoDesc.RasterizerState         <- rasterizerStateDesc 
         psoDesc.PrimitiveTopologyType   <- topologyType
@@ -79,15 +84,12 @@ module MyPipelineStore =
     // ----------------------------------------------------------------------------------------------------
     //  PSO storage: All psos built and kept in a nested dict
     // ----------------------------------------------------------------------------------------------------
-    let loggerPSO = LogManager.GetLogger("Pipeline.Store")
-
     [<AllowNullLiteralAttribute>]
     type PipelineStore(device:Device) =
         let mutable device=device
         let mutable ndict = new NestedDict<string, string, string, PrimitiveTopologyType, PipelineState>()
-        let logDebug = Debug(loggerPSO)
         
-        member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc, rasterizerStateDesc, topologyType) =
+        member this.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendStateDesc, rasterizerStateDesc:RasterizerStateDescription, topologyType, isCube) =
             let psoDesc = 
                 psoDesc(
                     device,
@@ -102,15 +104,19 @@ module MyPipelineStore =
                     topologyType,
                     SampleDescription(1, 0)
                     )
+            if isCube then
+                psoDesc.DepthStencilState.DepthComparison <- Comparison.LessEqual
+                psoDesc.RasterizerState.CullMode <- CullMode.None
+
             try                 
                 let pipelineState = device.CreateGraphicsPipelineState(psoDesc)
                 pipelineState
             with :? SharpDXException as ex -> 
-                logger.Fatal("Pipelinestate createError "  + "\n"  + ex.Message + "\n")
+                logError("Pipelinestate createError "  + "\n"  + ex.Message + "\n")
                 raise (PipelineCreateError("Pipelinestate create error " + ex.Message))
                 null
 
-        member this.Add(vtx:string, pxl:string, dom:string, hull:string, bld:string, rastr:string, topo:PrimitiveTopologyType, pso)=
+        member this.Add(vtx:string, pxl:string, dom:string, hull:string, bld:string, rastr:string, topo:PrimitiveTopologyType,  pso)=
             ndict.Add(vtx, pxl, dom, hull, bld, rastr, topo, pso)
 
         member this.Get(vtx:string, pxl:string, dom:string, hull:string, bld:string, rastr:string, topo:PrimitiveTopologyType) =

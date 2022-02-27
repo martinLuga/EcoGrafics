@@ -354,7 +354,7 @@ module D3DUtilities =
             ResourceStates.GenericRead
          )
 
-        let data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb) 
+        let data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat) 
 
         buffer.WriteToSubresource(0, 
             new ResourceRegion(             

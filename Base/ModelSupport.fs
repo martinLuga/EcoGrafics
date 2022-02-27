@@ -502,6 +502,10 @@ module ModelSupport =
         member this.TextureName() =
             if texture = null then ""
             else texture.Name
+
+        member this.TextureIsCube() =
+            if texture = null then false
+            else texture.IsCube
         
         member this.Material        
             with get() = material
@@ -546,6 +550,7 @@ module ModelSupport =
         new() = new Display([], Visibility.Opaque, Vector3.One, Augmentation.None)
         new(parts) = new Display(parts, Visibility.Opaque, Vector3.One, Augmentation.None)
         new(parts, visibility) = new Display(parts, visibility, Vector3.One, Augmentation.None)
+        new(parts, visibility, size) = new Display(parts, visibility, size, Augmentation.None)
         new(parts, augmentation) = new Display(parts, Visibility.Opaque, Vector3.One, augmentation)
 
         member this.Size

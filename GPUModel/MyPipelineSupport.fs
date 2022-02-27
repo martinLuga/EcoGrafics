@@ -6,9 +6,10 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //  
 
+open System.Collections.Generic
+
 open log4net
 
-open SharpDX.DXGI
 open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
@@ -68,14 +69,15 @@ module MyPipelineSupport =
 
         let mutable rootSignature:RootSignature=null
 
-        let mutable vertexShaderDesc:ShaderDescription=null
-        let mutable pixelShaderDesc:ShaderDescription=null
-        let mutable domainShaderDesc:ShaderDescription=null
-        let mutable hullShaderDesc:ShaderDescription=null
+        let mutable vertexShaderDesc:ShaderDescription=new ShaderDescription() 
+        let mutable pixelShaderDesc:ShaderDescription=new ShaderDescription() 
+        let mutable domainShaderDesc:ShaderDescription=new ShaderDescription() 
+        let mutable hullShaderDesc:ShaderDescription=new ShaderDescription() 
         let mutable rasterizerDesc:RasterizerDescription=RasterizerDescription.Default()
         let mutable blendDesc:BlendDescription=BlendDescription.Default()
         let mutable topologyType=PrimitiveTopologyType.Triangle
         let mutable topology=PrimitiveTopology.TriangleList
+        let mutable isCube=false
 
         do            
             psoStore <- new PipelineStore(device)
@@ -98,14 +100,14 @@ module MyPipelineSupport =
                         _HullShaderDesc.asString,
                         _BlendDesc.asString, 
                         _RasterizerDesc.asString,
-                        _TopologyType 
+                        _TopologyType  
                     )
             with 
             | :? PipelineStateNotFoundException -> 
                 logError("PipelineProvider not correctly initialized ")
 
         member this.Add (vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc:BlendDescription,  rasterizerDesc:RasterizerDescription,topologyType) =
-            let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description,topologyType)
+            let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description, topologyType, isCube)
             psoStore.Add( 
                 vertexShaderDesc.asString,
                 pixelShaderDesc.asString,
@@ -121,7 +123,8 @@ module MyPipelineSupport =
         //  PipelineState
         // 
         member this.GetCurrentPipelineState() =
-            if isDirty then
+            logDebug("GET CURRENT: " + this.ToString())
+            if isDirty then    
                 try 
                     currentPipelineState <- 
                         psoStore.Get(
@@ -131,12 +134,11 @@ module MyPipelineSupport =
                             hullShaderDesc.asString,
                             blendDesc.asString,
                             rasterizerDesc.asString,
-                            topologyType
+                            topologyType 
                         )
                 with 
                     | :? PipelineStateNotFoundException -> 
-                                        
-                        let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description, topologyType)
+                        let pso = psoStore.buildPso(inputLayoutDesc, rootSignatureDesc, vertexShaderDesc, pixelShaderDesc, domainShaderDesc, hullShaderDesc, blendDesc.Description,  rasterizerDesc.Description, topologyType, isCube)
                         psoStore.Add( 
                             vertexShaderDesc.asString,
                             pixelShaderDesc.asString,
@@ -182,10 +184,12 @@ module MyPipelineSupport =
 
         member this.PixelShaderDesc
             with get() = pixelShaderDesc
-            and set(value) = 
-                if pixelShaderDesc <> value then
-                    isDirty <- true
-                pixelShaderDesc <- value  
+            and set(value) =             
+                logDebug("COMPARE: " + (value:ShaderDescription ).asString)
+                logDebug("WITH:    " + (pixelShaderDesc:ShaderDescription ).asString)
+                if not (value.Equals pixelShaderDesc ) then
+                    pixelShaderDesc <- value 
+                    isDirty <- true 
 
         member this.DomainShaderDesc
             with get() = domainShaderDesc
@@ -228,6 +232,11 @@ module MyPipelineSupport =
                 if topology  <> value then
                     isDirty <- true
                 topology  <- value
+
+        member this.IsCube  
+            with get() = isCube  
+            and set(value) = 
+                isCube  <- value
 
         member this.RootSignature
             with get() = rootSignature

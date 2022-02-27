@@ -174,8 +174,6 @@ module GraficController =
                 pixelShaderDepthDesc
             )
 
-            instance
-
         // ----------------------------------------------------------------------------------------------------
         // Initialize (Default Configuration)
         // ----------------------------------------------------------------------------------------------------
@@ -231,7 +229,8 @@ module GraficController =
                 defaultSampleDesc  ,      
                 defaultBlendDesc ,   
                 defaultRasterizerDesc , 
-                defaultTopologyType     
+                defaultTopologyType ,                
+                new ShaderDefineMacros([])
             )
 
         abstract member ConfigureGPU:Unit -> Unit 
@@ -531,7 +530,8 @@ module GraficController =
         member this.updatePerPart(idx:int, displayable:BaseObject, part:Part) = 
             logDebug("Update part " + idx.ToString() + " " + part.Shape.Name)
 
-            let _world          = displayable.World
+            let _world          = displayable.World            
+
             let _view           = Camera.Instance.View
             let _proj           = Camera.Instance.Proj
             let _invView        = Matrix.Invert(_view)
@@ -540,20 +540,35 @@ module GraficController =
             let _invViewProj    = Matrix.Invert(_viewProj) 
             let _eyePos         = Camera.Instance.EyePosition
  
-            let objConst =                
-                new ObjectConstants(
-                    World = _world,
-                    View = Matrix.Transpose(_view),
-                    InvView = Matrix.Transpose(_invView), 
-                    Proj = Matrix.Transpose(_proj) ,
-                    InvProj = Matrix.Transpose(_invProj) ,
-                    ViewProj = Matrix.Transpose(_viewProj) ,
-                    InvViewProj = Matrix.Transpose(_invViewProj), 
-                    WorldViewProjection= _world * _viewProj,
-                    WorldInverseTranspose = Matrix.Transpose(Matrix.Invert(_world)),
-                    ViewProjection = _viewProj,
-                    EyePosW = _eyePos  
-                )
+            let objConst = 
+                if part.TextureIsCube() then
+                    new ObjectConstants( 
+                        World = Matrix.Scaling(5000.0f),
+                        View = Matrix.Identity,
+                        InvView = Matrix.Identity,
+                        Proj = Matrix.Identity,
+                        InvProj = Matrix.Identity,
+                        ViewProj = Matrix.Identity,
+                        InvViewProj = Matrix.Identity,
+                        WorldViewProjection = Matrix.Identity,
+                        WorldInverseTranspose = Matrix.Identity,
+                        ViewProjection = Matrix.Identity,
+                        EyePosW = Vector3.Zero
+                    )    
+                else 
+                    new ObjectConstants(
+                        World = _world,
+                        View = Matrix.Transpose(_view),
+                        InvView = Matrix.Transpose(_invView), 
+                        Proj = Matrix.Transpose(_proj) ,
+                        InvProj = Matrix.Transpose(_invProj) ,
+                        ViewProj = Matrix.Transpose(_viewProj) ,
+                        InvViewProj = Matrix.Transpose(_invViewProj), 
+                        WorldViewProjection= _world * _viewProj,
+                        WorldInverseTranspose = Matrix.Transpose(Matrix.Invert(_world)),
+                        ViewProjection = _viewProj,
+                        EyePosW = _eyePos  
+                    )
 
             let perObject = Transpose(objConst)
 
@@ -580,10 +595,11 @@ module GraficController =
                 part.Shape.TopologyType,
                 part.Shape.Topology,
                 this.RasterizerDesc,
-                blendDescriptionFromVisibility(part.Visibility)
+                blendDescriptionFromVisibility(part.Visibility),
+                part.TextureIsCube()
             )
 
-            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, part.TextureName())
+            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, part.TextureName(), part.TextureIsCube())
 
         override this.ToString() =
             "GraficController-" + graficWindow.ToString()

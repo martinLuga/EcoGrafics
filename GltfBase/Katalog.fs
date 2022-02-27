@@ -10,11 +10,12 @@ open System
 
 open VGltf.Types
 
-open Base.VertexDefs
-
 open Common
-open MyMesh
+open NodeAdapter
+open MeshManager
 open AnotherGPU
+open Structures
+open GPUInfrastructure
 
 type Resource = VGltf.Resource
 
@@ -33,18 +34,26 @@ module Katalog =
     // ----------------------------------------------------------------------------------------------------
 
     [<AllowNullLiteral>]
-    type NodeKatalog(device) =
+    type NodeKatalog(gpu: MyGPU) =
 
-        let mutable nodeRegister = new NestedDict2<string, int, Node>()
+        let mutable nodeRegister = new NestedDict2<string, int, NodeAdapter>()
+
+        static let mutable instance = null 
+        static member Instance
+            with get() = instance
+            and set(value) = instance <- value
+
+        static member CreateInstance(gpu: MyGPU) =
+            NodeKatalog.Instance <- new NodeKatalog(gpu)
 
         // Register one node of an object
-        member this.Add(objectName, nodeIdx, node) =
-            nodeRegister.Add(objectName, nodeIdx, node)
+        member this.Add(_objectName, _adapter:NodeAdapter) =            
+            nodeRegister.Add(_objectName, _adapter.Idx, _adapter)
 
         // Register one node of an object
         member this.Get(objectName, nodeIdx) = nodeRegister.Item(objectName, nodeIdx)
 
-        member this.Reset() = nodeRegister <-  NestedDict2<string, int, Node>()
+        member this.Reset() = nodeRegister <-  NestedDict2<string, int, NodeAdapter>()
 
     [<AllowNullLiteral>]
     type MeshKatalog(device) =
@@ -55,14 +64,23 @@ module Katalog =
         // Find Vertexdata to objectName/mesh
         let mutable meshContainer = new MeshContainer<Vertex>(device)
 
+        // Singleton
+        static let mutable instance = null 
+        static member Instance
+            with get() = 
+                if instance = null then
+                    instance <- new MeshKatalog(DEVICE_RTX3090)
+                instance
+            and set(value) = instance <- value
+
         interface IDisposable with 
             member this.Dispose() =  
                 (meshContainer:>IDisposable).Dispose()  
 
-        // Register one mesh of an object
-        member this.AddMesh(_object, _mesh, _vertices, _indices, _topology, _material:int) =
-            meshContainer.Append(_object, _mesh, _vertices, _indices, _topology)
-            meshRegister.Add(_object, _mesh, new RegistryEntry(_mesh, _material))
+        // Register one mesh of an object at (_object, _meshIdx)
+        member this.AddMesh(_objectName, _meshName, _meshIdx, _vertices, _indices, _topology, _matIdx:int) =
+            meshContainer.Append(_objectName, _meshIdx, _vertices, _indices, _topology)
+            meshRegister.Add(_objectName, _meshIdx, new RegistryEntry(_meshIdx, _meshName, _matIdx))
 
         member this.GetVertexBuffer(objectName, mesh) =
             meshContainer.getVertexBuffer (objectName, mesh)
@@ -74,7 +92,7 @@ module Katalog =
             meshContainer.getIndexCount (objectName, mesh)
 
         member this.Material(objectName, mesh) =
-            meshRegister.Item(objectName , mesh ).Material
+            meshRegister.Item(objectName , mesh ).MatIdx
 
         member this.Reset() =
             meshContainer <- new MeshContainer<Vertex>(device)
@@ -90,23 +108,33 @@ module Katalog =
     // Register material 
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type MaterialKatalog(device) =
+    type MaterialKatalog(_gpu:MyGPU) =
+
+        let mutable gpu = _gpu
 
         let mutable objectMaterials = new NestedDict2<string, int, MyMaterial>()
+        
+        static let mutable instance = null 
+        static member Instance
+            with get() = instance
+            and set(value) = instance <- value
+
+        static member CreateInstance(gpu: MyGPU) =
+            MaterialKatalog.Instance <- new MaterialKatalog(gpu)
 
         member this.Add
             (
                 _objectName,
-                idx,
-                material: Material,
-                baseColourFactor: float32 [],
-                emissiveFactor: float32 [],
-                metallicRoughnessValues: float32 []
+                _matIdx,
+                _material: Material,
+                _baseColourFactor: float32 [],
+                _emissiveFactor: float32 [],
+                _metallicRoughnessValues: float32 []
             ) =
-            let myMaterial = new MyMaterial(idx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
-            objectMaterials.Add(_objectName, idx, myMaterial)
+            let myMaterial = new MyMaterial(_matIdx, _material, _baseColourFactor, _emissiveFactor, _metallicRoughnessValues)
+            objectMaterials.Add(_objectName, _matIdx, myMaterial)
 
-        member this.GetMaterial(name, idx) = objectMaterials.Item(name, idx)
+        member this.GetMaterial(_objectName, _matIdx) = objectMaterials.Item(_objectName, _matIdx)
 
         member this.Count() = objectMaterials.Count
 
@@ -118,21 +146,34 @@ module Katalog =
     // Register all textures of an object
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TextureKatalog(gpu: MyGPU) =
+    type TextureKatalog(_gpu: MyGPU) =
 
-        let mutable textureCache        = new NestedDict3<string, int, string, MyTexture>()
-        let mutable textureRegister     = new NestedDict3<string, string, string, MyTexture >()
+        let mutable gpu = _gpu
+                                                        // Obj    MatIdx    Kind    Texture
+        let mutable textureCache        = new NestedDict3<string, int,      string, MyTexture>()
+
+                                                        // Obj    Kind      Name    Texture       
+        let mutable textureRegister     = new NestedDict3<string, string,   string, MyTexture >()
         
         let mutable myTexture:MyTexture = null 
-        let mutable textureIdx   = 0
+        let mutable heapIdx = 0
+
+        static let mutable instance = null 
+        static member Instance
+            with get() = instance
+            and set(value) = instance <- value
+
+        static member CreateInstance(gpu: MyGPU) =
+            TextureKatalog.Instance <- new TextureKatalog(gpu)
 
         member this.GetTextures(objectName, _material) =
             textureCache.Items(objectName, _material)
 
         member this.Add
             (
-                objectName: string,
+                _objectName: string,
                 _materialIdx: int,
+                _textureIdx: int,
                 _textureName: string,
                 _kind: string,
                 _samplerIdx: int,
@@ -143,23 +184,15 @@ module Katalog =
                 _cube: bool
             ) =
 
-            if textureRegister.Items(objectName, _kind).Length = 0 then                 // Noch keiner zu dem Kind
-                textureIdx <- 0                                                         // Ersten anlegen
-                myTexture <- new MyTexture(objectName, _textureName, textureIdx, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
-                textureRegister.Add(objectName, _kind, _textureName, myTexture)
-                textureCache.Add(objectName, _materialIdx, _textureName, myTexture)
+            if textureRegister.ContainsKey(_objectName, _kind, _textureName) then   // Schon da
+                ()                                                                  // Nichts tun
             else 
-                if textureRegister.ContainsKey(objectName, _kind, _textureName) then    // Schon da
-                    ()                                                                  // Nichts tun
-                else 
-                    let anz = textureRegister.Items(objectName, _kind).Length           // Neu anlegen
-                    textureIdx <- anz                                                   // Nummer hochzählen
-                    myTexture <- new MyTexture(objectName, _textureName, textureIdx, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
-                    textureRegister.Add(objectName, _kind, _textureName, myTexture)
-                    textureCache.Add(objectName, _materialIdx, _textureName, myTexture)
+                myTexture <- new MyTexture(_objectName, _textureIdx, _textureName, 0, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
+                textureRegister.Add(_objectName, _kind, _textureName, myTexture)
+                textureCache.Add(_objectName, _materialIdx, _textureName, myTexture)
 
-        member this.Get(objectName, _material, _textName) =
-            textureCache.Item(objectName, _material, _textName)
+        member this.Get(_objectName, _matIdx, _textName) =
+            textureCache.Item(_objectName, _matIdx, _textName)
 
         member this.ToGPU() =
             for texture in textureCache.Items() do
@@ -167,4 +200,4 @@ module Katalog =
 
         member this.Reset() =
             textureCache    <- new NestedDict3<string, int, string, MyTexture>()
-            textureRegister <-new NestedDict3<string, string, string, MyTexture >()
+            textureRegister <- new NestedDict3<string, string, string, MyTexture >()

@@ -7,7 +7,7 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open Common 
+open NodeAdapter
 open Base.GeometryUtils
 open SharpDX
 open VGltf.Types
@@ -54,6 +54,10 @@ module BaseObject =
         member this.Name
             with get() = name
             and set(value)  = name <- value 
+
+        member this.Tree
+            with get() = tree
+            and set(value)  = tree <- value 
 
         member this.Idx
             with get() = idx

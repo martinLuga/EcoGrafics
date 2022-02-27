@@ -14,12 +14,14 @@ open SharpDX.Direct3D12
 open System
 open System.Collections.Generic
 open System.Linq
+
+open GPUInfrastructure
  
 // ----------------------------------------------------------------------------------------------------
 // Container für Meshes unter Objektnamen und Teil-Nummer
 // Ausserdem Hochladen Mesh zur GPU
 // ---------------------------------------------------------------------------------------------------- 
-module MyMesh =
+module MeshManager =
 
     [<AllowNullLiteralAttribute>]
     type NestedDict () =
@@ -44,11 +46,13 @@ module MyMesh =
             objectNameDict.Clear()
 
     [<AllowNullLiteralAttribute>]
-    type RegistryEntry (mesh:int, material:int) =
-        let mutable mesh=mesh
-        let mutable material=material  
-        member this.Material = material
-        member this.Mesh = mesh
+    type RegistryEntry (_meshIdx:int, _meshName:string, _matIdx:int) =
+        let mutable meshIdx=_meshIdx
+        let mutable meshName=_meshName  
+        let mutable matIdx=_matIdx 
+        member this.MatIdx = matIdx
+        member this.MeshIdx = meshIdx
+        member this.MeshName = meshName
 
     [<AllowNullLiteralAttribute>]
     type MeshContainer<'T when 'T:struct and 'T:(new:unit->'T) and 'T:>ValueType>(device:Device) =
@@ -160,4 +164,3 @@ module MyMesh =
         member this.getIndexCount(geometryName, meshName) = 
             let ocb = ocbs.Item(geometryName, meshName)
             ocb.IndexCount
-

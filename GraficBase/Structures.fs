@@ -26,11 +26,51 @@ module Structures =
             val mutable InvProj: Matrix
             val mutable ViewProj: Matrix
             val mutable InvViewProj: Matrix
-            val mutable WorldViewProjection: Matrix     // WorldViewProjection matrix
-            val mutable WorldInverseTranspose: Matrix   // Inverse transpose of World
-            val mutable ViewProjection: Matrix          // ViewProjection matrix
+            val mutable WorldViewProjection: Matrix     
+            val mutable WorldInverseTranspose: Matrix   
+            val mutable ViewProjection: Matrix           
             val mutable EyePosW:Vector3
-        end
+            new(
+                world: Matrix,
+                view: Matrix,
+                invView: Matrix,
+                proj: Matrix,
+                invProj: Matrix,
+                viewProj: Matrix,
+                invViewProj: Matrix,
+                worldViewProjection: Matrix,
+                worldInverseTranspose: Matrix,
+                viewProjection: Matrix,
+                eyePosW:Vector3) =
+                { 
+                    World = world;
+                    View = view;
+                    InvView = invView;
+                    Proj = proj;
+                    InvProj = invProj;
+                    ViewProj = viewProj;
+                    InvViewProj = invViewProj;
+                    WorldViewProjection = worldViewProjection;
+                    WorldInverseTranspose = worldInverseTranspose;
+                    ViewProjection = viewProjection;
+                    EyePosW = eyePosW
+                } 
+            static member Default =
+                new ObjectConstants( 
+                    World = Matrix.Identity,
+                    View = Matrix.Identity,
+                    InvView = Matrix.Identity,
+                    Proj = Matrix.Identity,
+                    InvProj = Matrix.Identity,
+                    ViewProj = Matrix.Identity,
+                    InvViewProj = Matrix.Identity,
+                    WorldViewProjection = Matrix.Identity,
+                    WorldInverseTranspose = Matrix.Identity,
+                    ViewProjection = Matrix.Identity,
+                    EyePosW = Vector3.Zero
+                )         
+            end
+
 
     // Transpose the matrices so that they are in row major order for HLSL
     let Transpose (perObject:ObjectConstants) =

@@ -18,11 +18,21 @@ module ShaderSupport =
     type TopologyType   = | Triangle      | Patch               | Line         | Undefinded
     type RasterType     = | Solid  = 'S'  | Wired = 'W'         | Transparent = 'T'|  Undefinded = 'U'
     type BlendType      = | Opaque = 'O'  | Transparent = 'T'   | Undefinded = 'U'
-    type ShaderType     = | Vertex = 1    | Pixel = 2           | Domain = 3   | Hull = 4   
-    type ShaderUsage    = | Required = 0  | NotRequired = 1     | ToBeFilledIn = 2
+    type ShaderType     = | Vertex = 1    | Pixel = 2           | Domain = 3   | Hull = 4  |  Undefinded = 99 
+    type ShaderUsage    = | Required = 0  | NotRequired = 1     | ToBeFilledIn = 2 | Undefinded = 99 
 
     let  one = "1" 
 
+    // ----------------------------------------------------------------------------------------------------
+    // Shader-Defines
+    // ----------------------------------------------------------------------------------------------------
+    type ShaderDefinePBR =  
+        |HAS_BASECOLORMAP  
+        |HAS_NORMALMAP  
+        |HAS_EMISSIVEMAP  
+        |HAS_OCCLUSIONMAP  
+        |HAS_METALROUGHNESSMAP 
+        
     [<AllowNullLiteral>] 
     type ShaderDefineMacros(_macros:string list) =
         let mutable macros:ShaderMacro[] = [||]
@@ -31,32 +41,43 @@ module ShaderSupport =
                 _macros|> List.map (fun m -> new ShaderMacro(m, one))|> List.toArray
 
         member this.Defines = macros
-        override this.ToString() = macros|> Array.map(fun m -> m.Name) |> Seq.fold(fun s result -> result + s) ""
- 
+        override this.ToString() = macros|> Array.map(fun m -> m.Name) |> Seq.fold(fun s result -> result + s) ""  
+        
+        static member CreateFrom(_shaderDefines:ShaderDefinePBR list) = new ShaderDefineMacros((_shaderDefines |> Seq.map(fun sd -> string sd ) |> Seq.toList) ) 
 
     [<AllowNullLiteral>] 
     // ----------------------------------------------------------------------------------------------------
     // Shaderdescription
     // ----------------------------------------------------------------------------------------------------
     type ShaderDescription =
-        val Klass:ShaderType
+        val Klass:ShaderType 
         val Directory:string 
         val File:string
         val Entry:string
         val Mode:string
-        val Defines:string list
+        val mutable Defines:string list
         val Use:ShaderUsage
         val RootSignature:RootSignatureDescription
         new (klass, directory, file, entry, mode, defines, usage, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; Defines=defines; Use=usage ;RootSignature=rootSignature}
         new (klass, directory, file, entry, mode, usage, rootSignature) = {Klass=klass; Directory=directory; File=file; Entry=entry; Mode=mode; Defines=[]; Use=usage ;RootSignature=rootSignature}
         new (klass, usage) = {Klass=klass; Directory=""; File=""; Entry=""; Mode=""; Defines=[]; RootSignature=new RootSignatureDescription();Use=usage}
+        new () = {Klass=ShaderType.Undefinded; Directory=""; File=""; Entry=""; Mode=""; Defines=[]; RootSignature=new RootSignatureDescription(); Use=ShaderUsage.Undefinded}
+        
+        override this.Equals other =
+            match other with
+            | :? ShaderDescription as p -> p.asString.Equals(this.asString)
+            | _ -> false
+
+        override this.GetHashCode () = this.asString.GetHashCode()
+
         override this.ToString() = this.Klass.ToString() + "->" + this.Entry
+
         member self.NotRequired() = self.Use=ShaderUsage.NotRequired
         member self.ToBeFilledIn() = self.Use=ShaderUsage.ToBeFilledIn
         member self.IsSet() = not (self.IsEmpty())
         member self.IsEmpty()= self.File = ""
         member self.asFileInfo = (self.Directory, self.File, self.Entry, self.Mode)
-        member self.asString = self.File + "." + self.Entry
+        member self.asString = self.File + "." + self.Entry + self.Defines.ToString()
         static member CreateToBeFilledIn(klass) = new ShaderDescription(klass, ShaderUsage.ToBeFilledIn)
         static member CreateNotRequired(klass) = new ShaderDescription(klass, ShaderUsage.NotRequired)
 
@@ -110,12 +131,14 @@ module ShaderSupport =
 
     [<AllowNullLiteral>] 
     type RasterizerDescription=
-        val Type:RasterType
-        val Description:RasterizerStateDescription
+        val mutable Type:RasterType
+        val mutable Description:RasterizerStateDescription
         new (typ, description) = {Type=typ; Description=description}
         override this.ToString() =  "RASTR->" + this.Type.ToString()
         static member Default() = 
-            new RasterizerDescription(RasterType.Solid, rasterizerStateSolid)       
+            new RasterizerDescription(RasterType.Solid, rasterizerStateSolid) 
+        static member Copy(rd:RasterizerDescription) = 
+            new RasterizerDescription(rd.Type, rd.Description)      
         member self.asString = string self.Type  
 
     [<AllowNullLiteral>] 

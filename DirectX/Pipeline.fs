@@ -67,11 +67,12 @@ module Pipeline =
     let rootSignatureDesc =
         let slotRootParameters =
             [|
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0))  // t0 : World Textur
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : per Object
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : per Frame
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : per Material
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(3, 0), RootParameterType.ConstantBufferView)     // b3 : per Armature 
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0))  // t0 : Cube Textur
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 1))  // t1 : Textur
             |]
         new RootSignatureDescription(
             RootSignatureFlags.AllowInputAssemblerInputLayout,
@@ -117,11 +118,8 @@ module Pipeline =
         new InputLayoutDescription(
             [| 
                 new InputElement("SV_POSITION",     0, Format.R32G32B32_Float,       0, 0);
-                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);
-                new InputElement("COLOR",           0, Format.R32G32B32A32_Float,   24, 0);    
-                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         40, 0);
-                new InputElement("BLENDINDICES",    0, Format.R32G32B32A32_UInt,    48, 0); 
-                new InputElement("BLENDWEIGHT",     0, Format.R32G32B32A32_Float,   64, 0);   
+                new InputElement("NORMAL",          0, Format.R32G32B32_Float,      12, 0);   
+                new InputElement("TEXCOORD",        0, Format.R32G32_Float,         24, 0); 
             |]
         ) 
     let rootSignatureDescNT =

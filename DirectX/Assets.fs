@@ -30,38 +30,59 @@ module Assets =
     let mutable allInputLayoutDescriptions           = new Dictionary<string, InputLayoutDescription>() 
     let mutable allGraphicsPipelineStateDescriptions = new Dictionary<string, GraphicsPipelineStateDescription>() 
 
-    // ----------------------------------------------------------------------------------------------------
-    // Texture
-    // ----------------------------------------------------------------------------------------------------    
-    let textureDesc2D(resource:Resource) =
+    // Describe and create a shader resource view (SRV) descriptor heap.
+    // Für das Render Target
+    let CreateTextHeap(device:Device) =
+        let srvHeapDesc =  
+            new DescriptorHeapDescription(  
+                DescriptorCount = 8,
+                Flags = DescriptorHeapFlags.ShaderVisible,
+                Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView 
+            )
+        device.CreateDescriptorHeap(srvHeapDesc) 
+
+    let CreateSampHeap(device:Device) =
+        let  samplerHeapDesc = 
+            new DescriptorHeapDescription(   
+                DescriptorCount = 64,
+                Type =  DescriptorHeapType.Sampler,
+                Flags = DescriptorHeapFlags.ShaderVisible
+            )   
+        device.CreateDescriptorHeap(samplerHeapDesc)
+
+    let mutable srvDesc = 
         new ShaderResourceViewDescription(
             Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
             Dimension = ShaderResourceViewDimension.Texture2D,
-            Format = resource.Description.Format,
-            Texture2D = new ShaderResourceViewDescription.Texture2DResource(
-                MostDetailedMip = 0,
-                MipLevels = -1,
-                ResourceMinLODClamp = 0.0f
-            )
-        )
+            Texture2D = 
+                    new ShaderResourceViewDescription.Texture2DResource(
+                    MostDetailedMip = 0,
+                    MipLevels = -1,
+                    ResourceMinLODClamp = 0.0f
+                )
+            ) 
 
+    // ----------------------------------------------------------------------------------------------------
+    // Texture 
+    // ----------------------------------------------------------------------------------------------------   
+    // 2D
+    let textureDesc2D(resource:Resource) =
+        srvDesc.Format <- resource.Description.Format
+        srvDesc.Texture2D.MipLevels <- int resource.Description.MipLevels
+        srvDesc
+   
+    // Cube
     let textureDescCube(resource:Resource) =
-        new ShaderResourceViewDescription(
-            Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
-            Dimension = ShaderResourceViewDimension.TextureCube,
-            Format = resource.Description.Format, 
-            Texture2D = new ShaderResourceViewDescription.Texture2DResource(
-                MostDetailedMip = 0,
-                MipLevels = -1,
-                ResourceMinLODClamp = 0.0f
-            ),
-            TextureCube = new ShaderResourceViewDescription.TextureCubeResource(
+        srvDesc.Format      <- resource.Description.Format
+        srvDesc.Dimension   <-  ShaderResourceViewDimension.TextureCube;
+        srvDesc.TextureCube <-  
+            new ShaderResourceViewDescription.TextureCubeResource(            
                 MostDetailedMip = 0,
                 MipLevels = int resource.Description.MipLevels,
                 ResourceMinLODClamp = 0.0f
             )
-        )
-
+        srvDesc  
+    
     let textureDescription(resource:Resource, isCube:bool) =
         if isCube then
             textureDescCube(resource)
@@ -69,7 +90,7 @@ module Assets =
             textureDesc2D(resource)
 
     // ----------------------------------------------------------------------------------------------------
-    // Texture
+    // Sampler
     // ----------------------------------------------------------------------------------------------------    
     let samplerDescription=
         new SamplerStateDescription(

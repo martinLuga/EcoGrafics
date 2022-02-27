@@ -6,7 +6,6 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 // 
 
-
 open System
 open System.Threading 
 open System.Windows.Forms
@@ -26,6 +25,8 @@ open GPUModel.MYUtils
 // GPU Infrastructure
 // ----------------------------------------------------------------------------------------------------
 module GPUInfrastructure =
+
+    let DEVICE_RTX3090 = new Device(null, FeatureLevel.Level_11_0)
         
     // Multisampling 
     // Funktioniert nicht in DirectX 
@@ -126,7 +127,7 @@ module GPUInfrastructure =
         //debugController1.EnableSynchronizedCommandQueueValidation <- RawBool(true)
 
         factory                 <- new Factory4()
-        device                  <- new Device(null, FeatureLevel.Level_11_0)             
+        device                  <- DEVICE_RTX3090             
         fence                   <- device.CreateFence(0L, FenceFlags.None) 
 
         rtvDescriptorSize       <- device.GetDescriptorHandleIncrementSize(DescriptorHeapType.RenderTargetView) 

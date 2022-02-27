@@ -118,6 +118,10 @@ module MYUtils =
 
         member this.Increment() =
             hDescriptor <- hDescriptor + cbvSrvUavDescriptorSize
+            index <- index + 1
+
+        member this.Index
+            with get() = index
 
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
@@ -145,6 +149,10 @@ module MYUtils =
 
         member this.Increment() =
             hDescriptor <- hDescriptor + cbvSrvUavDescriptorSize
+            index <- index + 1
+
+        member this.Index
+            with get() = index
 
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize

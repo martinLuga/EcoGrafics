@@ -1,5 +1,4 @@
 ﻿namespace GltfBase
-
 //
 //  Deployment.fs
 //
@@ -7,16 +6,18 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
-open System
+open System.Collections.Generic
 
 open VGltf
 open VGltf.Types
 
 open Base.Framework
+open Base.ShaderSupport
 
 open BaseObject
-open Running
 open MeshBuild
+open NodeAdapter
+open Katalog
 
 // ----------------------------------------------------------------------------------------------------
 // Support für das Deploy auf die GPU
@@ -48,7 +49,8 @@ module Deployment =
         let mutable store:ResourcesStore = null
         let mutable gltf:VGltf.Types.Gltf = null 
         let mutable correctorGtlf:glTFLoader.Schema.Gltf = null 
-        let mutable materialCount   = 0
+        let mutable materialCount = 0
+        let mutable shaderDefines = new List<ShaderDefinePBR>()
         
         // ----------------------------------------------------------------------------------------------------
         // Singleton
@@ -68,6 +70,13 @@ module Deployment =
         
         member this.Initialize() =  
             materialCount <- 0 
+        
+        member this.Correct(_nodes:NodeAdapter list, _corrector:glTFLoader.Schema.Gltf) = 
+            for node in _nodes do
+                let correctNode = _corrector.Nodes[node.Idx]
+                node.Node.Scale <- correctNode.Scale
+                node.Node.Translation <- correctNode.Translation
+                node.Node.Rotation <- correctNode.Rotation
 
         // ----------------------------------------------------------------------------------------------------
         // Deploy 1 Gltf
@@ -86,29 +95,30 @@ module Deployment =
             let allNodes = _objekt.Nodes()
             this.Correct(allNodes, _correctorGtlf)
 
+            _objekt.Tree.printAll()
+
+            _objekt.Tree.printAllGltf()
+
             let allLeafNodes = allNodes |> List.filter(fun node -> node.Node.Children=null)
 
             for adapter in allLeafNodes do
                 this.DeployNode(_objekt.Name, adapter )            
 
-        member this.Correct(_nodes, _corrector) = 
-            for node in _nodes do
-                let correctNode = _corrector.Nodes[node.Idx]
-                node.Node.Scale <- correctNode.Scale
-                node.Node.Translation <- correctNode.Translation
-                node.Node.Rotation <- correctNode.Rotation
-
         member this.DeployNode(_objektName, _adapter) =
-            let node = _adapter.Node
-            Runner.Instance.NodeKatalog.Add(node.Name, _adapter.Idx, node)
-            this.DeployMesh(_objektName, node.Mesh)
+            shaderDefines <- new List<ShaderDefinePBR>()
+            if TEST_MESH_IDX = 0 || _adapter.Node.Mesh.Value = TEST_MESH_IDX then
+                this.DeployMesh(_objektName, _adapter.Node.Mesh)
+                _adapter.ShaderDefines <- shaderDefines 
+                NodeKatalog.Instance.Add(_objektName, _adapter)
 
-        member this.DeployMesh(_objectName, _mesh ) =
-            if _mesh.HasValue then
+        member this.DeployMesh(_objectName, _meshIdx ) =
+            if _meshIdx.HasValue then
+
+                let meshIdx = _meshIdx.Value
                 
-                let mesh = gltf.Meshes[_mesh.Value] 
+                let mesh = gltf.Meshes[meshIdx] 
                 let meshName, vertices, indices, topology, matIdx = CreateMeshData(mesh, store)
-                Runner.Instance.MeshKatalog.AddMesh(_objectName, _mesh.Value, vertices, indices, topology, matIdx)                 
+                MeshKatalog.Instance.AddMesh(_objectName, meshName, meshIdx, vertices, indices, topology, matIdx)                 
                 
                 let material         = gltf.Materials[matIdx] 
                 let text = material.GetTextures() |>Seq.toList
@@ -120,27 +130,32 @@ module Deployment =
                     if material.PbrMetallicRoughness.BaseColorTexture <> null then
                         texture  <- gltf.Textures[material.PbrMetallicRoughness.BaseColorTexture.Index]
                         if texture <> null then
-                            this.DeployTexture(_objectName, matIdx, material, texture,  "BaseColor") 
+                            this.DeployTexture(_objectName, matIdx, material, texture,  "BaseColor")
+                            shaderDefines.Add(ShaderDefinePBR.HAS_BASECOLORMAP) 
                     
                     if material.PbrMetallicRoughness.MetallicRoughnessTexture <> null then
                         texture <- gltf.Textures[material.PbrMetallicRoughness.MetallicRoughnessTexture.Index] 
                         if texture <> null then
                             this.DeployTexture(_objectName, matIdx, material, texture, "MetallicRoughness") 
+                            shaderDefines.Add(ShaderDefinePBR.HAS_METALROUGHNESSMAP)
                
                 if material.EmissiveTexture <> null then
                     texture <- gltf.Textures[material.EmissiveTexture.Index] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, texture, "Emissive")       
+                        this.DeployTexture(_objectName, matIdx, material, texture, "Emissive")
+                        shaderDefines.Add(ShaderDefinePBR.HAS_EMISSIVEMAP)       
                 
                 if material.NormalTexture <> null then
                     texture <- gltf.Textures[material.NormalTexture.Index] 
                     if texture <> null then
                         this.DeployTexture(_objectName, matIdx, material, texture,  "Normal")
+                        shaderDefines.Add(ShaderDefinePBR.HAS_NORMALMAP)
                         
                 if material.OcclusionTexture <> null then
                     texture <- gltf.Textures[material.OcclusionTexture.Index] 
                     if texture <> null then
                         this.DeployTexture(_objectName, matIdx, material, texture, "Occlusion")
+                        shaderDefines.Add(ShaderDefinePBR.HAS_OCCLUSIONMAP)
                 
                 if material.Extensions <> null then
                     let glossiness = material.Extensions.Item("KHR_materials_pbrSpecularGlossiness")
@@ -169,14 +184,15 @@ module Deployment =
                      material.PbrMetallicRoughness.RoughnessFactor 
                  |]
 
-                Runner.Instance.MaterialKatalog.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
+                MaterialKatalog.Instance.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
 
             member this.DeployTexture(_objectName, _matIdx:int, _material:Material, texture, tinfo) = 
                 let samplerIdx          = texture.Sampler.Value
+                let textureIdx          = texture.Source.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
-                let imageInfo           = gltf.Images[texture.Source.Value]
-                let imageResource       = store.GetOrLoadImageResourceAt(texture.Source.Value)                
+                let imageInfo           = gltf.Images[textureIdx]
+                let imageResource       = store.GetOrLoadImageResourceAt(textureIdx)                
                 let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
 
-                Runner.Instance.TextureKatalog.Add(_objectName, _matIdx, texture.Name, tinfo, samplerIdx, sampler, image, imageBytes, imageInfo, false)
+                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, tinfo, samplerIdx, sampler, image, imageBytes, imageInfo, false)

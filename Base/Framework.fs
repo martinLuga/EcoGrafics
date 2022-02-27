@@ -99,6 +99,12 @@ module Framework =
         let ys = sprintf "%6.2f" v.Y
         "X:" + xs + " Y:" + ys   
 
+    let fromArray4(x:float32[]) =
+        Vector4( x.[0],   x.[1],   x.[2],   x.[3])
+
+    let toArray4fromArray3(x:float32[]) =
+        Vector4( x.[0],   x.[1],   x.[2], 0.0f)
+
     let fromArray3(x:float32[]) =
         Vector3( x.[0],   x.[1],   x.[2])
 

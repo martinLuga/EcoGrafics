@@ -60,7 +60,7 @@ module ShaderCompile =
     let loadCompiled(desc: ShaderDescription) =  
         if not PRECOMPILED then
             raise (ShaderError("Not using precompiled shaders " ))
-        let fileName = fileNameHere desc.Directory desc.File + "_" + desc.Entry + ".cso"
+        let fileName = fileNameHere desc.Directory desc.asString + ".cso"
         let mutable str:FileStream = null 
         let mutable result:D3DCompiler.ShaderBytecode = null
         try   
@@ -75,7 +75,7 @@ module ShaderCompile =
         result
 
     let storeCompiled(bytecode:D3DCompiler.ShaderBytecode, desc: ShaderDescription) = 
-        let fileName = fileNameHere desc.Directory desc.File + "_" + desc.Entry + ".cso"
+        let fileName = fileNameHere desc.Directory desc.asString + ".cso"
         let mutable str:FileStream = null
         try   
             str <- new FileStream(fileName, FileMode.Create)
@@ -85,7 +85,7 @@ module ShaderCompile =
             logger.Debug("Stored shader bytecode to : " + fileName)
         with :? IOException -> logger.Warn("Cannot store precomiled shader named: " + fileName)
 
-    let shaderFromFile (desc: ShaderDescription) =
+    let shaderFromDescription (desc: ShaderDescription) =
         try   
             byteCode <- loadCompiled(desc)
         with :? ShaderError  -> 
@@ -93,7 +93,7 @@ module ShaderCompile =
             let dirName = dirNameHere desc.Directory  
             let myDefines = ShaderDefineMacros(desc.Defines)
             let includeHandler = new IncludeFX(dirName)
-            logger.Warn("Compiling shader named: " + fileName + "_" + desc.Entry  + "_" + myDefines.ToString())
+            logger.Warn("Compiling shader from file: " + fileName)
             let compResult = ShaderBytecode.CompileFromFile(fileName, desc.Entry, desc.Mode, ShaderFlags.OptimizationLevel3, EffectFlags.None, myDefines.Defines, includeHandler) 
             if compResult.Bytecode <> null then
                 byteCode <- compResult.Bytecode

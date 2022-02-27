@@ -8,7 +8,6 @@
 
 open Base
 open Base.Framework
-open Base.GeometryUtils
 open SharpDX
 open SharpDX.Direct3D
 open SharpDX.Direct3D12
@@ -44,10 +43,11 @@ module Common =
         member this.MetallicRoughnessValues = metallicRoughnessValues 
 
     [<AllowNullLiteral>]
-    type MyTexture(_objName:string, _name:string, _indx:int, _kind:string, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
+    type MyTexture(_objName:string, _textureIdx, _textName:string, _heapIdx:int, _kind:string, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable objName = _objName
-        let mutable indx    = _indx
-        let mutable name    = _name
+        let mutable heapIdx = _heapIdx
+        let mutable idx     = _textureIdx
+        let mutable name    = _textName
         let mutable kind    = _kind
         let mutable matIdx  = _matIdx
         let mutable smpIdx  = _smpIdx
@@ -59,17 +59,22 @@ module Common =
 
         member this.ObjectName = objName
         member this.Name    = name
-        member this.Index   = indx
+        member this.Idx     = idx
+        member this.HeapIdx
+            with get() = heapIdx
+            and set(value) = heapIdx <- value
         member this.Kind    = kind
-        member this.MaterialIdx = matIdx
-        member this.SamplerIdx = smpIdx 
+        member this.MatIdx  = matIdx
+        member this.SmpIdx
+            with get() = smpIdx
+            and set(value) = smpIdx <- value    
         member this.Sampler = sampler 
         member this.Image   = image
         member this.Data    = data
         member this.Info    = info
         member this.Cube    = cube
 
-        override this.ToString() = "MyTexture (" + _kind.ToString() + ") : " + name + " : " + indx.ToString()
+        override this.ToString() = "MyTexture (" + _kind.ToString() + ") : " + idx.ToString() + "/" + name + " " + heapIdx.ToString()
 
     // ----------------------------------------------------------------------------------------------------
     //  NestedDicts
@@ -160,129 +165,6 @@ module Common =
                     |> Seq.toList
 
         member this.Count = this.AllItems.Length
-
-    // ----------------------------------------------------------------------------------------------------
-    // NodeAdapter
-    // ----------------------------------------------------------------------------------------------------
-    [<AllowNullLiteralAttribute>]
-    type NodeAdapter(_gltf:Gltf, _idx:int) =
-        let gltf = _gltf
-        let idx  = _idx
-        let mutable node:Node = null
-        let mutable children: NodeAdapter list = []
-
-        override this.ToString() =
-            if node = null then this.instantiate()
-            node.Name
-
-        member this.Idx = _idx
-
-        member this.Node = node
-
-        member this.Children = children
-
-        member this.GetChildren() = 
-            this.instantiate()
-            children
-
-        member this.AllItems()      = 
-            this.Items(this.Idx) |> Seq.toList
-
-        member this.AllNodes()      = this.Nodes(this.Idx) |> Seq.toList
-
-        member this.Count           = this.AllItems().Length
-
-        member this.LeafesCount     = (this.LeafAdapters() ).Length
-
-        member this.instantiate() = 
-            if node = null then 
-                node <- gltf.Nodes[idx]
-                let childreni = node.Children 
-                children <- 
-                    if childreni <> null then
-                        childreni |> Seq.map(fun i -> new NodeAdapter(gltf, i) )|> Seq.toList
-                    else 
-                        []
-
-        member this.instantiateAll() = 
-            this.instantiate()
-            for child in this.GetChildren() do
-                child.instantiateAll()
-
-        member this.printAll() = 
-            printf " %i " idx 
-            for child in this.GetChildren() do
-                printfn " " 
-                child.printAll()
-
-        // All leafes as int[] recursively
-        member this.Items(idx) =
-            // Process recursively all children
-            let node = gltf.Nodes[ idx ]
-
-            if node.Children <> null then
-                node.Children
-                |> Seq.append (
-                    node.Children
-                    |> Seq.collect (fun child -> this.Items(child))
-                )
-            else
-                [ idx ]
-
-        // All nodes!! as Node recursively
-        member this.Nodes(idx)  = 
-            let mynode = gltf.Nodes[ idx ]
-            if mynode.Children <> null then
-                mynode.Children |> Seq.map (fun i -> gltf.Nodes[i])
-                |> Seq.append (                   
-                    mynode.Children
-                    |> Seq.collect (fun i  -> this.Nodes(i))                
-                )
-            else
-                [ mynode ]
-
-        // All Adapter (leafes only) recursively
-        member this.LeafAdapters():NodeAdapter list  =  
-            this.instantiate()
-            if this.Children.Length > 0 then                 
-                this.Children
-                |> List.collect (fun ada -> ada.LeafAdapters())
-            
-            else
-                [this]
-
-        member this.Adapters()  =  
-            this.instantiate()
-            if this.Children.Length > 0 then 
-                [this]
-                |> List.append( 
-                    this.Children
-                    |> List.collect (fun ada -> ada.Adapters())
-                )            
-            else
-                [this]
-
-        member this.WithIdx(_idx)  =  
-            this.Adapters()
-                |> List.find (fun ada -> ada.Idx = _idx)
-
-        member this.UpdatePositionsDeep(objectWorld) =
-            this.UpdatePos (this.Idx, objectWorld)
-
-        member this.UpdatePos (idx, _parentMatrix:Matrix) =
-            let mynode = gltf.Nodes[ idx ]
-            let myTransform = createLocalTransform (mynode.Translation , mynode.Rotation,  mynode.Scale) 
-            let newMatrix = myTransform * _parentMatrix
-            mynode.Matrix <- newMatrix.ToArray()
-
-            if mynode.Children <> null then
-                mynode.Children 
-                    |> Seq.iter (fun i -> this.UpdatePos(i, newMatrix))
-
-        member this.Mesh = 
-            if node.Mesh.HasValue then 
-                gltf.Meshes[node.Mesh.Value] 
-            else null
 
     // ----------------------------------------------------------------------------------------------------
     // Conversions

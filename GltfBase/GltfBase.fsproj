@@ -7,17 +7,19 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FrameResource.fs" />
+    <Compile Include="GPUInfrastructure.fs" />
+    <Compile Include="MeshManager.fs" />
     <Compile Include="Common.fs" />
+    <Compile Include="NodeAdapter.fs" />
+    <Compile Include="PrintSupport.fs" />
     <Compile Include="Structures.fs" />
     <Compile Include="MeshBuild.fs" />
-    <Compile Include="MeshContainer.fs" />
-    <Compile Include="GPUInfrastructure.fs" />
-    <Compile Include="FrameResource.fs" />
     <Compile Include="AnotherGPU.fs" />
+    <Compile Include="Katalog.fs" />
     <Compile Include="GraficWindow.fs" />
     <Compile Include="BaseObject.fs" />
     <Compile Include="Reader.fs" />
-    <Compile Include="Katalog.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Deployment.fs" />
     <Compile Include="Builder.fs" />
