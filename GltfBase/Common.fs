@@ -8,6 +8,7 @@
 
 open Base
 open Base.Framework
+open Base.ShaderSupport
 open SharpDX
 open SharpDX.Direct3D
 open SharpDX.Direct3D12
@@ -43,12 +44,12 @@ module Common =
         member this.MetallicRoughnessValues = metallicRoughnessValues 
 
     [<AllowNullLiteral>]
-    type MyTexture(_objName:string, _textureIdx, _textName:string, _heapIdx:int, _kind:string, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
+    type MyTexture(_objName:string, _textureIdx:int, _textName:string, _heapIdx:int, _textureType:TextureTypePBR, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable objName = _objName
         let mutable heapIdx = _heapIdx
         let mutable idx     = _textureIdx
         let mutable name    = _textName
-        let mutable kind    = _kind
+        let mutable txtTyp  = _textureType
         let mutable matIdx  = _matIdx
         let mutable smpIdx  = _smpIdx
         let mutable sampler = _sampler 
@@ -63,7 +64,7 @@ module Common =
         member this.HeapIdx
             with get() = heapIdx
             and set(value) = heapIdx <- value
-        member this.Kind    = kind
+        member this.Kind    = txtTyp
         member this.MatIdx  = matIdx
         member this.SmpIdx
             with get() = smpIdx
@@ -74,7 +75,7 @@ module Common =
         member this.Info    = info
         member this.Cube    = cube
 
-        override this.ToString() = "MyTexture (" + _kind.ToString() + ") : " + idx.ToString() + "/" + name + " " + heapIdx.ToString()
+        override this.ToString() = "MyTexture (" + _textureType.ToString() + ") : " + idx.ToString() + "/" + name + " " 
 
     // ----------------------------------------------------------------------------------------------------
     //  NestedDicts

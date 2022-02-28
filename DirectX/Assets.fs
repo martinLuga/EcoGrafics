@@ -11,6 +11,8 @@ open System
 open System.Collections.Generic 
 
 open SharpDX.DXGI
+open SharpDX.Direct3D
+open SharpDX.D3DCompiler
 open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
 open SharpDX 
@@ -35,7 +37,7 @@ module Assets =
     let CreateTextHeap(device:Device) =
         let srvHeapDesc =  
             new DescriptorHeapDescription(  
-                DescriptorCount = 8,
+                DescriptorCount = 64,
                 Flags = DescriptorHeapFlags.ShaderVisible,
                 Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView 
             )
@@ -52,29 +54,29 @@ module Assets =
 
     let mutable srvDesc = 
         new ShaderResourceViewDescription(
-            Shader4ComponentMapping = D3DUtil.DefaultShader4ComponentMapping,
-            Dimension = ShaderResourceViewDimension.Texture2D,
-            Texture2D = 
-                    new ShaderResourceViewDescription.Texture2DResource(
-                    MostDetailedMip = 0,
-                    MipLevels = -1,
-                    ResourceMinLODClamp = 0.0f
-                )
-            ) 
+            Shader4ComponentMapping = 0x00001688,
+            Dimension = ShaderResourceViewDimension.Texture2D 
+        )
 
     // ----------------------------------------------------------------------------------------------------
     // Texture 
     // ----------------------------------------------------------------------------------------------------   
     // 2D
     let textureDesc2D(resource:Resource) =
-        srvDesc.Format <- resource.Description.Format
-        srvDesc.Texture2D.MipLevels <- int resource.Description.MipLevels
+        srvDesc.Format              <- resource.Description.Format
+        srvDesc.Dimension           <- ShaderResourceViewDimension.Texture2D
+        srvDesc.Texture2D           <-
+            new ShaderResourceViewDescription.Texture2DResource(
+                MostDetailedMip = 0,
+                MipLevels = int resource.Description.MipLevels,
+                ResourceMinLODClamp = 0.0f
+            )
         srvDesc
    
     // Cube
     let textureDescCube(resource:Resource) =
         srvDesc.Format      <- resource.Description.Format
-        srvDesc.Dimension   <-  ShaderResourceViewDimension.TextureCube;
+        srvDesc.Dimension   <-  ShaderResourceViewDimension.TextureCube 
         srvDesc.TextureCube <-  
             new ShaderResourceViewDescription.TextureCubeResource(            
                 MostDetailedMip = 0,

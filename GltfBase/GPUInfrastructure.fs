@@ -99,7 +99,7 @@ module GPUInfrastructure =
         // Für Texturen
         let srvDescriptorHeapDesc = 
             new DescriptorHeapDescription(  
-                DescriptorCount = 8,
+                DescriptorCount = 250,
                 Flags = DescriptorHeapFlags.ShaderVisible,
                 Type = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
         srvDescriptorHeap <- device.CreateDescriptorHeap(srvDescriptorHeapDesc)
@@ -108,7 +108,7 @@ module GPUInfrastructure =
         // Dyn Sampler der Texturen
         let  samplerHeapDesc = 
             new DescriptorHeapDescription(   
-                DescriptorCount = 8,
+                DescriptorCount = 250,
                 Type =  DescriptorHeapType.Sampler,
                 Flags = DescriptorHeapFlags.ShaderVisible
             )   

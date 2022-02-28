@@ -94,38 +94,41 @@ module NodeAdapter =
                 child.printAllIdent(nextIdent)
 
         member this.printAllGltf() =             
-            printfn " All Nodes from Gltf" 
+            printfn " All Leaf-Nodes from Gltf" 
             this.printAllIdentGltf("--", idx)
 
         member this.printAllIdentGltf(ident:string, idx:int) = 
             let mutable meshStr = ""
             let mutable matStr = ""
+            let mutable texStr = ""
+            let mutable nextIdent = ""
             let node =  gltf.Nodes[idx]
-            if node.Mesh.HasValue then 
-                meshStr <- node.Mesh.Value.ToString() 
-                let mesh = gltf.Meshes[node.Mesh.Value]
-                let prim = mesh.Primitives[0]
-                if prim.Material.HasValue then
-                    let mati = prim.Material.Value
-                    let mat = gltf.Materials[mati]
-                    matStr <- mat.Name
-                else
-                    matStr <- ""
-            else             
-                meshStr <- "" 
-                matStr <- ""
-            printfn "%s %s %s %s" ident node.Name meshStr matStr
-            let nextIdent = ident + ident
+
             let childreni = node.Children 
             if childreni <> null then
                 for childi in childreni do
                     this.printAllIdentGltf(nextIdent, childi)
+            else
+                if node.Mesh.HasValue then 
+                    meshStr <- node.Mesh.Value.ToString() 
+                    let mesh = gltf.Meshes[node.Mesh.Value]
+                    let prim = mesh.Primitives[0]
+                    if prim.Material.HasValue then
+                        let mati = prim.Material.Value
+                        let mat = gltf.Materials[mati]
+                        matStr <- mat.Name
+                        texStr <- mat.PbrMetallicRoughness.BaseColorTexture.Index.ToString() 
+                    else
+                        matStr <- ""
+                else             
+                    meshStr <- "" 
+                    matStr <- ""
+                printfn "%s %s %s %s %s" ident node.Name meshStr matStr texStr
+                nextIdent <- ident + ident
 
         // All leafes as int[] recursively
         member this.Items(idx) =
-            // Process recursively all children
             let node = gltf.Nodes[ idx ]
-
             if node.Children <> null then
                 node.Children
                 |> Seq.append (
@@ -135,7 +138,7 @@ module NodeAdapter =
             else
                 [ idx ]
 
-        // All nodes!! as Node recursively
+        // All gltf-nodes recursively
         member this.Nodes(idx)  = 
             let mynode = gltf.Nodes[ idx ]
             if mynode.Children <> null then
@@ -147,16 +150,16 @@ module NodeAdapter =
             else
                 [ mynode ]
 
-        // All Adapter (leafes only) recursively
+        // All Adapters (leafes) recursively
         member this.LeafAdapters():NodeAdapter list  =  
             this.instantiate()
             if this.Children.Length > 0 then                 
                 this.Children
-                |> List.collect (fun ada -> ada.LeafAdapters())
-            
+                |> List.collect (fun ada -> ada.LeafAdapters())            
             else
                 [this]
 
+        // All Adapters recursively
         member this.Adapters()  =  
             this.instantiate()
             if this.Children.Length > 0 then 

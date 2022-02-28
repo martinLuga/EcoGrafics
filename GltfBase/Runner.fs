@@ -255,6 +255,7 @@ module Running =
             TextureKatalog.Instance.Reset() 
             MaterialKatalog.Instance.Reset()  
             NodeKatalog.Instance.Reset() 
+            MeshKatalog.Instance.Reset()
 
         // ----------------------------------------------------------------------------------------------------
         // Run Grafic App

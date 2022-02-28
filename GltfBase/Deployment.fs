@@ -130,31 +130,31 @@ module Deployment =
                     if material.PbrMetallicRoughness.BaseColorTexture <> null then
                         texture  <- gltf.Textures[material.PbrMetallicRoughness.BaseColorTexture.Index]
                         if texture <> null then
-                            this.DeployTexture(_objectName, matIdx, material, texture,  "BaseColor")
+                            this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.baseColourTexture)
                             shaderDefines.Add(ShaderDefinePBR.HAS_BASECOLORMAP) 
                     
                     if material.PbrMetallicRoughness.MetallicRoughnessTexture <> null then
                         texture <- gltf.Textures[material.PbrMetallicRoughness.MetallicRoughnessTexture.Index] 
                         if texture <> null then
-                            this.DeployTexture(_objectName, matIdx, material, texture, "MetallicRoughness") 
+                            this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.metallicRoughnessTexture) 
                             shaderDefines.Add(ShaderDefinePBR.HAS_METALROUGHNESSMAP)
                
                 if material.EmissiveTexture <> null then
                     texture <- gltf.Textures[material.EmissiveTexture.Index] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, texture, "Emissive")
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.emissionTexture) 
                         shaderDefines.Add(ShaderDefinePBR.HAS_EMISSIVEMAP)       
                 
                 if material.NormalTexture <> null then
                     texture <- gltf.Textures[material.NormalTexture.Index] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, texture,  "Normal")
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.normalTexture) 
                         shaderDefines.Add(ShaderDefinePBR.HAS_NORMALMAP)
                         
                 if material.OcclusionTexture <> null then
                     texture <- gltf.Textures[material.OcclusionTexture.Index] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, texture, "Occlusion")
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.occlusionTexture)
                         shaderDefines.Add(ShaderDefinePBR.HAS_OCCLUSIONMAP)
                 
                 if material.Extensions <> null then
@@ -167,7 +167,7 @@ module Deployment =
                             let i   = index.GenericContent.ToString()|> int
                             texture <- gltf.Textures[i]
                             if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, texture, "Diffuse")
+                                this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.envDiffuseTexture)
 
                         let specularGlossinessText = glossiness.Item("specularGlossinessTexture")
                         if specularGlossinessText.GenericContent <> null then
@@ -175,18 +175,18 @@ module Deployment =
                             let i   = index.GenericContent.ToString()|> int
                             texture <- gltf.Textures[i]
                             if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, texture, "Glossiness")
+                                this.DeployTexture(_objectName, matIdx, material, texture,  TextureTypePBR.envSpecularTexture)
 
                 let baseColourFactor        = material.PbrMetallicRoughness.BaseColorFactor
                 let emissiveFactor          = material.EmissiveFactor
                 let metallicRoughnessValues:float32[] = [| 
-                     material.PbrMetallicRoughness.MetallicFactor;
-                     material.PbrMetallicRoughness.RoughnessFactor 
+                    material.PbrMetallicRoughness.MetallicFactor;
+                    material.PbrMetallicRoughness.RoughnessFactor;
                  |]
 
                 MaterialKatalog.Instance.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
 
-            member this.DeployTexture(_objectName, _matIdx:int, _material:Material, texture, tinfo) = 
+            member this.DeployTexture(_objectName, _matIdx:int, _material:Material, texture, textType) = 
                 let samplerIdx          = texture.Sampler.Value
                 let textureIdx          = texture.Source.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
@@ -195,4 +195,4 @@ module Deployment =
                 let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
 
-                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, tinfo, samplerIdx, sampler, image, imageBytes, imageInfo, false)
+                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, image, imageBytes, imageInfo, false) 

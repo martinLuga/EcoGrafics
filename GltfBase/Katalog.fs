@@ -8,6 +8,8 @@
 
 open System 
 
+open Base.ShaderSupport
+
 open VGltf.Types
 
 open Common
@@ -149,11 +151,8 @@ module Katalog =
     type TextureKatalog(_gpu: MyGPU) =
 
         let mutable gpu = _gpu
-                                                        // Obj    MatIdx    Kind    Texture
-        let mutable textureCache        = new NestedDict3<string, int,      string, MyTexture>()
-
-                                                        // Obj    Kind      Name    Texture       
-        let mutable textureRegister     = new NestedDict3<string, string,   string, MyTexture >()
+                                                        // Obj    MatIdx  Name    Texture
+        let mutable textureCache        = new NestedDict3<string, int,    string, MyTexture>()
         
         let mutable myTexture:MyTexture = null 
         let mutable heapIdx = 0
@@ -175,7 +174,7 @@ module Katalog =
                 _materialIdx: int,
                 _textureIdx: int,
                 _textureName: string,
-                _kind: string,
+                _textureType: TextureTypePBR,
                 _samplerIdx: int,
                 _sampler: Sampler,
                 _image: System.Drawing.Image,
@@ -184,12 +183,8 @@ module Katalog =
                 _cube: bool
             ) =
 
-            if textureRegister.ContainsKey(_objectName, _kind, _textureName) then   // Schon da
-                ()                                                                  // Nichts tun
-            else 
-                myTexture <- new MyTexture(_objectName, _textureIdx, _textureName, 0, _kind, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
-                textureRegister.Add(_objectName, _kind, _textureName, myTexture)
-                textureCache.Add(_objectName, _materialIdx, _textureName, myTexture)
+            myTexture <- new MyTexture(_objectName, _textureIdx, _textureName, 0, _textureType, _materialIdx, _samplerIdx, _sampler, _image, _data, _info, _cube)  
+            textureCache.Add(_objectName, _materialIdx, _textureName, myTexture)
 
         member this.Get(_objectName, _matIdx, _textName) =
             textureCache.Item(_objectName, _matIdx, _textName)
@@ -199,5 +194,4 @@ module Katalog =
                 gpu.InstallTexture(texture)
 
         member this.Reset() =
-            textureCache    <- new NestedDict3<string, int, string, MyTexture>()
-            textureRegister <- new NestedDict3<string, string, string, MyTexture >()
+            textureCache    <- new NestedDict3<string, int, string, MyTexture>() 

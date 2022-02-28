@@ -138,39 +138,3 @@ module Structures =
                 MinimumLod = 0.0f,
                 MipLodBias = 0.0f
             ) 
-
-    type Roughness() =
-        let mutable BaseColorFactor: float32[] = [|0.0f; 0.0f|]        
-        let mutable BaseColorTexture: Material.BaseColorTextureInfoType = null       
-        let mutable MetallicFactor: float32  = 0.0f       
-        let mutable MetallicRoughnessTexture: Material.MetallicRoughnessTextureInfoType  = null          
-        let mutable RoughnessFactor: float32 = 0.0f
-    
-        member this.Gltf =
-            let r = new Material.PbrMetallicRoughnessType()
-            r.BaseColorFactor           <- BaseColorFactor       
-            r.BaseColorTexture          <- BaseColorTexture      
-            r.MetallicFactor            <- MetallicFactor       
-            r.MetallicRoughnessTexture  <- MetallicRoughnessTexture      
-            r.RoughnessFactor           <- RoughnessFactor
-    
-    type MaterialGltf() =
-        let mutable AlphaCutoff:float32 = 0.0f
-        let mutable AlphaMode = Material.AlphaModeEnum.Opaque
-        let mutable DoubleSided = false
-        let mutable EmissiveFactor: float32[]  = [|0.0f; 0.0f|] 
-        let mutable EmissiveTexture:Material.EmissiveTextureInfoType = null 
-        let mutable NormalTexture:Material.NormalTextureInfoType = null 
-        let mutable OcclusionTexture:Material.OcclusionTextureInfoType = null  
-        let mutable PbrMetallicRoughness:Material.PbrMetallicRoughnessType = null 
-    
-        member this.Gltf =
-            let mat = new Material()
-            mat.AlphaCutoff             <- 0.0f 
-            mat.AlphaMode               <- Material.AlphaModeEnum.Opaque 
-            mat.DoubleSided             <- false 
-            mat.EmissiveFactor          <- [|0.0f; 0.0f|] 
-            mat.EmissiveTexture         <- new Material.EmissiveTextureInfoType() 
-            mat.NormalTexture           <- new Material.NormalTextureInfoType()
-            mat.OcclusionTexture        <- new Material.OcclusionTextureInfoType() 
-            mat.PbrMetallicRoughness    <- new Material.PbrMetallicRoughnessType()

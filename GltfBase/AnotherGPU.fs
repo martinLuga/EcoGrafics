@@ -31,6 +31,7 @@ open GPUModel.MYUtils
 
 open FrameResource
 open GPUInfrastructure
+open GPUAccess
 open Common
 open Structures
   
@@ -51,23 +52,11 @@ module AnotherGPU =
     let ROP_IDX_FRAME     = 1
     let ROP_IDX_MATERIAL  = 2
 
-    let ROP_IDX_TEX_BCOLR = 3 
-    let ROP_IDX_TEX_BNORM = 4 
-    let ROP_IDX_TEX_EMISS = 5 
-    let ROP_IDX_TEX_OCCLU = 6
-    let ROP_IDX_TEX_METAL = 7 
-    let ROP_IDX_TEX_DIFFU = 8 
-    let ROP_IDX_TEX_BRDFL = 9 
-    let ROP_IDX_TEX_SPECU = 10
+    let ROP_IDX_TEX_1     = 3 
+    let ROP_IDX_TEX_2     = 4  
 
-    let ROP_IDX_SMP_BCOLR = 11
-    let ROP_IDX_SMP_BNORM = 12
-    let ROP_IDX_SMP_EMISS = 13
-    let ROP_IDX_SMP_OCCLU = 14
-    let ROP_IDX_SMP_METAL = 15
-    let ROP_IDX_SMP_DIFFU = 16
-    let ROP_IDX_SMP_BRDFL = 17
-    let ROP_IDX_SMP_SPECU = 18
+    let ROP_IDX_SMP_1     = 5
+    let ROP_IDX_SMP_2     = 6
 
     let loggerGPU = LogManager.GetLogger("AnotherGPU")
     let logDebug = Debug(loggerGPU)
@@ -91,27 +80,12 @@ module AnotherGPU =
         let mutable currentPipelineConfigurationName="Basic"
         let mutable pixelShaderDesc:ShaderDescription=null
 
-        // Resources     
-        let mutable textures = new Dictionary<string, int>()
-        let mutable textureIdx = 0
+        // Resources    
+        let mutable textureHeap1:TextureHeapWrapper = null
+        let mutable textureHeap2:TextureHeapWrapper = null
 
-        let mutable baseColourTextureHeap:HeapWrapper = null
-        let mutable normalTextureHeap:HeapWrapper = null
-        let mutable emissionTextureHeap:HeapWrapper = null
-        let mutable occlusionTextureHeap:HeapWrapper = null
-        let mutable metallicRoughnessTextureHeap:HeapWrapper = null
-        let mutable diffuseTextureHeap:HeapWrapper = null
-        let mutable brdfLutTextureHeap:HeapWrapper = null
-        let mutable specularTextureHeap:HeapWrapper = null
-
-        let mutable baseColourSamplerHeap:SamplerHeapWrapper = null
-        let mutable normalSamplerHeap:SamplerHeapWrapper = null
-        let mutable emissionSamplerHeap:SamplerHeapWrapper = null
-        let mutable occlusionSamplerHeap:SamplerHeapWrapper = null
-        let mutable metallicRoughnessSamplerHeap:SamplerHeapWrapper = null
-        let mutable diffuseSamplerHeap:SamplerHeapWrapper = null
-        let mutable brdfLutSamplerHeap:SamplerHeapWrapper = null
-        let mutable specularSamplerHeap:SamplerHeapWrapper = null
+        let mutable samplerHeap1:SamplerHeapWrapper = null
+        let mutable samplerHeap2:SamplerHeapWrapper = null
 
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
@@ -247,40 +221,32 @@ module AnotherGPU =
         // ---------------------------------------------------------------------------------------------------- 
         // GPU 
         // ---------------------------------------------------------------------------------------------------- 
-        member this.InitGPU(form:UserControl) = 
+        member this.InitGPU(form: UserControl) =
 
             InitDirect3D(form, clientWidth, clientHeight)
 
             BuildDescriptorHeaps()
-                        
-            this.FrameResources             <- new List<FrameResource>(NUMFRAMERESOURCES)
 
-            baseColourTextureHeap           <- new HeapWrapper(device, srvDescriptorHeap)
-            normalTextureHeap               <- new HeapWrapper(device, srvDescriptorHeap)
-            emissionTextureHeap             <- new HeapWrapper(device, srvDescriptorHeap)
-            occlusionTextureHeap            <- new HeapWrapper(device, srvDescriptorHeap)
-            metallicRoughnessTextureHeap    <- new HeapWrapper(device, srvDescriptorHeap)
-            diffuseTextureHeap              <- new HeapWrapper(device, srvDescriptorHeap)
-            brdfLutTextureHeap              <- new HeapWrapper(device, srvDescriptorHeap)
-            specularTextureHeap             <- new HeapWrapper(device, srvDescriptorHeap)
+            this.FrameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
-            baseColourSamplerHeap           <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            metallicRoughnessSamplerHeap    <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            normalSamplerHeap               <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            emissionSamplerHeap             <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            occlusionSamplerHeap            <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            diffuseSamplerHeap              <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            brdfLutSamplerHeap              <- new SamplerHeapWrapper(device, smpDescriptorHeap)
-            specularSamplerHeap             <- new SamplerHeapWrapper(device, smpDescriptorHeap)
+            textureHeap1 <- new TextureHeapWrapper(device, srvDescriptorHeap, 5)
+            textureHeap2 <- new TextureHeapWrapper(device, srvDescriptorHeap, 3)
 
-            directRecorder                  <- new Recorder("Direct recording", device, commandQueue, null)
-            coordinator                     <- new ProcessorCoordinator(commandQueue, fence)
+            samplerHeap1 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 5)
+            samplerHeap2 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 3)
 
-            pipelineProvider                <- new PipelineProvider(device)
+            directRecorder <- new Recorder("Direct recording", device, commandQueue, null)
+            coordinator <- new ProcessorCoordinator(commandQueue, fence)
+
+            pipelineProvider <- new PipelineProvider(device)
 
         member this.Reset() =
-            baseColourSamplerHeap.Reset()
-            metallicRoughnessSamplerHeap.Reset()
+
+            textureHeap1 <- new TextureHeapWrapper(device, srvDescriptorHeap, 5)
+            textureHeap2 <- new TextureHeapWrapper(device, srvDescriptorHeap, 3)
+
+            samplerHeap1 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 5)
+            samplerHeap2 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 3)
 
         // ----------------------------------------------------------------------------------------------------
         // Install
@@ -303,18 +269,14 @@ module AnotherGPU =
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(_texture: MyTexture ) =  
             let bitmap = _texture.Image :?> System.Drawing.Bitmap
-            let texture = CreateTextureFromBitmap(device, bitmap) 
+            let texture = CreateTextureFromBitmap(device, bitmap)  
+            textureHeap1.AddResource(texture, int _texture.Kind, _texture.MatIdx)
+
             let sampler = _texture.Sampler
-            let sDesc   = DynamicSamplerDesc(sampler)             
- 
-            baseColourTextureHeap.AddResource(texture, false)
-            _texture.HeapIdx <- baseColourTextureHeap.Index - 1
+            let sDesc   = DynamicSamplerDesc(sampler) 
+            samplerHeap1.AddResource(sDesc , int _texture.Kind, _texture.MatIdx) 
 
-            baseColourSamplerHeap.AddResource(sDesc) 
-            _texture.SmpIdx <- baseColourSamplerHeap.Index  - 1
-
-            logDebug("Install: " + _texture.ToString()) 
- 
+            logDebug("Install: " + _texture.ToString())  
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 
@@ -448,39 +410,9 @@ module AnotherGPU =
             commandList.DrawIndexedInstanced(_instanceCount, 1, 0, 0, 0) 
 
         member this.DrawTextures (_commandList, _textures) =
-
             for texture in _textures do 
-                match texture.Kind with 
-                | "BaseColor" -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_BCOLR, baseColourTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_BCOLR, baseColourSamplerHeap.GetGpuHandle(texture.SmpIdx)) 
-
-                | "Normal"    -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_BNORM, normalTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_BNORM, normalSamplerHeap.GetGpuHandle(texture.SmpIdx)) 
-
-                | "Emissive"  -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_EMISS, emissionTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_EMISS, emissionSamplerHeap.GetGpuHandle(texture.SmpIdx)) 
-               
-                | "Occlusion" -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_OCCLU, occlusionTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_OCCLU, occlusionSamplerHeap.GetGpuHandle(texture.SmpIdx)) 
-
-                | "MetallicRoughness" -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_METAL, metallicRoughnessTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_METAL, metallicRoughnessSamplerHeap.GetGpuHandle(texture.SmpIdx))  
-                
-                | "Diffuse" -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_DIFFU, diffuseTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_DIFFU, diffuseSamplerHeap.GetGpuHandle(texture.SmpIdx))  
-                                    
-                | "Glossiness" -> 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_SPECU, specularTextureHeap.GetGpuHandle(texture.HeapIdx)) 
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_SPECU, specularSamplerHeap.GetGpuHandle(texture.SmpIdx))  
-
-                | _ ->  raise (new Exception("TextureInfoKind"))
-
+                _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_1, textureHeap1.GetGpuHandle(int texture.Kind, texture.MatIdx)) 
+                _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_1, samplerHeap1.GetGpuHandle(int texture.Kind, texture.SmpIdx))
                 logDebug ("DRAW Texture ! Obj: " + texture.ObjectName+ " ! Mat: " + texture.MatIdx.ToString() + " ! " + texture.ToString() )
 
         member this.EndDraw() = 

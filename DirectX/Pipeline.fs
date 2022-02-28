@@ -129,23 +129,11 @@ module Pipeline =
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : per Frame       1
                 new RootParameter(ShaderVisibility.All,     new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : per Material    2
 
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0))  // t0 : textures        3
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 1))  // t1 : textures        4 
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 2))  // t2 : textures        5
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 3))  // t3 : textures        6
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 4))  // t4 : textures        7
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 8))  // t8 : textures        8
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 9))  // t9 : textures        9
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1,10))  // t10: textures       10
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 0))  // t0 - t04: textures   3
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 3, 8))  // t8 - t10: textures   4
 
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 0))             // s0 : samplers       11
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 1))             // s1 : samplers       12
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 2))             // s2 : samplers       13
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 3))             // s3 : samplers       14
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 4))             // s4 : samplers       15
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 8))             // s8 : samplers       16
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1, 9))             // s9 : samplers       17
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 1,10))             // s10: samplers       18
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 5, 0))             // s0 : samplers        5
+                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 3, 8))             // s1 : samplers        6
             |]
         new RootSignatureDescription(
             RootSignatureFlags.AllowInputAssemblerInputLayout,
