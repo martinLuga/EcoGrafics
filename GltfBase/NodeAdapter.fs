@@ -10,6 +10,7 @@ open System.Collections.Generic
 
 open Base.GeometryUtils
 open Base.ShaderSupport
+open Base.PrintSupport
 
 open log4net
 
@@ -39,6 +40,15 @@ module NodeAdapter =
         let mutable node:Node = null
         let mutable children: NodeAdapter list = []
         let mutable shaderDefines = new List<ShaderDefinePBR>()
+
+        do 
+            node <- gltf.Nodes[idx]
+            let childreni = node.Children 
+            children <- 
+                if childreni <> null then
+                    childreni |> Seq.map(fun i -> new NodeAdapter(gltf, i) )|> Seq.toList
+                else 
+                    []
 
         override this.ToString() =
             if node = null then this.instantiate()
@@ -88,7 +98,9 @@ module NodeAdapter =
 
         member this.printAllIdent(ident:string) = 
             let m = if node.Mesh.HasValue then node.Mesh.Value.ToString() else ""
-            printfn "%s %s %s" ident node.Name m
+            printfn "%s %s %s" ident node.Name m 
+            printfn " %s" (dmatrix(node.Matrix, 4,4))
+
             let nextIdent = ident + ident
             for child in this.GetChildren() do
                 child.printAllIdent(nextIdent)

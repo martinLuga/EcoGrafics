@@ -21,7 +21,8 @@ module GPUAccess =
         let mutable device = device
         let mutable tableLength = _tableLength
         let mutable cbvSrvUavDescriptorSize = 0
-        let mutable hDescriptor = CpuDescriptorHandle() // Heap in CPU
+        let mutable cpuDescriptor = CpuDescriptorHandle() // Heap in CPU
+        let mutable gpuDescriptor = GpuDescriptorHandle() // Heap in GPU
         let mutable offSet = 0
 
         do
@@ -30,29 +31,28 @@ module GPUAccess =
                     DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView
                 )
 
-            hDescriptor <- heap.CPUDescriptorHandleForHeapStart
+            cpuDescriptor <- heap.CPUDescriptorHandleForHeapStart
+            gpuDescriptor <- heap.GPUDescriptorHandleForHeapStart
 
         member this.HDescriptor
-            with get () = hDescriptor
-            and set (value) = hDescriptor <- value
+            with get () = cpuDescriptor
+            and set (value) = cpuDescriptor <- value
 
         member this.ComputeOffset(typIdx: int, objIdx) =
             offSet <-
                 + objIdx * tableLength * cbvSrvUavDescriptorSize
                 + typIdx * cbvSrvUavDescriptorSize
 
-            hDescriptor <- heap.CPUDescriptorHandleForHeapStart + offSet
+            cpuDescriptor <- heap.CPUDescriptorHandleForHeapStart + offSet
+            gpuDescriptor <- heap.GPUDescriptorHandleForHeapStart + offSet
 
         member this.GetGpuHandle(typIdx, objIdx) =
-            offSet <-
-                +objIdx * tableLength * cbvSrvUavDescriptorSize
-                + typIdx * cbvSrvUavDescriptorSize
-
-            heap.GPUDescriptorHandleForHeapStart + offSet
+            this.ComputeOffset(typIdx, objIdx)
+            gpuDescriptor
 
         member this.AddResource(resource: Resource, typIdx: int, objIdx: int) =
             this.ComputeOffset(typIdx, objIdx)
-            device.CreateShaderResourceView(resource, Nullable(textureDescription (resource, false)), hDescriptor)
+            device.CreateShaderResourceView(resource, Nullable(textureDescription (resource, false)), cpuDescriptor)
 
     [<AllowNullLiteralAttribute>]
     type SamplerHeapWrapper(device: Device, heap: DescriptorHeap, _tableLength: int) =
@@ -72,7 +72,7 @@ module GPUAccess =
 
         member this.ComputeOffset(typIdx: int, objIdx) =
             offSet <-
-                +objIdx * tableLength * cbvSrvUavDescriptorSize
+                + objIdx * tableLength * cbvSrvUavDescriptorSize
                 + typIdx * cbvSrvUavDescriptorSize
 
             hDescriptor <- heap.CPUDescriptorHandleForHeapStart + offSet

@@ -24,7 +24,6 @@ open Base.ShaderSupport
 
 open DirectX.GraficUtils
 open DirectX.D3DUtilities 
-open DirectX.Assets
  
 open GPUModel.MyPipelineSupport
 open GPUModel.MYUtils
@@ -39,7 +38,12 @@ open Structures
 // GPU  
 // Abgeleitet von Original MyGPU
 // ----------------------------------------------------------------------------------------------------
+
 module AnotherGPU = 
+
+    let loggerGPU = LogManager.GetLogger("AnotherGPU")
+    let logDebug = Debug(loggerGPU)
+    let logInfo  = Info(loggerGPU)
 
     let FRAMECOUNT              = 2 
     let NUMFRAMERESOURCES       = 5 
@@ -57,10 +61,6 @@ module AnotherGPU =
 
     let ROP_IDX_SMP_1     = 5
     let ROP_IDX_SMP_2     = 6
-
-    let loggerGPU = LogManager.GetLogger("AnotherGPU")
-    let logDebug = Debug(loggerGPU)
-    let logInfo  = Info(loggerGPU)
 
     // ----------------------------------------------------------------------------------------------------
     //  Class  MyGPU 
@@ -229,12 +229,6 @@ module AnotherGPU =
 
             this.FrameResources <- new List<FrameResource>(NUMFRAMERESOURCES)
 
-            textureHeap1 <- new TextureHeapWrapper(device, srvDescriptorHeap, 5)
-            textureHeap2 <- new TextureHeapWrapper(device, srvDescriptorHeap, 3)
-
-            samplerHeap1 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 5)
-            samplerHeap2 <- new SamplerHeapWrapper(device, smpDescriptorHeap, 3)
-
             directRecorder <- new Recorder("Direct recording", device, commandQueue, null)
             coordinator <- new ProcessorCoordinator(commandQueue, fence)
 
@@ -270,11 +264,19 @@ module AnotherGPU =
         member this.InstallTexture(_texture: MyTexture ) =  
             let bitmap = _texture.Image :?> System.Drawing.Bitmap
             let texture = CreateTextureFromBitmap(device, bitmap)  
-            textureHeap1.AddResource(texture, int _texture.Kind, _texture.MatIdx)
 
             let sampler = _texture.Sampler
             let sDesc   = DynamicSamplerDesc(sampler) 
-            samplerHeap1.AddResource(sDesc , int _texture.Kind, _texture.MatIdx) 
+            
+            match  _texture.Kind with
+            |  TextureTypePBR.envDiffuseTexture 
+            |  TextureTypePBR.brdfLutTexture   
+            |  TextureTypePBR.envSpecularTexture  ->
+                textureHeap2.AddResource(texture, int _texture.Kind, _texture.TxtIdx)
+                samplerHeap2.AddResource(sDesc  , int _texture.Kind, _texture.SmpIdx) 
+            | _ ->                
+                textureHeap1.AddResource(texture, int _texture.Kind, _texture.TxtIdx)
+                samplerHeap1.AddResource(sDesc  , int _texture.Kind, _texture.SmpIdx) 
 
             logDebug("Install: " + _texture.ToString())  
 
@@ -411,8 +413,14 @@ module AnotherGPU =
 
         member this.DrawTextures (_commandList, _textures) =
             for texture in _textures do 
-                _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_1, textureHeap1.GetGpuHandle(int texture.Kind, texture.MatIdx)) 
-                _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_SMP_1, samplerHeap1.GetGpuHandle(int texture.Kind, texture.SmpIdx))
+                match  texture.Kind with
+                |  TextureTypePBR.envDiffuseTexture 
+                |  TextureTypePBR.brdfLutTexture   
+                |  TextureTypePBR.envSpecularTexture  ->
+                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_2, textureHeap2.GetGpuHandle(int texture.Kind, texture.TxtIdx)) 
+                | _ ->
+                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_1, textureHeap1.GetGpuHandle(int texture.Kind, texture.TxtIdx)) 
+
                 logDebug ("DRAW Texture ! Obj: " + texture.ObjectName+ " ! Mat: " + texture.MatIdx.ToString() + " ! " + texture.ToString() )
 
         member this.EndDraw() = 

@@ -22,6 +22,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="PrintSupport.fs" />
     <Compile Include="GameTimer.fs" />
     <Compile Include="MathHelper.fs" />
     <Compile Include="ShaderSupport.fs" />

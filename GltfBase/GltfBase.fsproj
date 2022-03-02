@@ -13,7 +13,6 @@
     <Compile Include="MeshManager.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="NodeAdapter.fs" />
-    <Compile Include="PrintSupport.fs" />
     <Compile Include="Structures.fs" />
     <Compile Include="MeshBuild.fs" />
     <Compile Include="AnotherGPU.fs" />

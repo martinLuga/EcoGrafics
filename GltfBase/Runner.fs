@@ -31,10 +31,8 @@ open Katalog
 open NodeAdapter
 open GraficWindow
 open BaseObject
+open Structures
 
-type ObjectConstants    = GltfBase.Structures.ObjectConstantsPBR
-type MaterialConstants  = GltfBase.Structures.MaterialConstantsPBR
-type FrameConstants     = GltfBase.Structures.FrameConstants
 type DirectionalLight   = GltfBase.Structures.DirectionalLight
 
 // ----------------------------------------------------------------------------------------------------
@@ -66,7 +64,7 @@ module Running =
         let mutable gpu: MyGPU = new MyGPU()
 
         let mutable lightDir = Vector4.Zero
-        let mutable frameLight: DirectionalLight = DirectionalLight(Color3.White) 
+        let mutable frameLight: DirectionalLight = DirectionalLight(Color3.White, Vector3.One) 
 
         let mutable defaultInputLayoutDesc: InputLayoutDescription = null
         let mutable defaultRootSignatureDesc: RootSignatureDescription = null
@@ -187,8 +185,8 @@ module Running =
         member this.ConfigureGPU() =
 
             gpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
-            gpu.MatLength <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
-            gpu.ItemLength <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
+            gpu.MatLength <- D3DUtil.CalcConstantBufferByteSize<MaterialConstantsPBR>()
+            gpu.ItemLength <- D3DUtil.CalcConstantBufferByteSize<ObjectConstantsPBR>()
 
             gpu.Initialize(_graficWindow)
             this.RefreshPipline()
@@ -295,7 +293,7 @@ module Running =
             let _world = Matrix(adapter.Node.Matrix)
             let _view = Camera.Instance.View
             let _proj = Camera.Instance.Proj
-            let objConst = new ObjectConstants(_world, _view, _proj)
+            let objConst = new ObjectConstantsPBR(_world, _view, _proj)
             let perObject = GltfBase.Structures.Transpose(objConst)
             gpu.UpdateView(partIdx, ref perObject)
 
@@ -306,8 +304,7 @@ module Running =
         member this.updatePerMaterial(_objectName, _bufferIdx, node: NodeAdapter) =
             let mesh = MeshKatalog.Instance.Mesh(_objectName, node.Node.Mesh.Value)
             let myMaterial = MaterialKatalog.Instance.GetMaterial(_objectName, mesh.MatIdx)
-            let mutable matConst = new MaterialConstants(myMaterial)
-            matConst.camera  <- Camera.Instance.EyePosition
+            let matConst = new MaterialConstantsPBR(myMaterial, Camera.Instance.EyePosition)
             gpu.UpdateMaterial(_bufferIdx, ref matConst)
 
         member this.drawPerNode(_objectName, _bufferIdx: int, _adapter: NodeAdapter) =

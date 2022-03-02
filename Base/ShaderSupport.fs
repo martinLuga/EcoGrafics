@@ -32,16 +32,19 @@ module ShaderSupport =
         | HAS_EMISSIVEMAP = 2
         | HAS_OCCLUSIONMAP = 3
         | HAS_METALROUGHNESSMAP = 4
+        | USE_IBL = 5
+        | USE_TEX_LOD = 6
 
+    // Corelliert mit den Registern
     type TextureTypePBR =
         | baseColourTexture = 0
         | normalTexture = 1
         | emissionTexture = 2
         | occlusionTexture = 3
         | metallicRoughnessTexture = 4
-        | envDiffuseTexture = 5
-        | brdfLutTexture = 6
-        | envSpecularTexture = 7    
+        | envDiffuseTexture = 8
+        | brdfLutTexture = 9
+        | envSpecularTexture = 10    
         
     [<AllowNullLiteral>] 
     type ShaderDefineMacros(_macros:string list) =

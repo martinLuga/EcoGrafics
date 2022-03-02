@@ -125,15 +125,15 @@ module Pipeline =
     let rootSignatureDescNT =
         let slotRootParameters =
             [|
-                new RootParameter(ShaderVisibility.All,     new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : per Object      0
-                new RootParameter(ShaderVisibility.All,     new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : per Frame       1
-                new RootParameter(ShaderVisibility.All,     new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : per Material    2
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(0, 0), RootParameterType.ConstantBufferView)     // b0 : per Object      0
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(1, 0), RootParameterType.ConstantBufferView)     // b1 : per Frame       1
+                new RootParameter(ShaderVisibility.All, new RootDescriptor(2, 0), RootParameterType.ConstantBufferView)     // b2 : per Material    2
 
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 0))  // t0 - t04: textures   3
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.ShaderResourceView, 3, 8))  // t8 - t10: textures   4
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 5, 0))  // t0 - t04: textures   3
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 3, 8))  // t8 - t10: textures   4
 
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 5, 0))             // s0 : samplers        5
-                new RootParameter(ShaderVisibility.Pixel,   new DescriptorRange(DescriptorRangeType.Sampler, 3, 8))             // s1 : samplers        6
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.Sampler, 5, 0))             // s0 : samplers        5
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.Sampler, 3, 8))             // s1 : samplers        6
             |]
         new RootSignatureDescription(
             RootSignatureFlags.AllowInputAssemblerInputLayout,

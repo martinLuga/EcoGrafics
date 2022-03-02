@@ -81,9 +81,9 @@ module Structures =
     [<StructLayout(LayoutKind.Sequential, Pack = 4)>]
     type DirectionalLight =
         struct
-            val mutable Color: Color3 // 16 bytes
+            val mutable Color: Color3  
             val _padding1: float32  
-            val mutable Direction: Vector3 // 12 bytes
+            val mutable Direction: Vector3  
             val _padding2: float32  
 
             new(color, direction) =
@@ -91,8 +91,6 @@ module Structures =
                   _padding1 = 0.0f 
                   Direction = direction
                   _padding2 = 0.0f }
-
-            new(color) = DirectionalLight(color, Vector3.Zero)
         end
 
     [<StructLayout(LayoutKind.Sequential, Pack = 4)>]
@@ -106,22 +104,22 @@ module Structures =
     type MaterialConstantsPBR =
         struct
             val mutable normalScale: float32
-            val mutable emissiveFactor: float32[]
+            val mutable emissiveFactor: Vector3
             val mutable occlusionStrength: float32
-            val mutable metallicRoughnessValues: float32[] 
+            val mutable metallicRoughnessValues: Vector2 
             val mutable padding1: float32
-            val mutable baseColorFactor: float32[]
+            val mutable baseColorFactor: Color4
             val mutable camera: Vector3
             val mutable padding2: float32
-            new(material: MyMaterial) =
+            new(material: MyMaterial, _camera:Vector3) =
                 {
                     normalScale=1.0f
-                    emissiveFactor=material.Material.EmissiveFactor
+                    emissiveFactor=Vector3(material.Material.EmissiveFactor)
                     occlusionStrength=20.0f
-                    metallicRoughnessValues= material.MetallicRoughnessValues
+                    metallicRoughnessValues=Vector2(material.MetallicRoughnessValues) 
                     padding1=0.0f
-                    baseColorFactor=material.BaseColourFactor
-                    camera=Vector3.One
+                    baseColorFactor=Color4(material.BaseColourFactor)
+                    camera=_camera
                     padding2=0.0f
                 }
         end

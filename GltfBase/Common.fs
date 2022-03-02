@@ -47,7 +47,7 @@ module Common =
     type MyTexture(_objName:string, _textureIdx:int, _textName:string, _heapIdx:int, _textureType:TextureTypePBR, _matIdx:int, _smpIdx:int, _sampler:Sampler, _image:System.Drawing.Image, _data:byte[], _info:Image, _cube:bool) =
         let mutable objName = _objName
         let mutable heapIdx = _heapIdx
-        let mutable idx     = _textureIdx
+        let mutable txtIdx  = _textureIdx
         let mutable name    = _textName
         let mutable txtTyp  = _textureType
         let mutable matIdx  = _matIdx
@@ -60,7 +60,7 @@ module Common =
 
         member this.ObjectName = objName
         member this.Name    = name
-        member this.Idx     = idx
+        member this.TxtIdx  = txtIdx
         member this.HeapIdx
             with get() = heapIdx
             and set(value) = heapIdx <- value
@@ -75,7 +75,7 @@ module Common =
         member this.Info    = info
         member this.Cube    = cube
 
-        override this.ToString() = "MyTexture (" + _textureType.ToString() + ") : " + idx.ToString() + "/" + name + " " 
+        override this.ToString() = "MyTexture (" + _textureType.ToString() + ") : " + txtIdx.ToString() + "/" + name + " " 
 
     // ----------------------------------------------------------------------------------------------------
     //  NestedDicts

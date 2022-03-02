@@ -151,11 +151,10 @@ module Katalog =
     type TextureKatalog(_gpu: MyGPU) =
 
         let mutable gpu = _gpu
-                                                        // Obj    MatIdx  Name    Texture
-        let mutable textureCache        = new NestedDict3<string, int,    string, MyTexture>()
+                                        //                Obj       TextIdx  Name      Texture
+        let mutable textureCache        = new NestedDict3<string,   int,     string,   MyTexture>()
         
         let mutable myTexture:MyTexture = null 
-        let mutable heapIdx = 0
 
         static let mutable instance = null 
         static member Instance
