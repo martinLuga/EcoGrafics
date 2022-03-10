@@ -237,7 +237,7 @@ module Running =
 
         member this.Prepare() =
             logInfo ("Prepare")
-            gpu.StartInstall()
+            gpu.StartInstall() 
             let anzObjects = objects.Values |> Seq.toList
             let anzahlNodes = this.AnzahlNodes(anzObjects)
             let anzMaterials = MaterialKatalog.Instance.Count()

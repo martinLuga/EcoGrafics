@@ -375,3 +375,8 @@ module Framework =
         let ms = new MemoryStream(buffer, offset, count)
         ms.Position <- 0L
         ms.ToArray() 
+
+    let ByteArrayToStream (buffer: byte[], offset:int, count:int) =
+        let ms = new MemoryStream(buffer, offset, count)
+        ms.Position <- 0L
+        ms 

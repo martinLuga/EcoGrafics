@@ -7,7 +7,6 @@
 
 open System
 open System.Runtime.InteropServices
-open SharpDX.Direct3D12
 
 open System.IO
 open System.Linq
@@ -17,6 +16,7 @@ open SharpDX.D3DCompiler
 open SharpDX.Direct3D
 open SharpDX.Mathematics.Interop
 open SharpDX.DXGI
+open SharpDX.Direct3D12
 
 // ----------------------------------------------------------------------------
 // Portiert aus DX12GameProgramming
@@ -344,6 +344,7 @@ module D3DUtilities =
                 Flags = ResourceFlags.None,
                 DepthOrArraySize = 1s,
                 SampleDescription = new SampleDescription(1, 0),
+                Layout = TextureLayout.Unknown,
                 Dimension = ResourceDimension.Texture2D 
         ) 
 

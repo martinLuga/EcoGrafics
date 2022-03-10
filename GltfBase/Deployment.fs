@@ -14,6 +14,8 @@ open VGltf.Types
 open Base.Framework
 open Base.ShaderSupport
 
+open DirectX.BitmapSupport
+
 open BaseObject
 open MeshBuild
 open NodeAdapter
@@ -128,35 +130,35 @@ module Deployment =
                         textureIdx <- material.PbrMetallicRoughness.BaseColorTexture.Index
                         texture  <- gltf.Textures[textureIdx]
                         if texture <> null then
-                            this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.baseColourTexture)
+                            this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.baseColourTexture)
                             shaderDefines.Add(ShaderDefinePBR.HAS_BASECOLORMAP) 
                     
                     if material.PbrMetallicRoughness.MetallicRoughnessTexture <> null then
                         textureIdx <- material.PbrMetallicRoughness.MetallicRoughnessTexture.Index
                         texture <- gltf.Textures[textureIdx] 
                         if texture <> null then
-                            this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.metallicRoughnessTexture) 
+                            this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.metallicRoughnessTexture) 
                             shaderDefines.Add(ShaderDefinePBR.HAS_METALROUGHNESSMAP)
                
                 if material.EmissiveTexture <> null then
                     textureIdx <- material.EmissiveTexture.Index
                     texture <- gltf.Textures[textureIdx] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.emissionTexture) 
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.emissionTexture) 
                         shaderDefines.Add(ShaderDefinePBR.HAS_EMISSIVEMAP)       
                 
                 if material.NormalTexture <> null then
                     textureIdx <- material.NormalTexture.Index
                     texture <- gltf.Textures[textureIdx] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.normalTexture) 
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.normalTexture) 
                         shaderDefines.Add(ShaderDefinePBR.HAS_NORMALMAP)
                         
                 if material.OcclusionTexture <> null then
                     textureIdx <- material.OcclusionTexture.Index
                     texture <- gltf.Textures[textureIdx] 
                     if texture <> null then
-                        this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.occlusionTexture)
+                        this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.occlusionTexture)
                         shaderDefines.Add(ShaderDefinePBR.HAS_OCCLUSIONMAP)
                 
                 if material.Extensions <> null then
@@ -169,7 +171,7 @@ module Deployment =
                             textureIdx <- index.GenericContent.ToString()|> int
                             texture <- gltf.Textures[textureIdx]
                             if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, textureIdx, texture, TextureTypePBR.envDiffuseTexture)
+                                this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.envDiffuseTexture)
                                 shaderDefines.Add(ShaderDefinePBR.USE_IBL)
 
                         let specularGlossinessText = glossiness.Item("specularGlossinessTexture")
@@ -178,7 +180,7 @@ module Deployment =
                             textureIdx <- index.GenericContent.ToString()|> int
                             texture <- gltf.Textures[textureIdx]
                             if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, textureIdx, texture,  TextureTypePBR.envSpecularTexture)
+                                this.DeployTexture(_objectName, matIdx, material, texture,  TextureTypePBR.envSpecularTexture)
                                 shaderDefines.Add(ShaderDefinePBR.USE_TEX_LOD)
 
                 let baseColourFactor        = material.PbrMetallicRoughness.BaseColorFactor
@@ -190,13 +192,15 @@ module Deployment =
 
                 MaterialKatalog.Instance.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
 
-            member this.DeployTexture(_objectName, _matIdx:int, _material:Material, _textureIdx, texture, textType) = 
+            member this.DeployTexture(_objectName, _matIdx:int, _material:Material, texture, textType) = 
                 let samplerIdx          = texture.Sampler.Value
                 let textureIdx          = texture.Source.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
                 let imageInfo           = gltf.Images[textureIdx]
                 let imageResource       = store.GetOrLoadImageResourceAt(textureIdx)                
-                let image               = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-
-                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, image, imageBytes, imageInfo, false) 
+                let bitmap              = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
+                let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count) 
+                let testbytes           = ByteArrayToImage(imageBytes, 0, imageBytes.Length)               
+                
+                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageBytes, imageInfo, false)                
+              

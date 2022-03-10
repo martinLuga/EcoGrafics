@@ -13,6 +13,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BitmapSupport.fs" />
     <Compile Include="D3DUtilities.fs" />
     <Compile Include="Assets.fs" />
     <Compile Include="Pipeline.fs" />

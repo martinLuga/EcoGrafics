@@ -50,6 +50,9 @@ module BaseObject =
         new (objectName, gltf, position, rotation, scale) = new Objekt(objectName, gltf, position, rotation, scale, Vector3.Zero, 0.0f, false ) 
         new (objectName, gltf, position, rotation) = new Objekt(objectName, gltf, position, rotation, Vector3.One, Vector3.Zero, 0.0f,false )
         new (objectName, gltf, position) = new Objekt(objectName, gltf, position, Vector4.Zero, Vector3.One, Vector3.Zero, 0.0f,false )
+
+        override this.ToString() =
+            "BaseObject: " + this.Name
        
         member this.Name
             with get() = name

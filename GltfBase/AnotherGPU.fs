@@ -21,9 +21,11 @@ open SharpDX.DXGI
 
 open Base.LoggingSupport
 open Base.ShaderSupport 
+open Base.Framework
 
 open DirectX.GraficUtils
 open DirectX.D3DUtilities 
+open DirectX.BitmapSupport 
  
 open GPUModel.MyPipelineSupport
 open GPUModel.MYUtils
@@ -73,7 +75,7 @@ module AnotherGPU =
         let mutable scissorRectangels:RawRectangle[] = Array.create 1 (new RawRectangle())
         let mutable clientWidth  = 1100 
         let mutable clientHeight = 850       
-        let mutable clearColor:RawColor4 = new RawColor4(0.0f, 0.0f, 0.0f, 1.0f) 
+        let mutable clearColor:RawColor4 = new RawColor4(1.0f, 1.0f, 1.0f, 1.0f) 
 
         // Shaders
         let mutable pipelineConfigurations=new Dictionary<string, ShaderConfiguration>() 
@@ -235,7 +237,7 @@ module AnotherGPU =
             pipelineProvider <- new PipelineProvider(device)
 
         member this.Reset() =
-
+            
             textureHeap1 <- new TextureHeapWrapper(device, srvDescriptorHeap, 5)
             textureHeap2 <- new TextureHeapWrapper(device, srvDescriptorHeap, 3)
 
@@ -261,9 +263,10 @@ module AnotherGPU =
         // ----------------------------------------------------------------------------------------------------
         // Texture
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallTexture(_texture: MyTexture ) =  
-            let bitmap = _texture.Image :?> System.Drawing.Bitmap
-            let texture = CreateTextureFromBitmap(device, bitmap)  
+        member this.InstallTexture(_texture: MyTexture ) =
+
+            let mutable bitmapManager = BitmapManager.InitFromArray(_texture.Info.MimeType, _texture.Data) 
+            let texture = bitmapManager.CreateTextureFromBitmap(device)  
 
             let sampler = _texture.Sampler
             let sDesc   = DynamicSamplerDesc(sampler) 
@@ -272,8 +275,8 @@ module AnotherGPU =
             |  TextureTypePBR.envDiffuseTexture 
             |  TextureTypePBR.brdfLutTexture   
             |  TextureTypePBR.envSpecularTexture  ->
-                textureHeap2.AddResource(texture, int _texture.Kind, _texture.TxtIdx)
-                samplerHeap2.AddResource(sDesc  , int _texture.Kind, _texture.SmpIdx) 
+                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx)
+                samplerHeap2.AddResource(sDesc  , (int _texture.Kind) - 8, _texture.SmpIdx) 
             | _ ->                
                 textureHeap1.AddResource(texture, int _texture.Kind, _texture.TxtIdx)
                 samplerHeap1.AddResource(sDesc  , int _texture.Kind, _texture.SmpIdx) 
@@ -417,7 +420,7 @@ module AnotherGPU =
                 |  TextureTypePBR.envDiffuseTexture 
                 |  TextureTypePBR.brdfLutTexture   
                 |  TextureTypePBR.envSpecularTexture  ->
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_2, textureHeap2.GetGpuHandle(int texture.Kind, texture.TxtIdx)) 
+                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_2, textureHeap2.GetGpuHandle((int texture.Kind) - 8, texture.TxtIdx)) 
                 | _ ->
                     _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_1, textureHeap1.GetGpuHandle(int texture.Kind, texture.TxtIdx)) 
 

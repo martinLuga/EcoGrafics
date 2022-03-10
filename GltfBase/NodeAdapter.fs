@@ -92,8 +92,13 @@ module NodeAdapter =
             for child in this.GetChildren() do
                 child.instantiateAll()
 
+        member this.PrintShaderDefines =
+            shaderDefines
+                |> Seq.map (fun defn -> string defn)
+                |> Seq.reduce (fun strg1 strg2 -> strg1 + ":" + strg2)
+
         member this.printAll() = 
-            printfn " All Nodes " 
+            printfn " All Nodes : %s" this.Node.Name
             this.printAllIdent("---")
 
         member this.printAllIdent(ident:string) = 
