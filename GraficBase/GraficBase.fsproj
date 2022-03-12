@@ -24,7 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Base\Base.fsproj" />
-    <ProjectReference Include="..\Builder\Builder.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
   </ItemGroup>

@@ -122,7 +122,6 @@ module BitmapSupport =
                 stride,
                 System.Drawing.Imaging.PixelFormat.Format32bppPArgb,
                 intptr)         
-            bitmap
 
         member this.CreateTextureFromBitmap(device:Device) =
             this.Copy()

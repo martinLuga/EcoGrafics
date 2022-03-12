@@ -13,13 +13,12 @@ open Base.ObjectBase
 open Geometry.GeometricModel
 open log4net
 open SharpDX
-open System.Collections.Generic
-open GraficBase.GraficController
+open System.Collections.Generic 
 
 // ----------------------------------------------------------------------------------------------------
 // Ein Scenario stellt eine graphische Ausgangssituation her
 // Die anzeigbaren Objekte werden erstellt und der jeweilige GraficController damit versorgt
-// Realisiert ist ein Scenario aals einr Function
+// Realisiert ist ein Scenario als eine Function
 // Hier sind Functions zum Erstellen, Finden und Ausführen vorhanden
 // ----------------------------------------------------------------------------------------------------
 module ScenarioSupport =

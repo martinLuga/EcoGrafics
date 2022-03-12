@@ -271,16 +271,19 @@ module AnotherGPU =
             let sampler = _texture.Sampler
             let sDesc   = DynamicSamplerDesc(sampler) 
             
-            match  _texture.Kind with
-            |  TextureTypePBR.envDiffuseTexture 
-            |  TextureTypePBR.brdfLutTexture   
-            |  TextureTypePBR.envSpecularTexture  ->
-                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx)
-                samplerHeap2.AddResource(sDesc  , (int _texture.Kind) - 8, _texture.SmpIdx) 
-            | _ ->                
-                textureHeap1.AddResource(texture, int _texture.Kind, _texture.TxtIdx)
-                samplerHeap1.AddResource(sDesc  , int _texture.Kind, _texture.SmpIdx) 
-
+            match _texture.Kind with
+            | TextureTypePBR.envDiffuseTexture ->
+                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, true)
+                samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
+            | TextureTypePBR.brdfLutTexture ->
+                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, false)
+                samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
+            | TextureTypePBR.envSpecularTexture ->
+                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, true)
+                samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
+            | _ ->
+                textureHeap1.AddResource(texture, int _texture.Kind, _texture.TxtIdx, false)
+                samplerHeap1.AddResource(sDesc, int _texture.Kind, _texture.SmpIdx) 
             logDebug("Install: " + _texture.ToString())  
 
         // ---------------------------------------------------------------------------------------------------- 
@@ -420,7 +423,8 @@ module AnotherGPU =
                 |  TextureTypePBR.envDiffuseTexture 
                 |  TextureTypePBR.brdfLutTexture   
                 |  TextureTypePBR.envSpecularTexture  ->
-                    _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_2, textureHeap2.GetGpuHandle((int texture.Kind) - 8, texture.TxtIdx)) 
+                    ()
+                    //_commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_2, textureHeap2.GetGpuHandle((int texture.Kind) - 8, texture.TxtIdx)) 
                 | _ ->
                     _commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEX_1, textureHeap1.GetGpuHandle(int texture.Kind, texture.TxtIdx)) 
 

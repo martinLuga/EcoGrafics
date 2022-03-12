@@ -13,6 +13,7 @@
     <Compile Include="GlbFormat.fs" />
     <Compile Include="WavefrontFormat.fs" />
     <Compile Include="SimpleFormat.fs" />
+    <Compile Include="GlTf.fs" />
     <Compile Include="Glb.fs" />
     <Compile Include="Wavefront.fs" />
     <Compile Include="Builder.fs" />
@@ -26,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
+    <ProjectReference Include="..\GltfBase\GltfBase.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

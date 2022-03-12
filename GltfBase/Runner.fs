@@ -63,7 +63,6 @@ module Running =
         let mutable status = RunnerStatus.New
         let mutable gpu: MyGPU = new MyGPU()
 
-        let mutable lightDir = Vector4.Zero
         let mutable frameLight: DirectionalLight = DirectionalLight(Color3.White, Vector3.One) 
 
         let mutable defaultInputLayoutDesc: InputLayoutDescription = null

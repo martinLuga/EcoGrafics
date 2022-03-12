@@ -111,11 +111,11 @@ module Structures =
             val mutable baseColorFactor: Color4
             val mutable camera: Vector3
             val mutable padding2: float32
-            new(material: MyMaterial, _camera:Vector3) =
+            new(material:MyMaterial, _camera:Vector3) =
                 {
                     normalScale=1.0f
                     emissiveFactor=Vector3(material.Material.EmissiveFactor)
-                    occlusionStrength=20.0f
+                    occlusionStrength=1.0f
                     metallicRoughnessValues=Vector2(material.MetallicRoughnessValues) 
                     padding1=0.0f
                     baseColorFactor=Color4(material.BaseColourFactor)
@@ -131,7 +131,7 @@ module Structures =
                 AddressV = TextureAddressMode.Wrap,
                 AddressW = TextureAddressMode.Wrap,
                 ComparisonFunction = Comparison.Never,
-                Filter = Filter.MinMagMipLinear,
+                Filter = Filter.MaximumAnisotropic,
                 MaximumLod = Single.MaxValue,
                 MinimumLod = 0.0f,
                 MipLodBias = 0.0f

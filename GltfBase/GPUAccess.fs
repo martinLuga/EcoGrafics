@@ -49,9 +49,9 @@ module GPUAccess =
             this.ComputeOffset(typIdx, objIdx)
             gpuDescriptor
 
-        member this.AddResource(resource: Resource, typIdx: int, objIdx: int) =
+        member this.AddResource(resource: Resource, typIdx: int, objIdx: int, isCube) =
             this.ComputeOffset(typIdx, objIdx)
-            device.CreateShaderResourceView(resource, Nullable(textureDescription (resource, false)), cpuDescriptor)
+            device.CreateShaderResourceView(resource, Nullable(textureDescription (resource, isCube)), cpuDescriptor)
 
     [<AllowNullLiteralAttribute>]
     type SamplerHeapWrapper(device: Device, heap: DescriptorHeap, _tableLength: int) =

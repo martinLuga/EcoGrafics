@@ -76,7 +76,7 @@ module Assets =
     // Cube
     let textureDescCube(resource:Resource) =
         srvDesc.Format      <- resource.Description.Format
-        srvDesc.Dimension   <-  ShaderResourceViewDimension.TextureCube 
+        srvDesc.Dimension   <- ShaderResourceViewDimension.TextureCube 
         srvDesc.TextureCube <-  
             new ShaderResourceViewDescription.TextureCubeResource(            
                 MostDetailedMip = 0,
