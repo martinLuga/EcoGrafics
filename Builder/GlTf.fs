@@ -80,13 +80,13 @@ module GlTf =
             store
 
         member this.AddPart(_name, _vertices, _indices, _material, _texture, _visibility, _shaders) =
-            let mutable myTexture = new Base.ModelSupport.Texture(_texture.Name, _texture.Data) 
+            let mutable texture = new Base.ModelSupport.Texture(_texture.Name, _texture.Info.MimeType, _texture.Data) 
             part <- 
                 new Part(
                     _name,
                     new TriangularShape(_name, Vector3.Zero, _vertices, _indices, scale, Quality.High),
                     _material,
-                    myTexture,
+                    texture,
                     _visibility,
                     _shaders
                 )

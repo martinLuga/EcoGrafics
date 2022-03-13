@@ -13,13 +13,12 @@ open SharpDX
 open SharpDX.IO
 open SharpDX.WIC
 open SharpDX.DXGI
-open SharpDX
-open SharpDX.D3DCompiler
 open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
-open SharpDX.DXGI
 
 open Base.Framework
+
+open DX12GameProgramming
 
 // ----------------------------------------------------------------------------------------------------
 // Read and install bitmap-files of multiple formats
@@ -37,9 +36,10 @@ module BitmapSupport =
         let mutable decoder: BitmapDecoder = null
 
         match extension with
+        | ".jpg"
         | "image/jpg" -> decoder <- new JpegBitmapDecoder(factory)
         | "image/png" -> decoder <- new PngBitmapDecoder(factory)
-        | _ -> raise (Exception("unknown format"))
+        | _ -> ()
 
         decoder
 
@@ -76,7 +76,7 @@ module BitmapSupport =
 
         member this.InitFromArray(extension: string, array: byte[]) =
             let dataStream = ByteArrayToStream(array, 0, array.Length)
-            this.InitFromStream(extension , dataStream )
+            this.InitFromStream(extension , dataStream)
 
         member this.InitFromStream(extension: string, dataStream: Stream) =
             decoder <- getDecoder (extension)
@@ -119,7 +119,10 @@ module BitmapSupport =
                 height,
                 stride,
                 System.Drawing.Imaging.PixelFormat.Format32bppPArgb,
-                intptr)         
+                intptr) 
+                
+        member this.CreateTextureFromDDS(textureFilename) =        
+            TextureUtilities.CreateTextureFromDDS(device, textureFilename)
 
         member this.CreateTextureFromBitmap() =
 

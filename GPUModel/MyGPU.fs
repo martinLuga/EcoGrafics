@@ -24,6 +24,7 @@ open Base.ShaderSupport
 open Base.VertexDefs
 
 open DirectX.GraficUtils
+open DirectX.BitmapSupport
 
 open DX12GameProgramming
 
@@ -101,6 +102,7 @@ module MyGPU =
         let mutable textureIdx = 0
         let mutable textureHeapWrapper:HeapWrapper = null
         let mutable textureHeapWrapperCube:HeapWrapper = null
+        let mutable bitmapManager = BitmapManager(device)  
 
         // Pipeline
         let mutable pipelineProvider:PipelineProvider=null
@@ -246,8 +248,6 @@ module MyGPU =
             scissorRectangels.[0] <- ToRawRectangle(sr)            
             this.Size(form.ClientSize.Width, form.ClientSize.Height)
 
-
-
         // 
         // GPU 
         // 
@@ -264,6 +264,7 @@ module MyGPU =
             // DescriptorHeaps             
             textureHeapWrapper <- new HeapWrapper(device, srvDescriptorHeap)
             textureHeapWrapperCube <- new HeapWrapper(device, srvDescriptorHeap)
+            bitmapManager <- BitmapManager(device)  
 
              // Recorder: Command processing     
             directRecorder <- new Recorder("Direct recording", device, commandQueue, null)
@@ -334,36 +335,31 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         // Texture
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool) =
-            if textureName <> null then
-                if isCube then
-                    this.InstallCube(textureName , textureFilename)
-                else 
-                    this.InstallTexture(textureName , textureFilename)
+        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) =            
+            if data.Length > 0 then
+                this.HasCube <- false
+                bitmapManager.InitFromArray(mimeType, data) 
+            else 
+                this.HasCube <- isCube                
+                if not (textureFilename.EndsWith("dds")) then
+                    bitmapManager.InitFromFile(textureFilename)
+            
+            let textureResource = 
+                if textureFilename.EndsWith("dds") then
+                    bitmapManager.CreateTextureFromDDS(textureFilename)
+                else
+                    bitmapManager.CreateTextureFromBitmap() 
 
-        member this.InstallCube(textureName:string, textureFilename:string) =
-            this.HasCube <- true
-            this.AddTexture(textureName, textureFilename, textureHeapWrapperCube, true)
+            this.AddTexture(textureName, textureResource, this.HasCube)
 
-        member this.InstallTexture(textureName:string, textureFilename:string) =
-            this.HasCube <- false
-            this.AddTexture(textureName, textureFilename, textureHeapWrapper, false)
-
-        member this.AddTexture(textureName:string, textureFilename:string, textureHeap, isCube:bool) =
+        member this.AddTexture(textureName:string,  resource:Resource, isCube:bool) =
             if not (textures.ContainsKey(textureName)) && not (textureName = "") then
-                let  resource = this.GetTextureResource(textureFilename)
-                textureHeap.AddResource(resource, isCube)
+                if this.HasCube then
+                    textureHeapWrapperCube.AddResource(resource, isCube)
+                else 
+                    textureHeapWrapper.AddResource(resource, isCube)
                 textures.Add(textureName, textureIdx)
                 textureIdx <- textureIdx + 1
-
-        member this.GetTextureResource(textureFilename:string) =
-            if textureFilename.EndsWith("jpg") then
-                TextureUtilities.CreateTextureFromBitmap(device, textureFilename)
-            else
-                if textureFilename.EndsWith("dds") then 
-                    TextureUtilities.CreateTextureFromDDS(device, textureFilename)
-                else 
-                    raise (new System.Exception("Texture file-type?"))
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 

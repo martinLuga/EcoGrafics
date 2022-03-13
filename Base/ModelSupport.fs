@@ -96,24 +96,30 @@ module ModelSupport =
         TRI | QUAD | BEZIER | NONE
 
     [<AllowNullLiteral>]
-    type Texture(name: string, fileName:string, pathName:string, idx:int, _data:byte[], isCube:bool) =
+    type Texture(name: string, fileName:string, pathName:string, idx:int, _data:byte[], _mimeType, isCube:bool) =
         let mutable name=name
+        let mutable mimeType=_mimeType
         let mutable idx=idx
         let mutable fileName=fileName
         let mutable path = pathName 
         let mutable isCube = isCube 
         let mutable data:byte[] = _data
 
-        new(name, fileName, pathName, isCube, data) = Texture(name, fileName, pathName, 0, data, isCube)
-        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, 0, [||], isCube) 
-        new(name, fileName, pathName) = Texture(name, fileName, pathName, false) 
-        new(name, data) = Texture(name, "", "", 0, data, false)  
-        new(name, idx) = Texture(name, "", "", idx, [||], false)  
-        new(name) = Texture(name, "", "", 0, [||], false)  
-        new() = Texture("", "", "", 0, [||], false)  
+        
+        new(name, fileName, pathName, isCube, data, mimeType) = Texture(name, fileName, pathName, 0, data, mimeType, isCube)
+        new(name, fileName, pathName, isCube, data) = Texture(name, fileName, pathName, 0, data, "", isCube)
+        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, 0, [||], "", isCube) 
+        new(name, fileName, pathName) = Texture(name, fileName, pathName, false)
+        new(name, mimeType, data) = Texture(name, "", "", 0, data, mimeType, false)   
+        new(name, data) = Texture(name, "", "", 0, data, "", false)  
+        new(name, idx) = Texture(name, "", "", idx, [||], "", false)  
+        new(name) = Texture(name, 0)  
+        new() = Texture("", "", "", 0, [||], "", false)  
 
         member this.Name = name
+        
         member this.Idx = idx
+        member this.MimeType = mimeType
         member this.FileName = fileName
         member this.Path =
             if path <> "" then path

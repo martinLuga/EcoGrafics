@@ -21,10 +21,8 @@ open SharpDX.DXGI
 
 open Base.LoggingSupport
 open Base.ShaderSupport 
-open Base.Framework
 
 open DirectX.GraficUtils
-open DirectX.D3DUtilities 
 open DirectX.BitmapSupport 
  
 open GPUModel.MyPipelineSupport

@@ -397,8 +397,8 @@ module GraficController =
                 logDebug("Install Material " + part.Material.Name)     
             
             // Texture Data
-            if part.Texture <> null then
-                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path, part.Texture.IsCube) 
+            if part.Texture <> null && (not part.Texture.isEmpty)  then
+                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path, part.Texture.IsCube, part.Texture.Data, part.Texture.MimeType)  
 
         // ---------------------------------------------------------------------------------------------------- 
         // Alle Meshes erneut schreiben
