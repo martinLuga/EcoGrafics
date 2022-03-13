@@ -265,8 +265,9 @@ module AnotherGPU =
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(_texture: MyTexture ) =
 
-            let mutable bitmapManager = BitmapManager.InitFromArray(_texture.Info.MimeType, _texture.Data) 
-            let texture = bitmapManager.CreateTextureFromBitmap(device)  
+            let mutable bitmapManager = BitmapManager(device)            
+            bitmapManager.InitFromArray(_texture.Info.MimeType, _texture.Data) 
+            let texture = bitmapManager.CreateTextureFromBitmap()  
 
             let sampler = _texture.Sampler
             let sDesc   = DynamicSamplerDesc(sampler) 

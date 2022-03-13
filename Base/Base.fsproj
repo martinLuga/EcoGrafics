@@ -34,7 +34,6 @@
     <Compile Include="VertexDefs.fs" />
     <Compile Include="MathSupport.fs" />
     <Compile Include="MeshObject.fs" />
-    <None Include="ModelSupport.md" />
     <Compile Include="QuaderSupport.fs" />
     <Compile Include="ModelSupport.fs" />
     <Compile Include="MaterialsAndTextures.fs" />

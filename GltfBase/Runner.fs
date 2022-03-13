@@ -174,9 +174,9 @@ module Running =
 
             this.ConfigureGPU()
 
-            MaterialKatalog.CreateInstance(gpu)
-            TextureKatalog.CreateInstance(gpu)
-            NodeKatalog.CreateInstance(gpu)
+            MaterialKatalog.CreateInstance()
+            TextureKatalog.CreateInstance()
+            NodeKatalog.CreateInstance()
 
         // ----------------------------------------------------------------------------------------------------
         // GPU
@@ -242,7 +242,7 @@ module Running =
             let anzMaterials = MaterialKatalog.Instance.Count()
             gpu.PrepareInstall(anzahlNodes, anzMaterials)
             MeshKatalog.Instance.ToGPU(gpu.DirectRecorder.CommandList)
-            TextureKatalog.Instance.ToGPU()
+            TextureKatalog.Instance.ToGPU(gpu)
             gpu.ExecuteInstall()
 
         member this.Reset() =

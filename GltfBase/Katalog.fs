@@ -9,6 +9,7 @@
 open System 
 
 open Base.ShaderSupport
+open Base.MeshObjects 
 
 open VGltf.Types
 
@@ -16,8 +17,8 @@ open Common
 open NodeAdapter
 open MeshManager
 open AnotherGPU
-open Structures
 open GPUInfrastructure
+open Structures
 
 type Resource = VGltf.Resource
 
@@ -36,7 +37,7 @@ module Katalog =
     // ----------------------------------------------------------------------------------------------------
 
     [<AllowNullLiteral>]
-    type NodeKatalog(gpu: MyGPU) =
+    type NodeKatalog() =
 
         let mutable nodeRegister = new NestedDict2<string, int, NodeAdapter>()
 
@@ -45,8 +46,8 @@ module Katalog =
             with get() = instance
             and set(value) = instance <- value
 
-        static member CreateInstance(gpu: MyGPU) =
-            NodeKatalog.Instance <- new NodeKatalog(gpu)
+        static member CreateInstance() =
+            NodeKatalog.Instance <- new NodeKatalog()
 
         // Register one node of an object
         member this.Add(_objectName, _adapter:NodeAdapter) =            
@@ -58,20 +59,23 @@ module Katalog =
         member this.Reset() = nodeRegister <-  NestedDict2<string, int, NodeAdapter>()
 
     [<AllowNullLiteral>]
-    type MeshKatalog(device) =
+    type MeshKatalog<'VERTEX when 'VERTEX: struct and 'VERTEX: equality and 'VERTEX:>ValueType and 'VERTEX:(new:unit->'VERTEX)> (device) =
     
         // Mesh-Information to objectName/mesh
         let meshRegister = new NestedDict2<string, int, RegistryEntry>()
 
+        
+        let meshStore = new NestedDict2<string, int, MeshData<'VERTEX>>()
+
         // Find Vertexdata to objectName/mesh
-        let mutable meshContainer = new MeshContainer<Vertex>(device)
+        let mutable meshContainer = new MeshContainer<'VERTEX>(device)
 
         // Singleton
         static let mutable instance = null 
         static member Instance
             with get() = 
                 if instance = null then
-                    instance <- new MeshKatalog(DEVICE_RTX3090)
+                    instance <- new MeshKatalog<'VERTEX>(DEVICE_RTX3090)
                 instance
             and set(value) = instance <- value
 
@@ -80,9 +84,13 @@ module Katalog =
                 (meshContainer:>IDisposable).Dispose()  
 
         // Register one mesh of an object at (_object, _meshIdx)
-        member this.AddMesh(_objectName, _meshName, _meshIdx, _vertices, _indices, _topology, _matIdx:int) =
+        member this.AddMesh<'VERTEX>(_objectName, _meshName, _meshIdx, _vertices, _indices, _topology, _matIdx:int) =
+            meshStore.Add(_objectName, _meshIdx, new MeshData<'VERTEX>(_vertices, _indices))
             meshContainer.Append(_objectName, _meshIdx, _vertices, _indices, _topology)
             meshRegister.Add(_objectName, _meshIdx, new RegistryEntry(_meshIdx, _meshName, _matIdx))
+        
+        member this.GetMesh(_objectName, _meshIdx) =
+            meshStore.Item(_objectName, _meshIdx)
 
         member this.GetVertexBuffer(objectName, mesh) =
             meshContainer.getVertexBuffer (objectName, mesh)
@@ -96,8 +104,8 @@ module Katalog =
         member this.Material(objectName, mesh) =
             meshRegister.Item(objectName , mesh ).MatIdx
 
-        member this.Reset() =
-            meshContainer <- new MeshContainer<Vertex>(device)
+        member this.Reset<'VERTEX>() =
+            meshContainer <- new MeshContainer<'VERTEX>(device)
             meshRegister.Clear()
 
         member this.Mesh(_objectName, _mesh) =
@@ -110,9 +118,7 @@ module Katalog =
     // Register material 
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type MaterialKatalog(_gpu:MyGPU) =
-
-        let mutable gpu = _gpu
+    type MaterialKatalog( ) = 
 
         let mutable objectMaterials = new NestedDict2<string, int, MyMaterial>()
         
@@ -121,8 +127,8 @@ module Katalog =
             with get() = instance
             and set(value) = instance <- value
 
-        static member CreateInstance(gpu: MyGPU) =
-            MaterialKatalog.Instance <- new MaterialKatalog(gpu)
+        static member CreateInstance() =
+            MaterialKatalog.Instance <- new MaterialKatalog()
 
         member this.Add
             (
@@ -148,10 +154,8 @@ module Katalog =
     // Register all textures of an object
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TextureKatalog(_gpu: MyGPU) =
-
-        let mutable gpu = _gpu
-                                        //                Obj       TextIdx  Name      Texture
+    type TextureKatalog() =
+                                        //                Obj       TextIdx   Texture
         let mutable textureCache        = new NestedDict3<string,   int,     string,   MyTexture>()
         
         let mutable myTexture:MyTexture = null 
@@ -161,8 +165,8 @@ module Katalog =
             with get() = instance
             and set(value) = instance <- value
 
-        static member CreateInstance(gpu: MyGPU) =
-            TextureKatalog.Instance <- new TextureKatalog(gpu)
+        static member CreateInstance() =
+            TextureKatalog.Instance <- new TextureKatalog()
 
         member this.GetTextures(objectName, _material) =
             textureCache.Items(objectName, _material)
@@ -188,8 +192,8 @@ module Katalog =
         member this.Get(_objectName, _matIdx, _textName) =
             textureCache.Item(_objectName, _matIdx, _textName)
 
-        member this.ToGPU() =
-            for texture in textureCache.Items() do
+        member this.ToGPU(gpu:MyGPU) =
+            for texture in textureCache.Items() do 
                 gpu.InstallTexture(texture)
 
         member this.Reset() =

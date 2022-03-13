@@ -30,7 +30,6 @@ module Glb =
         
         let mutable store:ResourcesStore = null
         let mutable gltf:Gltf = null
-        let mutable loader:ResourceLoaderFromEmbedOnly = null
 
         let mutable size = Vector3.One
 
@@ -128,7 +127,7 @@ module Glb =
             for  i in 0.. gltf.Images.Count-1 do
                 let img = gltf.Images[i];
                 let imgResN = store.GetOrLoadImageResourceAt(i) 
-                let myTexture = new ModelSupport.Texture(img.Name, img.Uri, "", i, false)
+                let myTexture = new ModelSupport.Texture(img.Name, img.Uri, "", false)
                 textures.Add(myTexture.Name, myTexture)
 
     // ----------------------------------------------------------------------------------------------------
@@ -141,8 +140,6 @@ module Glb =
         let mutable name = name 
         let mutable parts : List<Part> = new List<Part>()
         let mutable part : Part = null
-        let mutable materials: Dictionary<string, ModelSupport.Material> = new Dictionary<string, ModelSupport.Material>()
-        let mutable textures : Dictionary<string, ModelSupport.Texture>  = new Dictionary<string, ModelSupport.Texture>()
         let mutable generalSizeFactor = Vector3.One
         let mutable augmentation = Augmentation.None
         let mutable isTransparent = false

@@ -96,18 +96,21 @@ module ModelSupport =
         TRI | QUAD | BEZIER | NONE
 
     [<AllowNullLiteral>]
-    type Texture(name: string, fileName:string, pathName:string, idx:int, isCube:bool) =
+    type Texture(name: string, fileName:string, pathName:string, idx:int, _data:byte[], isCube:bool) =
         let mutable name=name
         let mutable idx=idx
         let mutable fileName=fileName
         let mutable path = pathName 
         let mutable isCube = isCube 
+        let mutable data:byte[] = _data
 
-        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, 0, isCube) 
-        new(name, fileName, pathName) = Texture(name, fileName, pathName, 0, false) 
-        new(name, idx) = Texture(name, "", "", idx, false)  
-        new(name) = Texture(name, "", "", 0, false)  
-        new() = Texture("", "", "", 0, false)  
+        new(name, fileName, pathName, isCube, data) = Texture(name, fileName, pathName, 0, data, isCube)
+        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, 0, [||], isCube) 
+        new(name, fileName, pathName) = Texture(name, fileName, pathName, false) 
+        new(name, data) = Texture(name, "", "", 0, data, false)  
+        new(name, idx) = Texture(name, "", "", idx, [||], false)  
+        new(name) = Texture(name, "", "", 0, [||], false)  
+        new() = Texture("", "", "", 0, [||], false)  
 
         member this.Name = name
         member this.Idx = idx
@@ -117,6 +120,10 @@ module ModelSupport =
             else "textures/" + this.FileName
 
         member this.IsCube = isCube = true 
+
+        member this.Data
+            with get() = data
+            and set(value) = data <- value 
 
         member this.isEmpty = this.Name = "" 
 

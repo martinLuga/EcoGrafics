@@ -14,6 +14,7 @@
     <Compile Include="Common.fs" />
     <Compile Include="NodeAdapter.fs" />
     <Compile Include="Structures.fs" />
+    <Compile Include="MeshBuild2.fs" />
     <Compile Include="MeshBuild.fs" />
     <Compile Include="AnotherGPU.fs" />
     <Compile Include="Katalog.fs" />
@@ -21,6 +22,7 @@
     <Compile Include="BaseObject.fs" />
     <Compile Include="Reader.fs" />
     <Compile Include="Runner.fs" />
+    <Compile Include="Deployment2.fs" />
     <Compile Include="Deployment.fs" />
     <Compile Include="Builder.fs" />
   </ItemGroup>

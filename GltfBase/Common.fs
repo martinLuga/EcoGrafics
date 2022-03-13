@@ -154,6 +154,11 @@ module Common =
 
         member this.Items(o1: 'TYP1) = key1Dict.Item(o1).Values
 
+        member this.Items() = 
+            key1Dict.Values
+            |> Seq.collect(fun elem -> elem.Values)
+
+
         member this.ContainsKey(o1: 'TYP1, o2: 'TYP2) = this.Item(o1, o2) <> null
 
         member this.Clear() = key1Dict.Clear()

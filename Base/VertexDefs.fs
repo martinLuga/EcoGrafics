@@ -47,9 +47,10 @@ module VertexDefs =
             val mutable Color:    Color4        // 16 bytes 
             val mutable Texture:  Vector2       // 12 bytes
             val mutable Skinning: SkinningVertex
-            new (position, normal, color, texture) = {Position=position; Normal=normal; Color=color; Texture=texture; Skinning=new SkinningVertex(0u, 0.0f) }
-            new (position, normal, color) = {Position=position; Normal=normal; Color=color; Texture=Vector2.Zero; Skinning=SkinningVertex(0u, 0.0f) }
-            new (position, color) = Vertex(position, Vector3.Normalize(position), color)
+            new (position, normal, color, texture) = {Position=position; Normal=normal; Color=color; Texture=texture; Skinning=new SkinningVertex(0u, 0.0f) }            
+            new (position, normal, texture) = Vertex (position, normal, Color4.White, texture)
+            new (position, normal, color) = Vertex (position, normal, color, Vector2.Zero)
+            new (position, color:Color4) = Vertex(position, Vector3.Normalize(position), color)
             new (position) = Vertex(position, Color4.White) 
             new (
                 px:float32, py:float32, pz:float32,

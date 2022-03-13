@@ -365,7 +365,6 @@ module MyGPU =
                 else 
                     raise (new System.Exception("Texture file-type?"))
 
-
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 
         // Alle benötigten Shader dieser Konfiguration  

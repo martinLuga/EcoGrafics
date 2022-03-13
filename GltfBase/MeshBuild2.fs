@@ -15,14 +15,14 @@ open VGltf
 open VGltf.Types
 
 open Base.Framework
+open Base.VertexDefs
 
-open Structures
 open Common
 
 // ----------------------------------------------------------------------------------------------------
 // Mesh Build
 // ---------------------------------------------------------------------------------------------------- 
-module MeshBuild = 
+module MeshBuild2 = 
 
     // ----------------------------------------------------------------------------------------------------
     // Erzeugen Vertex und Indices
@@ -54,7 +54,7 @@ module MeshBuild =
             let pos = ueberAllePositionen.Current
             let norm = ueberAlleNormalen.Current
             let tex = ueberAlleTexCoords.Current
-            let vertex = new Vertex(pos, norm, tex)
+            let vertex = new Vertex(Vector3(pos.X, pos.Y, pos.Z), norm, tex)
             meshVertices.Add(vertex)
 
         // Index
@@ -62,4 +62,5 @@ module MeshBuild =
         let meshIndices = indGltf.GetPrimitivesAsCasted<int>() 
 
         let topology    = myTopology(primitive.Mode)
-        mesh.Name, meshVertices, meshIndices, topology, primitive.Material.Value 
+        mesh.Name, meshVertices.ToArray(), meshIndices|>Seq.toArray, topology, primitive.Material.Value 
+

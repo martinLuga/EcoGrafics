@@ -13,17 +13,18 @@ open VGltf.Types
 
 open Base.Framework
 open Base.ShaderSupport
+open Base.VertexDefs
 
 open BaseObject
+open MeshBuild2
 open NodeAdapter
 open Katalog
-open Structures
 open GPUInfrastructure
 
 // ----------------------------------------------------------------------------------------------------
-// Support für das Deploy auf die GPU
+// Deployment auf Base.Framework + Vertex
 // ---------------------------------------------------------------------------------------------------- 
-module Deployment =
+module Deployment2 =
 
     let rec collect (gltf:Gltf, idx) = 
         // Process recursively all children
@@ -53,6 +54,9 @@ module Deployment =
         let mutable materialCount = 0
         let mutable shaderDefines = new List<ShaderDefinePBR>()
         let mutable meshKatalog:MeshKatalog<Vertex> = new MeshKatalog<Vertex>(DEVICE_RTX3090)
+        let mutable textureKatalog:TextureKatalog = new TextureKatalog() 
+        let mutable materialKatalog:MaterialKatalog = new MaterialKatalog()
+        let mutable nodeKatalog:NodeKatalog = new NodeKatalog()
         
         // ----------------------------------------------------------------------------------------------------
         // Singleton
@@ -69,6 +73,15 @@ module Deployment =
         static member Deploy(_object:Objekt, _store:ResourcesStore, _correctorGtlf:glTFLoader.Schema.Gltf) =
             instance.Initialize()
             instance.Deploy(_object, _store, _correctorGtlf)
+
+        member this.MeshKatalog
+            with get() = meshKatalog
+
+        member this.TextureKatalog
+            with get () = textureKatalog
+
+        member this.MaterialKatalog
+            with get () = materialKatalog
         
         member this.Initialize() =  
             materialCount <- 0 
@@ -107,7 +120,7 @@ module Deployment =
             if TEST_MESH_IDX = 0 || _adapter.Node.Mesh.Value = TEST_MESH_IDX then
                 this.DeployMesh(_objektName, _adapter.Node.Mesh)
                 _adapter.ShaderDefines <- shaderDefines 
-                NodeKatalog.Instance.Add(_objektName, _adapter)
+                nodeKatalog.Add(_objektName, _adapter)
 
         member this.DeployMesh(_objectName, _meshIdx ) =
             if _meshIdx.HasValue then
@@ -115,8 +128,8 @@ module Deployment =
                 let meshIdx = _meshIdx.Value
                 
                 let mesh = gltf.Meshes[meshIdx] 
-                let meshName, vertices, indices, topology, matIdx = CreateMeshData(mesh, store)
-                meshKatalog.AddMesh(_objectName, meshName, meshIdx, vertices.ToArray(), indices |> Seq.toArray, topology, matIdx)                  
+                let meshName, vertices, indices, topology, matIdx = CreateMeshData (mesh, store)
+                meshKatalog.AddMesh(_objectName, meshName, meshIdx, vertices, indices  , topology, matIdx)                  
                 
                 let material         = gltf.Materials[matIdx] 
                 let text = material.GetTextures() |>Seq.toList
@@ -190,7 +203,7 @@ module Deployment =
                     material.PbrMetallicRoughness.RoughnessFactor;
                  |]
 
-                MaterialKatalog.Instance.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
+                materialKatalog.Add(_objectName, matIdx, material, baseColourFactor, emissiveFactor, metallicRoughnessValues)
 
             member this.DeployTexture(_objectName, _matIdx:int, _material:Material, texture, textType, isCube) = 
                 let samplerIdx          = texture.Sampler.Value
@@ -199,8 +212,8 @@ module Deployment =
                 let imageInfo           = gltf.Images[textureIdx]
                 let imageResource       = store.GetOrLoadImageResourceAt(textureIdx)                
                 let bitmap              = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                let imageBytes          = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count) 
-                let testbytes           = ByteArrayToImage(imageBytes, 0, imageBytes.Length)               
+                let imageData           = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 
-                TextureKatalog.Instance.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageBytes, imageInfo, isCube)                
+                textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, imageInfo, isCube)                
               
+

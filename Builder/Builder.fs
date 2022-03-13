@@ -15,6 +15,7 @@ open Base.ShaderSupport
 open Wavefront
 open SimpleFormat
 open Glb
+open GlTf
 
 // ----------------------------------------------------------------------------------------------------
 // Client-Schnittestelle
@@ -52,7 +53,23 @@ module GlbBuilder =
         let builder = new GlbBuilder(name, fileName) 
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)    
         builder.Parts
- 
+
+module GltfBuilder = 
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für das gltf Format
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Gltf")
+    let logInfo = Info(logger)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (_objectName, _fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating Geometry for GLTF-File: " + _fileName  )
+        let builder = new GlTfBuilder(_objectName, _fileName)  
+        builder.Build(sizeFactor, visibility, augmentation, quality, shaders)    
+        builder.Parts
+         
 module WavefrontBuilder =
     // ----------------------------------------------------------------------------------------------------
     // Builder für das Wavefront-Format

@@ -47,8 +47,8 @@ module BitmapSupport =
     // Manager
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type BitmapManager() =
-
+    type BitmapManager(_device:Device) =
+        let mutable device = _device
         let mutable stream: WICStream = null
         let mutable decoder: BitmapDecoder = null
         let mutable pixelFormat = PixelFormat.FormatDontCare
@@ -62,10 +62,8 @@ module BitmapSupport =
         let mutable stride = width * sizeof<UInt32>
         let mutable imageSize = 0
 
-        static member InitFromArray(mimeType, data) =
-            let instance = new BitmapManager()
-            instance.InitFromArray(mimeType, data)
-            instance
+        member this.InitFromArray(mimeType, data) =
+            this.InitFromArray(mimeType, data)
 
         member this.Image
             with get() = image
@@ -100,7 +98,7 @@ module BitmapSupport =
             image <- Array.zeroCreate imageSize
             if pixelFormat = PixelFormat.Format32bppRGBA then
                 frame.CopyPixels(image)
-            else if (converter.CanConvert(pixelFormat, PixelFormat.Format32bppRGBA)) = true then
+            else if (converter.CanConvert(pixelFormat, PixelFormat.Format32bppRGBA)) = RawBool(true) then
                 converter.Initialize(
                     frame,
                     PixelFormat.Format32bppRGBA,
@@ -123,7 +121,8 @@ module BitmapSupport =
                 System.Drawing.Imaging.PixelFormat.Format32bppPArgb,
                 intptr)         
 
-        member this.CreateTextureFromBitmap(device:Device) =
+        member this.CreateTextureFromBitmap() =
+
             this.Copy()
             this.GetBitmap()
             

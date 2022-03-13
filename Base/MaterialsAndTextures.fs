@@ -6,12 +6,9 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open System.Collections.Generic
-
 open SharpDX
 
 open ModelSupport
-open Framework
 
 // ----------------------------------------------------------------------------------------------------
 // Speicher für viel benutzte Eigenschaften
