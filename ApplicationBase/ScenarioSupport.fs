@@ -134,7 +134,7 @@ module TestScenariosCommon =
 
     open GroundPlaneSurfaces
 
-    let WORLDORIGIN = Vector3.Zero
+    let mutable WORLDORIGIN = Vector3.Zero
     let GROUND_LEVEL = WORLDORIGIN.Y
     let WORLD_HALF_LENGTH = 50.0f
     

@@ -20,18 +20,24 @@ module ObjectBase =
     // Moveable, Immoveable 
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>] 
-    type BaseObject(name: string, display: Display, position:Vector3) =  
+    type BaseObject(name: string, display: Display, position:Vector3, rotation:Vector4, scale:Vector3) =  
         let mutable position=position
         let mutable display = display
         let mutable name=name
         let mutable idx=0
         let mutable changed=true
-        let mutable orientation=Vector3.UnitX           // HACK , muss je nach Objekt eingestellt werden
-        let mutable world = Matrix.Translation(position - Vector3.Zero)        
-        let mutable rotation = Matrix.Identity
+        let mutable orientation=Vector3.UnitX         
+        let mutable rotation = rotation.ToArray()
+        let mutable translation = position.ToArray()
+        let mutable scale = scale.ToArray()
 
-        new (name) = BaseObject(name, new Display(), Vector3.Zero) 
-        new (name, position) = BaseObject(name, new Display(), position)
+        new (name) = BaseObject(name, new Display(), Vector3.Zero, Vector4.Zero, Vector3.One) 
+        new (name, position) = BaseObject(name, new Display(), position, Vector4.Zero, Vector3.One)
+        new (name, display, position) = BaseObject(name, display, position, Vector4.Zero, Vector3.One)
+        new (name, display, position, scale) = BaseObject(name, display, position, Vector4.Zero, scale)
+
+        member this.LocalTransform() =
+            createLocalTransform (translation, rotation, scale) 
         
         abstract member Copy:unit -> BaseObject  
         default this.Copy () = this
@@ -40,7 +46,7 @@ module ObjectBase =
         default this.DeepCopy () =  this.MemberwiseClone():?> BaseObject 
 
         abstract member World: Matrix with get 
-        default this.World = Matrix.Multiply(rotation, Matrix.Translation(position))
+        default this.World = this.LocalTransform()
 
         abstract member Center: Vector3 with get
         default this.Center 
@@ -51,10 +57,6 @@ module ObjectBase =
             with get() = Vector3.UnitX
             and set(value) = orientation <- value
         
-        abstract member RealWorld: Vector3 -> Matrix
-        default this.RealWorld(position) = 
-           Matrix.Multiply(rotation, Matrix.Translation(position))
-
         abstract member Changed:bool with get, set 
         default this.Changed
             with get () = changed
@@ -66,7 +68,9 @@ module ObjectBase =
 
         member this.Position
             with get () = position
-            and set (aValue) = position <- aValue
+            and set (aValue) = 
+                position <- aValue
+                translation <- position.ToArray()
 
         member this.Display 
             with get () = display
@@ -88,37 +92,8 @@ module ObjectBase =
         abstract member Moveable : bool
         default this.Moveable = false
 
-        abstract member isPermeable: unit -> bool
-        abstract member isSimulation: unit -> bool
-        abstract member isAlive: unit -> bool
-        abstract member isMoving: unit -> bool
-        default this.isPermeable() = false
-        default this.isSimulation() = false
-        default this.isAlive() = false
-        default this.isMoving() = false
-
-        abstract member isAnt: unit -> bool
-        default this.isAnt() =
-            false
-
-        abstract member isFood: bool
-        default this.isFood =
-            false
-
-        abstract member isEnemy: unit -> bool
-        default this.isEnemy() =
-            false
-
         abstract member isCenter: unit -> bool
         default this.isCenter() =
-            false
-
-        abstract member hasEnergy: unit -> bool
-        default this.hasEnergy() =
-            false
-
-        abstract member isLandscape: unit -> bool
-        default this.isLandscape() =
             false
 
         abstract member isGround: unit -> bool
@@ -127,21 +102,6 @@ module ObjectBase =
 
         override this.ToString() = 
             this.Name
-
-        member this.setRotationInXZ(angle) =
-           rotation <- rotationMatrixHor(angle)  
-
-        member this.setRotationInYZ(angle) =
-           rotation <- rotationMatrixVert(angle)  
-
-        // Ausrichtung zwischen zwei Punkten
-        member this.setRotationBetween(point1:Vector3, point2) =
-            let mutable _p1 = Vector3(point1.X, point1.Y + 1.0f, point1.Z)
-            let mutable _p2 = point2
-            _p1 <- _p1 - point1 
-            _p2 <- point2 - point1 
-            let quat = rotateBetween (_p1, _p2)
-            rotation <- Matrix.RotationQuaternion(quat)
 
         member this.Rotation
             with get() = rotation

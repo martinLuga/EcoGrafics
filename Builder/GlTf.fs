@@ -46,16 +46,14 @@ module GlTf =
         let mutable part : Part = null
         let mutable deployer = Deployer ()
                 
-        let defaultMaterial = MAT_NONE
-
-        member this.Build(_scale:Vector3, _visibility:Visibility, _augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
+        member this.Build(_scale:Vector3, _material:Material, _visibility:Visibility, _augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
             scale <- _scale
             let correctorGtlf = correctorGltf(fileName)
             store <- this.Read(_objectName, fileName)
             objekt <- new Objekt(objectName, store.Gltf, Vector3.Zero, Vector4.Zero, _scale)             
             deployer.Deploy(objekt, store, correctorGtlf)
 
-            for node in objekt.Nodes() do
+            for node in objekt.LeafNodes() do
                 let mesh = deployer.MeshKatalog.GetMesh(objectName, node.Node.Mesh.Value)
                 let material = deployer.MeshKatalog.Material(objectName, node.Node.Mesh.Value)
                 let textures = deployer.TextureKatalog.GetTextures(objectName, material)
@@ -63,7 +61,7 @@ module GlTf =
                     textures 
                     |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
 
-                this.AddPart(node.Node.Name, mesh.Vertices, mesh.Indices, defaultMaterial, texture, _visibility, _shaders) 
+                this.AddPart(node.Node.Name, mesh.Vertices, mesh.Indices, _material, texture, _visibility, _shaders) 
 
         member this.Initialize() =  
             objekt <- null

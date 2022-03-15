@@ -121,10 +121,22 @@ module GeometryUtils =
         let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, rotHorizontal)
         Matrix.RotationQuaternion(oRotationQuat) 
 
+    // Generate a rotation around Y-axis
+    let rotationHorizontal(rotHorizontal) = 
+        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, rotHorizontal)
+        let rotArray = oRotationQuat.ToArray()
+        Vector4(rotArray)
+
     // Generate a rotation matrix for rotation around X-axis
-    let rotationMatrixVert(rotVertical) = 
-        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, rotVertical)
+    let rotationMatrixVert(angle) = 
+        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, angle)
         Matrix.RotationQuaternion(oRotationQuat) 
+
+    // Generate a rotation around X-axis
+    let rotationVert(angle) = 
+        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, angle)
+        let rotArray = oRotationQuat.ToArray()
+        Vector4(rotArray)
 
     //-----------------------------------------------------------------------------------------------------
     // Drehung eines Objekts, so dass es zwischen Punkt p1 und p2 liegt

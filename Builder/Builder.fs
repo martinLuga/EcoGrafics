@@ -64,10 +64,10 @@ module GltfBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (_objectName, _fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-        logInfo ("Creating Geometry for GLTF-File: " + _fileName  )
+    let Build (_objectName, _fileName, _sizeFactor, _material:Material, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating Geometry for GLTF-File: " + _fileName)
         let builder = new GlTfBuilder(_objectName, _fileName)  
-        builder.Build(sizeFactor, visibility, augmentation, quality, shaders)    
+        builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
         builder.Parts
          
 module WavefrontBuilder =

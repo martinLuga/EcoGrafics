@@ -250,6 +250,10 @@ module GraficController =
         member this.ConfigureCamera(position:Vector3, target:Vector3) = 
             CameraController.Instance.ConfigureCamera( position, target, graficWindow.AspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, DEFAULT_ROT_STRENGTH, DEFAULT_ZOOM_STRENGTH)  
 
+        member this.ConfigureCamera(position:Vector3, target:Vector3,  _rot_strength, _zoom_strength) = 
+            CameraController.Instance.ConfigureCamera( position, target, graficWindow.AspectRatio, DEFAULT_ROT_HORIZONTAL, DEFAULT_ROT_VERTICAL, _rot_strength, _zoom_strength)  
+
+
         member this.InitDefaultCamera() =
             this.ConfigureCamera(DEFAULT_CAMERA_POS, DEFAULT_TARGET_POS)
 
