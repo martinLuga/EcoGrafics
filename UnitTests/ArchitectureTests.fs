@@ -22,7 +22,7 @@ open System
 open System.IO
 open DX12GameProgramming
 open ExampleShaders
-open DirectX.Pipeline
+open ShaderRenderingCookbook.Pipeline
 
 module Architecture =
 

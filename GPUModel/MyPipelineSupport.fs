@@ -6,8 +6,6 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //  
 
-open System.Collections.Generic
-
 open log4net
 
 open SharpDX.Direct3D

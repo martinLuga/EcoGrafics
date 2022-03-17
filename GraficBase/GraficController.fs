@@ -23,7 +23,9 @@ open Base.ShaderSupport
 open Base.GameTimer
 
 open DirectX.D3DUtilities
-open DirectX.Pipeline
+open DirectX.Assets
+
+open ShaderRenderingCookbook.Pipeline 
 
 open GPUModel.MyGPU
 
@@ -31,7 +33,8 @@ open CameraControl
 open Camera
 open Cache
 open GraficWindow
-open Structures
+
+open ShaderRenderingCookbook.Structures
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
@@ -44,9 +47,7 @@ open Structures
 module GraficController =
  
     // ----------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------------------------
     // Steuerung der Grafic, Versorgung der Gpu, Entgegennehmen der Abbildungsinformationen
-    // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     
     exception ObjectNotFoundException of string

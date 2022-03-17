@@ -10,7 +10,6 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Structures.fs" />
     <Compile Include="ShaderCache.fs" />
     <Compile Include="Camera.fs" />
     <Compile Include="CameraControl.fs" />
@@ -26,6 +25,7 @@
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
+    <ProjectReference Include="..\ShaderRenderingCookbook\ShaderRenderingCookbook.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.3" />

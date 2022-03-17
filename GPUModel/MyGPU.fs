@@ -26,8 +26,6 @@ open Base.VertexDefs
 open DirectX.GraficUtils
 open DirectX.BitmapSupport
 
-open DX12GameProgramming
-
 open MyFrame
 open MyPipelineSupport
 open MYUtils
@@ -337,16 +335,18 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) =            
             if data.Length > 0 then
-                this.HasCube <- false
+                this.HasCube <- isCube
                 bitmapManager.InitFromArray(mimeType, data) 
             else 
-                this.HasCube <- isCube                
-                if not (textureFilename.EndsWith("dds")) then
+                this.HasCube <- isCube
+                if textureFilename.EndsWith("dds") then
+                    bitmapManager.InitFromDDS(textureFilename)
+                else 
                     bitmapManager.InitFromFile(textureFilename)
             
             let textureResource = 
                 if textureFilename.EndsWith("dds") then
-                    bitmapManager.CreateTextureFromDDS(textureFilename)
+                    bitmapManager.CreateTextureFromDDS()
                 else
                     bitmapManager.CreateTextureFromBitmap() 
 

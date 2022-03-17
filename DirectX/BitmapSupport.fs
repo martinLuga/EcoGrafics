@@ -37,9 +37,9 @@ module BitmapSupport =
 
         match extension with
         | ".jpg"
-        | "image/jpg" -> decoder <- new JpegBitmapDecoder(factory)
-        | "image/png" -> decoder <- new PngBitmapDecoder(factory)
-        | _ -> ()
+        | "image/jpg"   -> decoder <- new JpegBitmapDecoder(factory)
+        | "image/png"   -> decoder <- new PngBitmapDecoder(factory)
+        | _             -> decoder <- new BitmapDecoder(factory, Guid.Empty)
 
         decoder
 
@@ -61,6 +61,7 @@ module BitmapSupport =
         let mutable height = 0
         let mutable stride = width * sizeof<UInt32>
         let mutable imageSize = 0
+        let mutable isCube = false
 
         member this.InitFromArray(mimeType, data) =
             this.InitFromArray(mimeType, data)
@@ -73,6 +74,12 @@ module BitmapSupport =
             decoder <- getDecoder (file.Extension)
             stream <- new WICStream(factory, fileName, NativeFileAccess.Read)
             this.initialize ()
+
+        member this.InitFromDDS(fileName: string) =
+            image <- System.IO.File.ReadAllBytes(fileName)
+            let nativeint = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(image,0)
+            let ddsEncoder = new DdsDecoder(nativeint) 
+            () // TODO Eventuell weiter verfolgen
 
         member this.InitFromArray(extension: string, array: byte[]) =
             let dataStream = ByteArrayToStream(array, 0, array.Length)
@@ -121,8 +128,8 @@ module BitmapSupport =
                 System.Drawing.Imaging.PixelFormat.Format32bppPArgb,
                 intptr) 
                 
-        member this.CreateTextureFromDDS(textureFilename) =        
-            TextureUtilities.CreateTextureFromDDS(device, textureFilename)
+        member this.CreateTextureFromDDS() =        
+            TextureUtilities.CreateTextureFromDDS(device, image, &isCube)
 
         member this.CreateTextureFromBitmap() =
 

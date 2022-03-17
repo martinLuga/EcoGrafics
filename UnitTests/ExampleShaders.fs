@@ -9,7 +9,7 @@
 open Base.ShaderSupport
 open GraficBase.Cache
 
-open DirectX.Pipeline
+open ShaderRenderingCookbook.Pipeline
 
 open SharpDX.Direct3D 
 open SharpDX.Direct3D12

@@ -13,10 +13,10 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TextRendering.fs" />
     <Compile Include="BitmapSupport.fs" />
     <Compile Include="D3DUtilities.fs" />
     <Compile Include="Assets.fs" />
-    <Compile Include="Pipeline.fs" />
     <Compile Include="GraficUtils.fs" />
     <Compile Include="UploadBuffer.fs" />
   </ItemGroup>

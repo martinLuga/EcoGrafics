@@ -133,8 +133,14 @@ module GeometryUtils =
         Matrix.RotationQuaternion(oRotationQuat) 
 
     // Generate a rotation around X-axis
-    let rotationVert(angle) = 
+    let rotationVertical(angle) = 
         let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, angle)
+        let rotArray = oRotationQuat.ToArray()
+        Vector4(rotArray)
+
+    // Generate a rotation around X-axis
+    let rotationDepth(angle) = 
+        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitZ, angle)
         let rotArray = oRotationQuat.ToArray()
         Vector4(rotArray)
 

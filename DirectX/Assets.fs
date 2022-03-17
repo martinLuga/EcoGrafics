@@ -283,3 +283,21 @@ module Assets =
                 Stencil = byte 0
             )
         )
+
+    let emptyPsoDesc ()  = 
+        let psoDesc = 
+            new GraphicsPipelineStateDescription( 
+                DepthStencilState = DepthStencilStateDescription.Default(),
+                SampleMask = Int32.MaxValue,
+                RenderTargetCount = 1,  
+                StreamOutput=StreamOutputDescription(),
+                DepthStencilFormat = DEPTHSTENCILFORMAT
+            )            
+        psoDesc.RenderTargetFormats.SetValue(BACKBUFFERFORMAT, 0)
+        psoDesc
+
+    let rootSignatureDescEmpty =
+        new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, [||], GetStaticSamplers()) 
+        
+    let isRootSignatureDescEmpty(rs:RootSignatureDescription) =
+        rs.Parameters = null || rs.Parameters.Length = 0

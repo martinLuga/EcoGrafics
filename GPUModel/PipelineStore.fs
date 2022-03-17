@@ -6,6 +6,8 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //  
 
+open System
+
 open log4net
 
 open System.Collections.Generic 
@@ -19,7 +21,7 @@ open Base.LoggingSupport
 open Base.ShaderSupport
 open Base.ShaderCompile
 
-open DirectX.Pipeline
+open DirectX.Assets
   
 // ----------------------------------------------------------------------------------------------------
 // Wrapper und Cache für Pipelinestates
@@ -38,7 +40,14 @@ module MyPipelineStore =
     type Resource = SharpDX.Direct3D12.Resource 
 
     let psoDesc(device, inputLayoutDesc:InputLayoutDescription, rootSignatureDesc:RootSignatureDescription, vertexShaderDesc:ShaderDescription, pixelShaderDesc:ShaderDescription, domainShaderDesc:ShaderDescription, hullShaderDesc:ShaderDescription, blendStateDesc , rasterizerStateDesc, topologyType, sampleDescription:SampleDescription) =  
-        let mutable psoDesc = emptyPsoDesc() 
+        let mutable psoDesc =  
+            new GraphicsPipelineStateDescription( 
+                DepthStencilState = DepthStencilStateDescription.Default(),
+                SampleMask = Int32.MaxValue,
+                RenderTargetCount = 1,  
+                StreamOutput=StreamOutputDescription(),
+                DepthStencilFormat = DEPTHSTENCILFORMAT
+            )
         psoDesc.InputLayout             <- inputLayoutDesc
         psoDesc.RootSignature           <- createRootSignature(device, rootSignatureDesc) 
         if vertexShaderDesc.IsSet()  then

@@ -1,9 +1,9 @@
-﻿namespace GraficBase
+﻿namespace ShaderRenderingCookbook
 //
-//  Material.fs
+//  Structures.fs
 //
-//  Created by Martin Luga on 08.02.18.
-//  Copyright © 2018 Martin Luga. All rights reserved.
+//  Created by Martin Luga on 16.03.22.
+//  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
 open System.Runtime.InteropServices
@@ -12,7 +12,7 @@ open SharpDX
 open SharpDX.Mathematics.Interop
 
 // ----------------------------------------------------------------------------------------------------
-// Strukturen aus Cookbook  
+// Strukturen aus ShaderRenderingCookbook  
 // ----------------------------------------------------------------------------------------------------
 module Structures = 
 
