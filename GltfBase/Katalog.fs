@@ -7,9 +7,11 @@
 //
 
 open System 
+open log4net
 
 open Base.ShaderSupport
 open Base.MeshObjects 
+open Base.LoggingSupport
 
 open VGltf.Types
 
@@ -17,8 +19,7 @@ open Common
 open NodeAdapter
 open MeshManager
 open AnotherGPU
-open GPUInfrastructure
-open Structures
+open GPUInfrastructure 
 
 type Resource = VGltf.Resource
 
@@ -27,6 +28,10 @@ type Resource = VGltf.Resource
 // ----------------------------------------------------------------------------------------------------
 
 module Katalog =
+
+    let logger = LogManager.GetLogger("Katalog")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
     // Kataloge
@@ -56,7 +61,9 @@ module Katalog =
         // Register one node of an object
         member this.Get(objectName, nodeIdx) = nodeRegister.Item(objectName, nodeIdx)
 
-        member this.Reset() = nodeRegister <-  NestedDict2<string, int, NodeAdapter>()
+        member this.Reset() = 
+            nodeRegister <-  NestedDict2<string, int, NodeAdapter>()            
+            logDebug("Reset NodeKatalog") 
 
     [<AllowNullLiteral>]
     type MeshKatalog<'VERTEX when 'VERTEX: struct and 'VERTEX: equality and 'VERTEX:>ValueType and 'VERTEX:(new:unit->'VERTEX)> (device) =
@@ -75,7 +82,8 @@ module Katalog =
         static member Instance
             with get() = 
                 if instance = null then
-                    instance <- new MeshKatalog<'VERTEX>(DEVICE_RTX3090)
+                    instance <- new MeshKatalog<'VERTEX>(DEVICE_RTX3090)                
+                logDebug("Instance")  
                 instance
             and set(value) = instance <- value
 
@@ -107,6 +115,7 @@ module Katalog =
         member this.Reset<'VERTEX>() =
             meshContainer <- new MeshContainer<'VERTEX>(device)
             meshRegister.Clear()
+            logDebug("Reset MeshKatalog")  
 
         member this.Mesh(_objectName, _mesh) =
             meshRegister.Item(_objectName, _mesh)
@@ -148,7 +157,9 @@ module Katalog =
 
         member this.ToGPU(commandList) = ()
 
-        member this.Reset() = objectMaterials <- new NestedDict2<string, int, MyMaterial>()
+        member this.Reset() = 
+            objectMaterials <- new NestedDict2<string, int, MyMaterial>()            
+            logDebug("Reset MaterialKatalog") 
 
     // ----------------------------------------------------------------------------------------------------
     // Register all textures of an object
@@ -197,4 +208,5 @@ module Katalog =
                 gpu.InstallTexture(texture)
 
         member this.Reset() =
-            textureCache    <- new NestedDict3<string, int, string, MyTexture>() 
+            textureCache    <- new NestedDict3<string, int, string, MyTexture>()
+            logDebug("Reset TextureKatalog") 

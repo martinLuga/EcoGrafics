@@ -1,18 +1,21 @@
 ﻿namespace GltfBase
 //
-//  Deployment.fs
+//  Deployment2.fs
 //
-//  Created by Martin Luga on 08.02.18.
+//  Created by Martin Luga on 08.02.22.
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
 open System.Collections.Generic
+open log4net
 
 open VGltf
 open VGltf.Types
 
-open Base.Framework
 open Base.ShaderSupport
+open Base.LoggingSupport
+
+open Base.Framework
 open Base.VertexDefs
 
 open BaseObject
@@ -25,6 +28,10 @@ open GPUInfrastructure
 // Deployment auf Base.Framework + Vertex
 // ---------------------------------------------------------------------------------------------------- 
 module Deployment2 =
+
+    let logger = LogManager.GetLogger("Deployment")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger)
 
     let rec collect (gltf:Gltf, idx) = 
         // Process recursively all children
@@ -63,16 +70,19 @@ module Deployment2 =
         // ----------------------------------------------------------------------------------------------------         
         static let mutable instance = null 
         static member Instance
-            with get() = instance
+            with get() = 
+                if instance=null then
+                    Deployer.Instance <- new Deployer()
+                    logInfo("Instance")  
+                instance
             and set(value) = instance <- value
 
-        static member CreateInstance() =
-            Deployer.Instance <- new Deployer()
-            Deployer.Instance.Initialize()
-
         static member Deploy(_object:Objekt, _store:ResourcesStore, _correctorGtlf:glTFLoader.Schema.Gltf) =
-            instance.Initialize()
-            instance.Deploy(_object, _store, _correctorGtlf)
+            Deployer.Instance.Initialize()
+            Deployer.Instance.Deploy(_object, _store, _correctorGtlf)
+
+        static member Reset() =  
+            Deployer.Instance.Initialize()
 
         member this.MeshKatalog
             with get() = meshKatalog
@@ -83,8 +93,14 @@ module Deployment2 =
         member this.MaterialKatalog
             with get () = materialKatalog
         
-        member this.Initialize() =  
-            materialCount <- 0 
+        member this.Initialize() = 
+            logInfo("Initialize") 
+            meshKatalog.Reset()
+            textureKatalog.Reset() 
+            materialKatalog.Reset()
+            nodeKatalog.Reset()
+            materialCount   <- 0 
+            shaderDefines   <-  new List<ShaderDefinePBR>()
         
         member this.Correct(_nodes:NodeAdapter list, _corrector:glTFLoader.Schema.Gltf) = 
             for node in _nodes do
@@ -106,7 +122,7 @@ module Deployment2 =
             let allNodes = _objekt.Nodes()
             this.Correct(allNodes, _correctorGtlf)
 
-            _objekt.Tree.printAll()
+            //_objekt.Tree.printAll()
 
             //_objekt.Tree.printAllGltf()
 

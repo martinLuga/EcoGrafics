@@ -83,6 +83,18 @@ module Assets =
                 MipLevels = int resource.Description.MipLevels,
                 ResourceMinLODClamp = 0.0f
             )
+        srvDesc 
+        
+    // Cube
+    let textureDescCubeArray(resource:Resource) =
+        srvDesc.Format      <- resource.Description.Format
+        srvDesc.Dimension   <- ShaderResourceViewDimension.Texture2DArray 
+        srvDesc.Texture2DArray <-  
+            new ShaderResourceViewDescription.Texture2DArrayResource( 
+                MostDetailedMip = 0,
+                MipLevels = int resource.Description.MipLevels,
+                ResourceMinLODClamp = 0.0f
+            )
         srvDesc  
     
     let textureDescription(resource:Resource, isCube:bool) =

@@ -55,19 +55,10 @@ module MyGPU =
     let ROP_IDX_CUBE      = 4 
     let ROP_IDX_TEXTURE   = 5 
 
-    let loggerGPU = LogManager.GetLogger("GPU")
-    let debugGPU = Debug(loggerGPU)
-    let infoGPU  = Info(loggerGPU)
+    let logger   = LogManager.GetLogger("GPU")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger)
     
-    let loggerUPDT = LogManager.GetLogger("GPU.UPDATE")
-    let debugUPDT = Debug(loggerUPDT)
-    let infoUPDT  = Info(loggerUPDT)
-
-    let loggerDRAW = LogManager.GetLogger("GPU.DRAW")
-    let debugDRAW  = Debug(loggerDRAW)
-    let infoDRAW   = Info(loggerDRAW)
-    let errorDRAW  = Error(loggerDRAW)
-
     // ----------------------------------------------------------------------------------------------------
     //  Class  MyGPU 
     //      Init
@@ -218,7 +209,7 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         
         member this.Begin() =
-            infoGPU("Begin")  
+            logInfo("Begin")  
             this.FlushCommandQueue()  
 
         member this.FlushCommandQueue() = 
@@ -288,7 +279,7 @@ module MyGPU =
 
         abstract PrepareInstall:int*int->Unit
         default this.PrepareInstall(anzObjects, anzMaterials) =
-            loggerGPU.Info("Install " + anzObjects.ToString() + " objects for display ") 
+            logger.Info("Install " + anzObjects.ToString() + " objects for display ") 
             this.BuildFrameResources(anzObjects, anzMaterials)
             this.resetMeshCache()
 
@@ -360,6 +351,13 @@ module MyGPU =
                     textureHeapWrapper.AddResource(resource, isCube)
                 textures.Add(textureName, textureIdx)
                 textureIdx <- textureIdx + 1
+
+        member this.ResetTextures() =
+            textureIdx <- 0
+            textures.Clear()
+            textureHeapWrapperCube.Reset()
+            textureHeapWrapper.Reset()
+            logDebug("Reset Textures")
 
         // ---------------------------------------------------------------------------------------------------- 
         // Den PipelineProvider mit einer Konfiguration füllen 
@@ -452,7 +450,6 @@ module MyGPU =
         // Draw
         // ----------------------------------------------------------------------------------------------------
         member this.StartDraw() = 
-            debugDRAW("START")
             if frameResources.Count > 0 then
             
                 this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.InitialPipelineState
@@ -567,7 +564,7 @@ module MyGPU =
                 viewport <- ToRawViewport(new ViewportF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight, 0.0f, 1.0f))
                 scissorRectangels.[0] <- ToRawRectangle(new RectangleF(0.0f, 0.0f, (float32)clientWidth, (float32)clientHeight))
 
-            debugGPU("MYGPU INFO: SIZE End\n")
+            logDebug("MYGPU INFO: SIZE End\n")
 
         // ----------------------------------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------------

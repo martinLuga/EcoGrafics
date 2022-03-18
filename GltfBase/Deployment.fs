@@ -93,7 +93,7 @@ module Deployment =
             let allNodes = _objekt.Nodes()
             this.Correct(allNodes, _correctorGtlf)
 
-            _objekt.Tree.printAll()
+            //_objekt.Tree.printAll()
 
             //_objekt.Tree.printAllGltf()
 

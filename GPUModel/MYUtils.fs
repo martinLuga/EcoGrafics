@@ -114,6 +114,7 @@ module MYUtils =
             and set(value) = hDescriptor <- value
 
         member this.Reset() =
+            index<-0
             hDescriptor <- heap.CPUDescriptorHandleForHeapStart
 
         member this.Increment() =

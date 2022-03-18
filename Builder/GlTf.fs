@@ -13,9 +13,7 @@ open VGltf.Types
 open SharpDX
 
 open Base.ModelSupport
-open Base.MaterialsAndTextures
 open Base.ShaderSupport
-open Base.VertexDefs
 
 open Geometry.GeometricModel
 
@@ -23,8 +21,6 @@ open GltfBase.Deployment2
 open GltfBase.VGltfReader
 open GltfBase.Gltf2Reader
 open GltfBase.BaseObject
-
-open GltfBase.Katalog
 
 // ----------------------------------------------------------------------------------------------------
 // Support für das Einlesen von glb-Files
@@ -44,19 +40,18 @@ module GlTf =
         let mutable store:ResourcesStore = null
         let mutable parts : List<Part> = new List<Part>()
         let mutable part : Part = null
-        let mutable deployer = Deployer ()
                 
         member this.Build(_scale:Vector3, _material:Material, _visibility:Visibility, _augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
             scale <- _scale
             let correctorGtlf = correctorGltf(fileName)
             store <- this.Read(_objectName, fileName)
-            objekt <- new Objekt(objectName, store.Gltf, Vector3.Zero, Vector4.Zero, _scale)             
-            deployer.Deploy(objekt, store, correctorGtlf)
+            objekt <- new Objekt(objectName, store.Gltf, Vector3.Zero, Vector4.Zero, _scale)
+            Deployer.Deploy(objekt, store, correctorGtlf)
 
             for node in objekt.LeafNodes() do
-                let mesh = deployer.MeshKatalog.GetMesh(objectName, node.Node.Mesh.Value)
-                let material = deployer.MeshKatalog.Material(objectName, node.Node.Mesh.Value)
-                let textures = deployer.TextureKatalog.GetTextures(objectName, material)
+                let mesh = Deployer.Instance.MeshKatalog.GetMesh(objectName, node.Node.Mesh.Value)
+                let material = Deployer.Instance.MeshKatalog.Material(objectName, node.Node.Mesh.Value)
+                let textures = Deployer.Instance.TextureKatalog.GetTextures(objectName, material)
                 let texture = 
                     textures 
                     |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
