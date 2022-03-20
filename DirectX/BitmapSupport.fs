@@ -8,6 +8,7 @@
 
 open System
 open System.IO
+open System.Runtime.InteropServices
 
 open SharpDX
 open SharpDX.IO
@@ -17,6 +18,7 @@ open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
 
 open Base.Framework
+open Base.FileSupport
 
 open DX12GameProgramming
 
@@ -38,6 +40,7 @@ module BitmapSupport =
         match extension with
         | ".jpg"
         | "image/jpg"   -> decoder <- new JpegBitmapDecoder(factory)
+        | ".png"
         | "image/png"   -> decoder <- new PngBitmapDecoder(factory)
         | _             -> decoder <- new BitmapDecoder(factory, Guid.Empty)
 
@@ -53,35 +56,84 @@ module BitmapSupport =
         let mutable decoder: BitmapDecoder = null
         let mutable pixelFormat = PixelFormat.FormatDontCare
         let mutable image: byte [] = null
+        let mutable imageArray: byte [][] = null
         let mutable bitmap:System.Drawing.Bitmap = null
+        let mutable bitmapArray:System.Drawing.Bitmap[] = Array.zeroCreate 6
         let mutable converter = new FormatConverter(factory)
         let mutable frame: BitmapFrameDecode = null
+        let mutable resource:Resource = null
         let mutable size: Size2 = new Size2()
         let mutable width = 0
         let mutable height = 0
         let mutable stride = width * sizeof<UInt32>
         let mutable imageSize = 0
         let mutable isCube = false
-
-        member this.InitFromArray(mimeType, data) =
-            this.InitFromArray(mimeType, data)
+        let mutable fromArray = false
+        let mutable fileType = "NotSet"
 
         member this.Image
             with get() = image
 
+        member this.Resource
+            with get() = resource
+        
+        member this.IsCube
+            with get() = isCube
+
+        member this.FromArray
+            with get() = fromArray
+
+        // ----------------------------------------------------------------------------------------------------
+        // Initialize with sources: File, Directory, ByteArray
+        // ----------------------------------------------------------------------------------------------------
+        member this.InitFromFileSystem(path: string) =
+            let attr = File.GetAttributes(path)
+            if  attr = FileAttributes.Directory then
+                this.InitFromArray(path)
+            else 
+                this.InitFromFile(path)
+
+        member this.InitFromArray(directoryPath) =
+            isCube <- true
+            fromArray <- true
+            let files = filesInPath directoryPath          // TODO Sort ?
+            assert(files.Length=6)
+            let file = new FileInfo(files[0].Name)
+            bitmapArray <- Array.zeroCreate 6
+            imageArray <- Array.zeroCreate 6
+            let mutable i = 0
+            for file in files do
+                stream <- new WICStream(factory, file.FullName, NativeFileAccess.Read)
+                decoder <- getDecoder (file.Extension)
+                this.initialize ()
+                this.CreateImage()
+                this.CreateBitmap()
+                bitmapArray.[i] <- bitmap
+                imageArray.[i] <- image
+                i <- i + 1   
+
         member this.InitFromFile(fileName: string) =
+            fromArray <- false
+            if fileName.EndsWith("dds") then
+                this.InitFromDDS(fileName)
+            else 
+                this.InitFromJPG(fileName)
+
+        member this.InitFromJPG(fileName: string) =
             let file = new FileInfo(fileName)
+            fileType <- file.Extension
             decoder <- getDecoder (file.Extension)
             stream <- new WICStream(factory, fileName, NativeFileAccess.Read)
             this.initialize ()
 
-        member this.InitFromDDS(fileName: string) =
+        member this.InitFromDDS(fileName: string) =        
+            fileType <- "dds"
             image <- System.IO.File.ReadAllBytes(fileName)
             let nativeint = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(image,0)
             let ddsEncoder = new DdsDecoder(nativeint) 
             () // TODO Eventuell weiter verfolgen
 
-        member this.InitFromArray(extension: string, array: byte[]) =
+        member this.InitFromByteArray(extension: string, array: byte[]) =
             let dataStream = ByteArrayToStream(array, 0, array.Length)
             this.InitFromStream(extension , dataStream)
 
@@ -101,7 +153,7 @@ module BitmapSupport =
             imageSize <- stride * height
             converter <- new FormatConverter(factory)
 
-        member this.Copy() =
+        member this.CreateImage() =
             image <- Array.zeroCreate imageSize
             if pixelFormat = PixelFormat.Format32bppRGBA then
                 frame.CopyPixels(image)
@@ -118,7 +170,7 @@ module BitmapSupport =
             else
                 raise (SystemException("Format convert"))
 
-        member this.GetBitmap() =
+        member this.CreateBitmap() =
             let nativeint = System.Runtime.InteropServices.Marshal.UnsafeAddrOfPinnedArrayElement(image,0)
             let intptr = new System.IntPtr(nativeint.ToPointer())
             bitmap <- new System.Drawing.Bitmap(
@@ -129,12 +181,23 @@ module BitmapSupport =
                 intptr) 
                 
         member this.CreateTextureFromDDS() =        
-            TextureUtilities.CreateTextureFromDDS(device, image, &isCube)
+            resource <- TextureUtilities.CreateTextureFromDDS(device, image, &isCube)
 
-        member this.CreateTextureFromBitmap() =
+        // ----------------------------------------------------------------------------------------------------
+        // Create Resource
+        // ----------------------------------------------------------------------------------------------------
+        member this.CreateTexture() =
+            if isCube && fromArray then
+                this.CreateTextureFromBitmapArray() // HACK only jpeg
+            else                 
+                if fileType.EndsWith("dds") then
+                    this.CreateTextureFromDDS()
+                else
+                    this.CreateImage()
+                    this.CreateBitmap()
+                    this.CreateTextureFromJPG() 
 
-            this.Copy()
-            this.GetBitmap()
+        member this.CreateTextureFromJPG() =
             
             let width = bitmap.Width 
             let height = bitmap.Height 
@@ -173,4 +236,57 @@ module BitmapSupport =
 
             let bufferSize = data.Height * data.Stride 
             bitmap.UnlockBits(data)  
-            buffer
+            resource <- buffer
+
+        member this.CreateTextureFromBitmapArray() =
+
+            let textureDesc = new ResourceDescription(  
+                Dimension = ResourceDimension.Texture2D,             
+                MipLevels = 1s,
+                Format = Format.B8G8R8A8_UNorm,
+                Alignment = 0,
+                Width = width,
+                Height = height,
+                DepthOrArraySize = 12s,
+                SampleDescription = new SampleDescription(1, 0),
+                Layout = TextureLayout.Unknown,
+                Flags = ResourceFlags.AllowRenderTarget
+               ) 
+
+            let buffer = device.CreateCommittedResource(
+                new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0),
+                HeapFlags.None,
+                textureDesc,
+                ResourceStates.GenericRead
+             )
+
+            let mutable i = 0
+
+            for i in  0..5 do
+                let bmp = bitmapArray[i]
+
+                let img = imageArray[i]
+
+                let mutable NumBytes = 0
+                let mutable RowBytes = 0
+                let mutable NumRows  = 0
+
+                DX12GameProgramming.TextureUtilities.GetSurfaceInfo(bmp.Width, bmp.Height, Format.R8G8B8A8_UNorm, &NumBytes, &RowBytes, &NumRows)
+
+                let handle = GCHandle.Alloc(img, GCHandleType.Pinned) 
+                let ptr = Marshal.UnsafeAddrOfPinnedArrayElement(img, 0) 
+
+                buffer.WriteToSubresource(
+                    i,
+                    new ResourceRegion(             
+                        Back = 1,
+                        Bottom = bmp.Height,
+                        Right = bmp.Width
+                    ),
+                    ptr,
+                    4 * bmp.Width,
+                    4 * bmp.Width * bmp.Height
+                )
+                handle.Free()
+
+            resource <- buffer

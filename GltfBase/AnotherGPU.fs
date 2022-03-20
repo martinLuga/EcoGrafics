@@ -264,24 +264,24 @@ module AnotherGPU =
         member this.InstallTexture(_texture: MyTexture ) =
 
             let mutable bitmapManager = BitmapManager(device)            
-            bitmapManager.InitFromArray(_texture.Info.MimeType, _texture.Data) 
-            let texture = bitmapManager.CreateTextureFromBitmap()  
+            bitmapManager.InitFromByteArray(_texture.Info.MimeType, _texture.Data) 
+            bitmapManager.CreateTexture()  
 
             let sampler = _texture.Sampler
             let sDesc   = DynamicSamplerDesc(sampler) 
             
             match _texture.Kind with
             | TextureTypePBR.envDiffuseTexture ->
-                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, true)
+                textureHeap2.AddResource(bitmapManager.Resource, (int _texture.Kind) - 8, _texture.TxtIdx, true)
                 samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
             | TextureTypePBR.brdfLutTexture ->
-                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, false)
+                textureHeap2.AddResource(bitmapManager.Resource, (int _texture.Kind) - 8, _texture.TxtIdx, false)
                 samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
             | TextureTypePBR.envSpecularTexture ->
-                textureHeap2.AddResource(texture, (int _texture.Kind) - 8, _texture.TxtIdx, true)
+                textureHeap2.AddResource(bitmapManager.Resource, (int _texture.Kind) - 8, _texture.TxtIdx, true)
                 samplerHeap2.AddResource(sDesc, (int _texture.Kind) - 8, _texture.SmpIdx)
             | _ ->
-                textureHeap1.AddResource(texture, int _texture.Kind, _texture.TxtIdx, false)
+                textureHeap1.AddResource(bitmapManager.Resource, int _texture.Kind, _texture.TxtIdx, false)
                 samplerHeap1.AddResource(sDesc, int _texture.Kind, _texture.SmpIdx) 
             logDebug("Install: " + _texture.ToString())  
 

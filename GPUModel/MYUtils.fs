@@ -127,8 +127,8 @@ module MYUtils =
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
 
-        member this.AddResource(resource:Resource, isCube:bool) =
-            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube)), hDescriptor)
+        member this.AddResource(resource:Resource, isCube:bool, fromArray:bool) =
+            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube, fromArray)), hDescriptor)
             this.Increment()
 
     [<AllowNullLiteralAttribute>]

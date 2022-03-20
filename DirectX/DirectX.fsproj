@@ -21,7 +21,7 @@
     <Compile Include="UploadBuffer.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EcoGrafics" Version="1.0.1" />
+    <PackageReference Include="EcoGrafics" Version="1.0.2" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />

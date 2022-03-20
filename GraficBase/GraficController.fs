@@ -185,36 +185,17 @@ module GraficController =
                 _vertexShaderDescription,
                 _pixelShaderDescription
             ) =
-            defaultInputLayoutDesc <- inputLayoutDescription
-            defaultRootSignatureDesc <- rootSignatureDesc
-            defaultVertexShaderDesc <-
-                ShaderDescription(
-                    ShaderType.Vertex,
-                    "shader",
-                    "VS",
-                    "VSMain",
-                    "vs_5_1", 
-                    ShaderUsage.Required,
-                    rootSignatureDesc
-                )
+            defaultInputLayoutDesc      <- inputLayoutDescription
+            defaultRootSignatureDesc    <- rootSignatureDesc
+            defaultVertexShaderDesc     <-_vertexShaderDescription
+            defaultPixelShaderDesc      <-_pixelShaderDescription
 
-            defaultPixelShaderDesc <-
-                ShaderDescription(
-                    ShaderType.Pixel,
-                    "shader",
-                    "PhongPS",
-                    "PSMain",
-                    "ps_5_1",
-                    ShaderUsage.Required,
-                    rootSignatureDesc 
-                )
-
-            defaultDomainShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
-            defaultHullShaderDesc <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
-            defaultSampleDesc <- SampleDescription(1, 0)
-            defaultRasterizerDesc <- RasterizerDescription.Default()
-            defaultBlendDesc <- BlendDescription.Default()
-            defaultTopologyType <- PrimitiveTopologyType.Triangle
+            defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
+            defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
+            defaultSampleDesc           <- SampleDescription(1, 0)
+            defaultRasterizerDesc       <- RasterizerDescription.Default()
+            defaultBlendDesc            <- BlendDescription.Default()
+            defaultTopologyType         <- PrimitiveTopologyType.Triangle
 
             this.ConfigureGPU()
 

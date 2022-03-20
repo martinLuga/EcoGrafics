@@ -327,28 +327,21 @@ module MyGPU =
         member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) =            
             if data.Length > 0 then
                 this.HasCube <- isCube
-                bitmapManager.InitFromArray(mimeType, data) 
+                bitmapManager.InitFromByteArray(mimeType, data) 
             else 
                 this.HasCube <- isCube
-                if textureFilename.EndsWith("dds") then
-                    bitmapManager.InitFromDDS(textureFilename)
-                else 
-                    bitmapManager.InitFromFile(textureFilename)
+                bitmapManager.InitFromFileSystem(textureFilename)
             
-            let textureResource = 
-                if textureFilename.EndsWith("dds") then
-                    bitmapManager.CreateTextureFromDDS()
-                else
-                    bitmapManager.CreateTextureFromBitmap() 
+            bitmapManager.CreateTexture()
 
-            this.AddTexture(textureName, textureResource, this.HasCube)
+            this.AddTexture(textureName, bitmapManager.Resource, this.HasCube, bitmapManager.FromArray)
 
-        member this.AddTexture(textureName:string,  resource:Resource, isCube:bool) =
+        member this.AddTexture(textureName:string,  resource:Resource, isCube:bool, fromArray:bool) =
             if not (textures.ContainsKey(textureName)) && not (textureName = "") then
                 if this.HasCube then
-                    textureHeapWrapperCube.AddResource(resource, isCube)
+                    textureHeapWrapperCube.AddResource(resource, isCube, fromArray)
                 else 
-                    textureHeapWrapper.AddResource(resource, isCube)
+                    textureHeapWrapper.AddResource(resource, isCube, false)
                 textures.Add(textureName, textureIdx)
                 textureIdx <- textureIdx + 1
 
