@@ -72,6 +72,10 @@ module ObjectBase =
                 position <- aValue
                 translation <- position.ToArray()
 
+        member this.Scale
+            with get () = scale
+            and set (aValue) = scale <- aValue
+
         member this.Display 
             with get () = display
             and set (aValue) = display <- aValue

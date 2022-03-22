@@ -93,16 +93,35 @@ module BitmapSupport =
             else 
                 this.InitFromFile(path)
 
+
+        //
+        // 0 	GL_TEXTURE_CUBE_MAP_POSITIVE_X
+        // 1 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+        // 2 	GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+        // 3 	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+        // 4 	GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+        // 5 	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+        //
         member this.InitFromArray(directoryPath) =
             isCube <- true
             fromArray <- true
-            let files = filesInPath directoryPath          // TODO Sort ?
-            assert(files.Length=6)
-            let file = new FileInfo(files[0].Name)
+            let files = filesInPath directoryPath          
+            assert(files.Length=6) 
             bitmapArray <- Array.zeroCreate 6
             imageArray <- Array.zeroCreate 6
             let mutable i = 0
-            for file in files do
+
+            let sorted = 
+                [
+                    files[3]  
+                    files[0]
+                    files[4]
+                    files[1]
+                    files[5]
+                    files[2]                
+                ]
+
+            for file in sorted do
                 stream <- new WICStream(factory, file.FullName, NativeFileAccess.Read)
                 decoder <- getDecoder (file.Extension)
                 this.initialize ()
@@ -221,21 +240,8 @@ module BitmapSupport =
                 ResourceStates.GenericRead
              )
 
-            let data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat) 
+            this.CreateResource(buffer, 0, bitmap, image)
 
-            buffer.WriteToSubresource(0, 
-                new ResourceRegion(             
-                    Back = 1,
-                    Bottom = height,
-                    Right = width
-                ),
-                data.Scan0,
-                4 * width,
-                4 * width * height
-            )
-
-            let bufferSize = data.Height * data.Stride 
-            bitmap.UnlockBits(data)  
             resource <- buffer
 
         member this.CreateTextureFromBitmapArray() =
@@ -260,33 +266,32 @@ module BitmapSupport =
                 ResourceStates.GenericRead
              )
 
-            let mutable i = 0
-
             for i in  0..5 do
-                let bmp = bitmapArray[i]
-
-                let img = imageArray[i]
-
-                let mutable NumBytes = 0
-                let mutable RowBytes = 0
-                let mutable NumRows  = 0
-
-                DX12GameProgramming.TextureUtilities.GetSurfaceInfo(bmp.Width, bmp.Height, Format.R8G8B8A8_UNorm, &NumBytes, &RowBytes, &NumRows)
-
-                let handle = GCHandle.Alloc(img, GCHandleType.Pinned) 
-                let ptr = Marshal.UnsafeAddrOfPinnedArrayElement(img, 0) 
-
-                buffer.WriteToSubresource(
-                    i,
-                    new ResourceRegion(             
-                        Back = 1,
-                        Bottom = bmp.Height,
-                        Right = bmp.Width
-                    ),
-                    ptr,
-                    4 * bmp.Width,
-                    4 * bmp.Width * bmp.Height
-                )
-                handle.Free()
+                this.CreateResource(buffer, i, bitmapArray[i], imageArray[i]) 
 
             resource <- buffer
+
+        member this.CreateResource(buffer:Resource, i, bmp:System.Drawing.Bitmap, img:byte[]) =
+ 
+            let mutable NumBytes = 0
+            let mutable RowBytes = 0
+            let mutable NumRows  = 0
+
+            DX12GameProgramming.TextureUtilities.GetSurfaceInfo(bmp.Width, bmp.Height, Format.R8G8B8A8_UNorm, &NumBytes, &RowBytes, &NumRows)
+
+            let handle = GCHandle.Alloc(img, GCHandleType.Pinned) 
+            let ptr = Marshal.UnsafeAddrOfPinnedArrayElement(img, 0) 
+
+            buffer.WriteToSubresource(
+                i,
+                new ResourceRegion(             
+                    Back = 1,
+                    Bottom = bmp.Height,
+                    Right = bmp.Width
+                ),
+                ptr,
+                4 * bmp.Width,
+                4 * bmp.Width * bmp.Height
+            )
+            handle.Free()
+

@@ -182,12 +182,11 @@ module GeometricTypes =
         //   |              \    |
         //   |                \  |
         //  P1 (x,y,z) --------- P2 (x+l, y, z)
-        let grade = 2.5f
         let mutable colr4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
         let v1 = createVertex p1 normal colr4  (new Vector2(0.0f, 0.0f))  
-        let v2 = createVertex p2 normal colr4  (new Vector2(grade, 0.0f))  
-        let v3 = createVertex p3 normal colr4  (new Vector2(grade, grade))  
-        let v4 = createVertex p4 normal colr4  (new Vector2(0.0f, grade))  
+        let v2 = createVertex p2 normal colr4  (new Vector2(1.0f, 0.0f))  
+        let v3 = createVertex p3 normal colr4  (new Vector2(1.0f, 1.0f))  
+        let v4 = createVertex p4 normal colr4  (new Vector2(0.0f, 1.0f))  
         let vert = {SV1 = v1; SV2 = v2; SV3 = v3; SV4 = v4}
         let ind =  {SI1 = idx + 0; SI2 = idx + 1; SI3 = idx + 2; SI4 = idx + 3}
         (vert, ind) 

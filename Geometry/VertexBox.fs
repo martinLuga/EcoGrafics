@@ -18,8 +18,7 @@ open Base.VertexDefs
 open SharpDX
 
 // ----------------------------------------------------------------------------------------------------
-// Vertexe für einen Quader erzeugen
-// Alle Seiten achsenparallel - Drehungen erfolgen über World-Transformationen
+// Vertexe für den Quader einer CubeMap erzeugen
 // ----------------------------------------------------------------------------------------------------
 
 module VertexBox = 

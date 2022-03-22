@@ -228,6 +228,33 @@ module GeometryUtils =
         Matrix.Scaling(sv)
 
     let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 []) =
-        createScaleMatrix (scale)
-        * createRotationMatrix (rot)
-        * createTranslationMatrix (trans)  
+        let s = createScaleMatrix (scale)
+        let r = createRotationMatrix (rot)
+        let t = createTranslationMatrix (trans)  
+        s * r * t
+
+    //-----------------------------------------------------------------------------------------------------
+    // Extract from Matrix
+    //----------------------------------------------------------------------------------------------------- 
+    
+    // Beide gleich ?
+    let getTranslationOf(matrix:Matrix) =
+        matrix.TranslationVector
+        Vector3(matrix.Column4.X, matrix.Column4.Y, matrix.Column4.Z)
+
+    let getScaleOf(matrix:Matrix) =
+        matrix.ScaleVector 
+
+    let getRotationOf(matrix:Matrix) =
+        let sx = sqrt(matrix.M11**2.0f + matrix.M12**2.0f + matrix.M13**2.0f) 
+        let sy = sqrt(matrix.M21**2.0f + matrix.M22**2.0f + matrix.M23**2.0f) 
+        let sz = sqrt(matrix.M31**2.0f + matrix.M32**2.0f + matrix.M33**2.0f) 
+
+        let scale = matrix.ScaleVector
+
+        let mutable result = new Matrix()
+        result.Row1 <- Vector4(matrix.M11/sx, matrix.M12/sx, matrix.M13/sx, 0.0f)
+        result.Row2 <- Vector4(matrix.M21/sy, matrix.M22/sy, matrix.M23/sy, 0.0f)
+        result.Row3 <- Vector4(matrix.M31/sz, matrix.M32/sz, matrix.M33/sz, 0.0f)
+        result.Row4 <- Vector4(0.0f, 0.0f,0.0f,0.0f)
+        result

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="VertexDefs.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="Structures.fs" />
     <Compile Include="Pipeline.fs" />

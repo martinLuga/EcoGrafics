@@ -464,8 +464,8 @@ module Wavefront =
                 | _ ->()
             result
 
-        member this.AddMaterial (materialName, nextMaterial: Material, logfun) =
-            materials.Replace(materialName, nextMaterial)
+        member this.AddMaterial (materialName:string, nextMaterial: Material, logfun) =
+            materials.Replace(materialName.Trim(), nextMaterial)
             logfun ("Stored Material: " +  materialName)
 
         //  Ablegen der Vertex-Informationen

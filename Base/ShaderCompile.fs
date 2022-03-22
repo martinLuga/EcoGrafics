@@ -23,7 +23,7 @@ open Base.ShaderSupport
 // ----------------------------------------------------------------------------------------------------  
 module ShaderCompile = 
     
-    let mutable PRECOMPILED = false
+    let mutable PRECOMPILED = true
 
     let logger = LogManager.GetLogger("ShaderCompile")
         

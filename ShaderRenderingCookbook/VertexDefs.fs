@@ -1,4 +1,4 @@
-﻿namespace Base
+﻿namespace ShaderRenderingCookbook
 //
 //  VertexDefs.fs
 //
@@ -11,7 +11,7 @@ open System.Runtime.InteropServices
 
 open SharpDX 
 
-open Framework
+open Base.Framework
 
 // ----------------------------------------------------------------------------------------------------
 // Vertex Typ  
@@ -102,14 +102,8 @@ module VertexDefs =
     let maxVecInY (point1:Vertex) (point2:Vertex) =
         if point1.Position.Y > point2.Position.Y then point1 else point2
 
-    let minVecInX (point1:Vertex) (point2:Vertex) =
-        if point1.Position.X < point2.Position.X then point1 else point2
-
     let minVecInY (point1:Vertex) (point2:Vertex) =
         if point1.Position.Y < point2.Position.Y then point1 else point2
-
-    let minVecInZ (point1:Vertex) (point2:Vertex) =
-        if point1.Position.Z < point2.Position.Z then point1 else point2
 
     let computeMaximumInY (points: Vertex list) =
         if points.Length = 0 then new Vertex()
@@ -121,18 +115,6 @@ module VertexDefs =
         if points.Length = 0 then new Vertex()
         else 
             let min = points |> List.reduce minVecInY  
-            min
-
-    let computeMinimumInX (points: Vertex list) =
-        if points.Length = 0 then new Vertex()
-        else 
-            let min = points |> List.reduce minVecInX  
-            min
-
-    let computeMinimumInZ (points: Vertex list) =
-        if points.Length = 0 then new Vertex()
-        else 
-            let min = points |> List.reduce minVecInZ  
             min
 
     let computeMaximum (points: Vertex list) =
@@ -148,19 +130,6 @@ module VertexDefs =
         if points.Length = 0 then []
         else 
             points |> List.sortBy (fun v -> v.Position.X, v.Position.Z)
-
-    let adjustXYZ(vertices: Vertex list) =
-        let minX = computeMinimumInX(vertices)
-        let minY = computeMinimumInY(vertices)
-        let minZ = computeMinimumInZ(vertices)
-
-        let deltaX = Vector3(minX.Position.X, 0.0f, 0.0f)
-        let deltaY = Vector3(0.0f, minY.Position.Y, 0.0f)
-        let deltaZ = Vector3(0.0f, 0.0f, minZ.Position.Z)
-
-        let v1 = shiftAllVertex(vertices, -deltaX) 
-        let v2 = shiftAllVertex(v1,-deltaY) 
-        shiftAllVertex(v2, -deltaZ)
 
     //-----------------------------------------------------------------------------------------------------
     // Lokale Extrema

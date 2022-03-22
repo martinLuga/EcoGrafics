@@ -15,8 +15,7 @@ open Base.VertexDefs
 open GeometricTypes 
 
 // ----------------------------------------------------------------------------------------------------
-// Vertexe für einen Quader erzeugen
-// Alle Seiten achsenparallel - Drehungen erfolgen über World-Transformationen
+// Vertexe für einen achsenparallelen Quader erzeugen
 // ----------------------------------------------------------------------------------------------------
 module VertexCube =
 

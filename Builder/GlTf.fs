@@ -49,14 +49,20 @@ module GlTf =
             Deployer.Deploy(objekt, store, correctorGtlf)
 
             for node in objekt.LeafNodes() do
-                let mesh = Deployer.Instance.MeshKatalog.GetMesh(objectName, node.Node.Mesh.Value)
+                let mutable mesh = Deployer.Instance.MeshKatalog.GetMesh(objectName, node.Node.Mesh.Value)
                 let material = Deployer.Instance.MeshKatalog.Material(objectName, node.Node.Mesh.Value)
                 let textures = Deployer.Instance.TextureKatalog.GetTextures(objectName, material)
                 let texture = 
                     textures 
                     |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
 
-                this.AddPart(node.Node.Name, mesh.Vertices, mesh.Indices, _material, texture, _visibility, _shaders) 
+                let vertexe = seq {
+                    for vertex in mesh.Vertices do
+                        let mutable v1 = vertex
+                        v1.Position <- v1.Position * scale
+                        yield v1
+                    } 
+                this.AddPart(node.Node.Name, vertexe |> ResizeArray , mesh.Indices, _material, texture, _visibility, _shaders) 
 
         member this.Initialize() =  
             objekt <- null

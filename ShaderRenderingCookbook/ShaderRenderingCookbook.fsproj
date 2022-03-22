@@ -7,12 +7,16 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="VertexDefs.fs" />
     <Compile Include="Pipeline.fs" />
     <Compile Include="Structures.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.3" />
