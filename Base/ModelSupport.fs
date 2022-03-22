@@ -299,6 +299,11 @@ module ModelSupport =
             with get () = raise (System.Exception("Nicht implementiert"))
             and set(value) = raise (System.Exception("Nicht implementiert"))
 
+        abstract member ToOrigin : Matrix with get , set
+        default this.ToOrigin 
+            with get () = raise (System.Exception("Nicht implementiert"))
+            and set(value) = raise (System.Exception("Nicht implementiert"))
+
         abstract member Update: GameTimer -> Unit
         default this.Update(gt: GameTimer) = raise (System.Exception("Nicht implementiert"))
 
@@ -396,7 +401,10 @@ module ModelSupport =
 
         override this.Minimum
             with get () = minimum
-            and set (value) = minimum <- value 
+            and set (value) = minimum <- value
+            
+        override this.ToOrigin 
+            with get () = Matrix.Translation(-this.Center)
 
     // ----------------------------------------------------------------------------------------------------
     //  FileBased: Alle Grafik-Informationen werden aus einer Datei gelesen
@@ -458,6 +466,9 @@ module ModelSupport =
                 computeSchwerpunkt ( 
                     Seq.map (fun (v:Vertex) -> v.Position) vertices |> Seq.toList
                 )
+
+        override this.ToOrigin 
+            with get () = Matrix.Identity
 
         override this.ToString() = "FileBased " + this.Name 
  

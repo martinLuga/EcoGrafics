@@ -19,6 +19,7 @@ open Base.LoggingSupport
 open Base.GameTimer
 open Base.QuaderSupport
 open Base.ModelSupport 
+open Base.MathSupport 
 open Base.MeshObjects
 open Base.VertexDefs
 open Base.MathHelper
@@ -785,6 +786,8 @@ module GeometricModel =
 
         member this.Bis  
             with get() = bis
+
+        member this.Length =  Vector3.Abs(bis - von)
         
         member this.ColorFront=color 
 
@@ -793,7 +796,7 @@ module GeometricModel =
             this.Maximum <- objectPosition + bis
             (this.Minimum, this.Maximum)
 
-        override this.Center = bis - von
+        override this.Center = computeCenter bis von 
 
         override this.resize newSize  = 
             ()
