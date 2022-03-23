@@ -25,6 +25,8 @@ open Base.VertexDefs
 open Base.MathHelper
 open Base.Framework
 
+open CorpusPatch
+
 open VertexWaves
 
 // ----------------------------------------------------------------------------------------------------
@@ -99,7 +101,7 @@ module GeometricModel =
     type Quader
         (
             name: string,
-            ursprung: Vector3,
+            origin: Vector3,
             laenge: float32,
             hoehe: float32,
             breite: float32,
@@ -110,7 +112,7 @@ module GeometricModel =
             colorTop: Color,
             colorBottom: Color
         ) =
-        inherit Geometry(name, ursprung, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit Geometry(name, origin, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable laenge = laenge
         let mutable hoehe = hoehe
         let mutable breite = breite 
@@ -127,11 +129,11 @@ module GeometricModel =
         let p7 = new Vector3(p1.X,        p1.Y+hoehe,   p1.Z+breite)
         let p8 = new Vector3(p1.X,        p1.Y      ,   p1.Z+breite)
 
-        new(name, ursprung, laenge, hoehe, breite, color) =
-            Quader(name, ursprung, laenge, hoehe, breite, color, color, color, color, color, color)
+        new(name, origin, laenge, hoehe, breite, color) =
+            Quader(name, origin, laenge, hoehe, breite, color, color, color, color, color, color)
 
-        new(name, ursprung, laenge, hoehe, breite) =
-            Quader(name, ursprung, laenge, hoehe, breite, Color.Transparent)
+        new(name, origin, laenge, hoehe, breite) =
+            Quader(name, origin, laenge, hoehe, breite, Color.Transparent)
         
         new(name, laenge, hoehe, breite, color) =
             Quader(name, Vector3.Zero, laenge, hoehe, breite, color, color, color, color, color, color)
@@ -219,7 +221,7 @@ module GeometricModel =
             with get () = Vector3( this.Origin.X +  laenge,  this.Origin.Y + hoehe,  this.Origin.Z + breite)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexCube.CreateMeshData(ursprung, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
+            VertexCube.CreateMeshData(origin, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
 
 
     // ----------------------------------------------------------------------------------------------------
@@ -228,7 +230,7 @@ module GeometricModel =
     type Keil
         (
             name: string,
-            ursprung: Vector3,
+            origin: Vector3,
             laenge: float32,
             hoehe: float32,
             breite: float32,
@@ -237,7 +239,7 @@ module GeometricModel =
         inherit Quader
             (
                 name ,
-                ursprung ,
+                origin ,
                 laenge ,
                 hoehe ,
                 breite ,
@@ -254,8 +256,8 @@ module GeometricModel =
 
         let mutable p1 = Vector3.Zero
 
-        new(name, ursprung, laenge, hoehe, breite) =
-            Keil(name, ursprung, laenge, hoehe, breite, Color.Black)
+        new(name, origin, laenge, hoehe, breite) =
+            Keil(name, origin, laenge, hoehe, breite, Color.Black)
         
         new(name, laenge, hoehe, breite, color) =
             Keil(name, Vector3.Zero, laenge, hoehe, breite, color)
@@ -266,7 +268,7 @@ module GeometricModel =
         new(name, min: Vector3, max: Vector3, color) = Keil(name, (max.X - min.X), (max.Y - min.Y), (max.Z - min.Z), color)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexPrisma.CreateMeshData(ursprung, laenge, hoehe, breite, color, color, color, color, color, color, visibility)  
+            VertexPrisma.CreateMeshData(origin, laenge, hoehe, breite, color, color, color, color, color, color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     //  Box
@@ -363,15 +365,15 @@ module GeometricModel =
     // ----------------------------------------------------------------------------------------------------
     // Pyramid
     // ----------------------------------------------------------------------------------------------------
-    type Pyramide(name: string, ursprung, seitenLaenge :float32, hoehe :float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color) =
-        inherit Geometry(name, ursprung, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+    type Pyramide(name: string, origin, seitenLaenge :float32, hoehe :float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color) =
+        inherit Geometry(name, origin, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
 
         let mutable seitenLaenge=seitenLaenge  
         let mutable hoehe =hoehe 
 
-        new(name, ursprung, seitenLaenge, hoehe, color)= Pyramide(name, ursprung, seitenLaenge , hoehe, color, color, color, color, color)
+        new(name, origin, seitenLaenge, hoehe, color)= Pyramide(name, origin, seitenLaenge , hoehe, color, color, color, color, color)
         new(name, seitenLaenge, hoehe, color)= Pyramide(name, Vector3.Zero, seitenLaenge , hoehe, color, color, color, color, color) 
-        new(name, ursprung, seitenLaenge, hoehe)= Pyramide(name, ursprung, seitenLaenge , hoehe, Color.Transparent)
+        new(name, origin, seitenLaenge, hoehe)= Pyramide(name, origin, seitenLaenge , hoehe, Color.Transparent)
         new(name, seitenLaenge, hoehe)= Pyramide(name, Vector3.Zero, seitenLaenge , hoehe, Color.Transparent)
         
         member this.SeitenLaenge
@@ -391,8 +393,9 @@ module GeometricModel =
         member this.ColorBack=colorBack                                       
         member this.ColorLeft=colorLeft
 
-        override this.Center  
-            with get() = Vector3(this.Origin.X + this.SeitenLaenge/ 2.0f, this.Origin.Y + this.Hoehe / 2.0f, this.Origin.Z + this.SeitenLaenge/ 2.0f)
+        override this.Center 
+            // Als Schwerpunkt
+            with get() = Vector3(this.Origin.X + this.SeitenLaenge/ 2.0f, this.Origin.Y + this.Hoehe / 4.0f, this.Origin.Z + this.SeitenLaenge/ 2.0f)
             and set (value) = base.Origin <- new Vector3(value.X  , value.Y - this.Hoehe / 2.0f, value.Z  )
 
         override this.resize newSize  = 
@@ -435,44 +438,44 @@ module GeometricModel =
         let mutable seitenlaenge = 0.0f 
 
         // Konstruktoren zum Anlegen in einer Ebene
-        static member InXYPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = ursprung + (Vector3.Right * seitenlaenge)
-            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = ursprung + (Vector3.Up * seitenlaenge)
-            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f)
+        static member InXYPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = origin + (Vector3.Right * seitenlaenge)
+            let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = origin + (Vector3.Up * seitenlaenge)
+            let q = new Fläche(name, origin, p2, p3, p4, color, 1.0f)
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y + seitenlaenge / 2.0f , ursprung.Z))
+            q.setCenter(Vector3(origin.X + seitenlaenge / 2.0f, origin.Y + seitenlaenge / 2.0f , origin.Z))
             q.setNormal(normal)
             q
 
-        static member InYZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = ursprung + (Vector3.ForwardLH * seitenlaenge)
-            let p3 = ursprung + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = ursprung + (Vector3.Up * seitenlaenge)
-            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f)
+        static member InYZPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = origin + (Vector3.ForwardLH * seitenlaenge)
+            let p3 = origin + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = origin + (Vector3.Up * seitenlaenge)
+            let q = new Fläche(name, origin, p2, p3, p4, color, 1.0f)
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(ursprung.X, ursprung.Y  + seitenlaenge / 2.0f , ursprung.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(origin.X, origin.Y  + seitenlaenge / 2.0f , origin.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
         
-        static member InXZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
-            let p2 = ursprung + (Vector3.Right * seitenlaenge)
-            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
-            let p4 = ursprung + (Vector3.ForwardLH * seitenlaenge)
-            let q = new Fläche(name, ursprung, p2, p3, p4, color, 1.0f) 
+        static member InXZPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+            let p2 = origin + (Vector3.Right * seitenlaenge)
+            let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = origin + (Vector3.ForwardLH * seitenlaenge)
+            let q = new Fläche(name, origin, p2, p3, p4, color, 1.0f) 
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y , ursprung.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(origin.X + seitenlaenge / 2.0f, origin.Y , origin.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q
 
-        static member InPlanePosition (name:string, ursprung:Vector3, seitenlaenge:float32, planePosition:PlanePosition, color:Color) =
+        static member InPlanePosition (name:string, origin:Vector3, seitenlaenge:float32, planePosition:PlanePosition, color:Color) =
             match planePosition with
-            | FRONT  -> Fläche.InXYPlane (name, ursprung, seitenlaenge, Vector3.UnitZ          , color)
-            | BACK   -> Fläche.InXYPlane (name, ursprung, seitenlaenge, Vector3.UnitZ * -1.0f  , color)
-            | LEFT   -> Fläche.InYZPlane (name, ursprung, seitenlaenge, Vector3.UnitX          , color)
-            | RIGHT  -> Fläche.InYZPlane (name, ursprung, seitenlaenge, Vector3.UnitX * -1.0f  , color)
-            | BOTTOM -> Fläche.InXZPlane (name, ursprung, seitenlaenge, Vector3.UnitY          , color)
-            | TOP    -> Fläche.InXZPlane (name, ursprung, seitenlaenge, Vector3.UnitY * -1.0f  , color)
+            | FRONT  -> Fläche.InXYPlane (name, origin, seitenlaenge, Vector3.UnitZ          , color)
+            | BACK   -> Fläche.InXYPlane (name, origin, seitenlaenge, Vector3.UnitZ * -1.0f  , color)
+            | LEFT   -> Fläche.InYZPlane (name, origin, seitenlaenge, Vector3.UnitX          , color)
+            | RIGHT  -> Fläche.InYZPlane (name, origin, seitenlaenge, Vector3.UnitX * -1.0f  , color)
+            | BOTTOM -> Fläche.InXZPlane (name, origin, seitenlaenge, Vector3.UnitY          , color)
+            | TOP    -> Fläche.InXZPlane (name, origin, seitenlaenge, Vector3.UnitY * -1.0f  , color)
             | _ -> raise (GeometryException("Plane-Position für Quadrat nicht ermittelt"))   
         
         // Dummy-Konstruktor        
@@ -620,13 +623,13 @@ module GeometricModel =
 
         let mutable waves = null
 
-        static member InXZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, normal:Vector3, color:Color, dx:float32, dt:float32, speed:float32, damping:float32) =
-            let p2 = ursprung + (Vector3.Right * seitenlaenge)
-            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
-            let p4 = ursprung + (Vector3.ForwardLH * seitenlaenge)
-            let q = new WaveSurface(name, ursprung, p2, p3, p4, color, 1.0f, dx , dt , speed , damping ) 
+        static member InXZPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color, dx:float32, dt:float32, speed:float32, damping:float32) =
+            let p2 = origin + (Vector3.Right * seitenlaenge)
+            let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = origin + (Vector3.ForwardLH * seitenlaenge)
+            let q = new WaveSurface(name, origin, p2, p3, p4, color, 1.0f, dx , dt , speed , damping ) 
             q.setSeitenlaenge(seitenlaenge)
-            q.setCenter(Vector3(ursprung.X + seitenlaenge / 2.0f, ursprung.Y , ursprung.Z + seitenlaenge / 2.0f))
+            q.setCenter(Vector3(origin.X + seitenlaenge / 2.0f, origin.Y , origin.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
             q.Animated <- true
             q
@@ -671,65 +674,68 @@ module GeometricModel =
             this.Waves.CreateMeshData (color, visibility)   
 
     // ----------------------------------------------------------------------------------------------------
-    //  Polyeder
+    //  Oktaeder
     // ----------------------------------------------------------------------------------------------------
-    type Polyeder(name: string, ursprung, radius:float32, color:Color, tessFactor:float32) =
-        inherit Geometry(name, ursprung, color, tessFactor, DEFAULT_RASTER, Vector3.One)
-        let mutable radius=radius
+    type Oktaeder(_name: string, _origin, _halfLength:float32, _color:Color) =
+        inherit Geometry(_name, _origin, _color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        let mutable halfLength = _halfLength
+        let mutable length = 2.0f * _halfLength
 
-        new (name, radius, color, tessFactor) = Polyeder(name, Vector3.Zero, radius, color, tessFactor)
+        new (name, halfLength, color) = Oktaeder(name, Vector3.Zero, halfLength, color)
 
-        member this.Radius
-            with get() = radius
-            and set(value) = radius <- value
+        member this.HalfLength
+            with get() = halfLength
+            and  set(value) = halfLength <- value
+
+        override this.Center  
+            with get() = Vector3(base.Origin.X + this.HalfLength, base.Origin.Y + this.HalfLength, base.Origin.Z + this.HalfLength)
+            and set (value) = base.Origin <- new Vector3(value.X - this.HalfLength, value.Y - this.HalfLength, value.Z - this.HalfLength)
 
         member this.Corners =
             [this.p1; this.p2; this.p3; this.p4; this.p5; this.p6]
 
-        // Ecken des Polyeders
-        member this.p1 = Vector3(this.Center.X - radius, this.Center.Y,            this.Center.Z + radius)    // vorn links
-        member this.p2 = Vector3(this.Center.X + radius, this.Center.Y,            this.Center.Z + radius)    // vorn rechts
-        member this.p3 = Vector3(this.Center.X + radius, this.Center.Y,            this.Center.Z - radius)    // hinten rechts
-        member this.p4 = Vector3(this.Center.X - radius, this.Center.Y,            this.Center.Z - radius)    // hinten links
-        member this.p5 = Vector3(this.Center.X,          this.Center.Y + radius,   this.Center.Z         )    // oben
-        member this.p6 = Vector3(this.Center.X,          this.Center.Y - radius,   this.Center.Z         )    // unten
-
-        member this.TessFactor = tessFactor
+        // Ecken des Oktaeder
+        member this.p1 = Vector3(this.Origin.X ,                this.Origin.Y + halfLength,     this.Origin.Z + length)         // vorn links
+        member this.p2 = Vector3(this.Origin.X + length,        this.Origin.Y + halfLength,     this.Origin.Z + length)         // vorn rechts
+        member this.p3 = Vector3(this.Origin.X + length,        this.Origin.Y + halfLength,     this.Origin.Z)                  // hinten rechts
+        member this.p4 = Vector3(this.Origin.X ,                this.Origin.Y + halfLength,     this.Origin.Z)                  // hinten links
+        member this.p5 = Vector3(this.Origin.X + halfLength,    this.Origin.Y + length,         this.Origin.Z + halfLength)     // oben
+        member this.p6 = Vector3(this.Origin.X + halfLength,    this.Origin.Y,                  this.Origin.Z + halfLength)     // unten
 
         override this.ToString() = this.Name 
-
-        override this.resize newSize = this.Radius <- this.Radius * newSize.X
 
         override this.Minimum
             with get () = this.Origin 
 
         override this.Maximum =
-            Vector3(this.Origin.X + this.Radius * 2.0f, this.Origin.Y + this.Radius * 2.0f, this.Origin.Z + this.Radius * 2.0f) 
-
-        override this.Center  
-            with get() = Vector3(base.Origin.X + this.Radius, base.Origin.Y + this.Radius, base.Origin.Z + this.Radius)
-            and set (value) = base.Origin <- new Vector3(value.X - this.Radius, value.Y - this.Radius, value.Z - this.Radius)
+            Vector3(this.Origin.X + length , this.Origin.Y + length, this.Origin.Z + length) 
 
         override this.TopologyType = PrimitiveTopologyType.Patch
 
         override this.Topology = PrimitiveTopology.PatchListWith3ControlPoints
 
         override this.CreateVertexData(visibility:Visibility) =
-            IcosahedronPatch.CreateMeshData(this.Center, radius, color, visibility)  
+            OctahedronPatch.CreateMeshData(this.p1, this.p2, this.p3, this.p4, this.p5, this.p6, _color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     //  Corpus
     // ----------------------------------------------------------------------------------------------------
-    let upperContour(contour: Vector3[], height) =
+    let makeUpperContour(contour: Vector3[], height) =
         contour |> Array.map (fun point -> Vector3(point.X, point.Y + height, point.Z))
 
     type Corpus(name: string, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
         inherit Geometry(name, Vector3.Zero, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
+        let mutable lowerContour = contour 
+        let mutable upperContour = contour 
         do  
-            minimum <- Base.MathSupport.computeMinimum(contour |> Array.toList )
-            maximum <- Base.MathSupport.computeMaximum(upperContour(contour, height) |> Array.toList )
+            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Array.toList )
+            lowerContour <- shiftContour(contour, -minimum)
+            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Array.toList )
+
+            upperContour <- shiftPoints lowerContour height
+            maximum <- Base.MathSupport.computeMaximum(upperContour |> Array.toList)
 
         new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
 
@@ -740,6 +746,9 @@ module GeometricModel =
         
         override this.Minimum with get() = minimum
         override this.Maximum with get() = maximum
+
+        override this.Origin  
+            with get() = minimum
 
         // Einfache Lösung über den umschließenden Quader
         // Besser wäre center zu berechnen als Schwerpunkt des Polygons
@@ -771,7 +780,7 @@ module GeometricModel =
             () 
 
         override this.CreateVertexData(visibility:Visibility) =
-            CorpusPatch.CreateMeshData(this.Center, contour, height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
+            CorpusPatch.CreateMeshData(this.Center, lowerContour, upperContour, height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
 
     // ----------------------------------------------------------------------------------------------------
     // Linie
@@ -821,32 +830,32 @@ module GeometricModel =
         let mutable p4=p4
         let mutable seitenlaenge=Vector3.Distance(p1, p2)
 
-        static member InXYPlane (name:string, ursprung:Vector3, seitenlaenge:float32, color:Color) =
-            let p2 = ursprung + (Vector3.Right * seitenlaenge)
-            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = ursprung + (Vector3.Up * seitenlaenge)
-            new Quadrat(name, ursprung, p2, p3, p4, color)
+        static member InXYPlane (name:string, origin:Vector3, seitenlaenge:float32, color:Color) =
+            let p2 = origin + (Vector3.Right * seitenlaenge)
+            let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = origin + (Vector3.Up * seitenlaenge)
+            new Quadrat(name, origin, p2, p3, p4, color)
 
-        static member InYZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, color:Color) =
-            let p2 = ursprung + (Vector3.ForwardLH * seitenlaenge)
-            let p3 = ursprung + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
-            let p4 = ursprung + (Vector3.Up * seitenlaenge)
-            new Quadrat(name, ursprung, p2, p3, p4, color)
+        static member InYZPlane (name:string, origin:Vector3, seitenlaenge:float32, color:Color) =
+            let p2 = origin + (Vector3.ForwardLH * seitenlaenge)
+            let p3 = origin + (Vector3.ForwardLH * seitenlaenge) + (Vector3.Up * seitenlaenge)
+            let p4 = origin + (Vector3.Up * seitenlaenge)
+            new Quadrat(name, origin, p2, p3, p4, color)
         
-        static member InXZPlane (name:string, ursprung:Vector3, seitenlaenge:float32, color:Color) =
-            let p2 = ursprung + (Vector3.Right * seitenlaenge)
-            let p3 = ursprung + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
-            let p4 = ursprung + (Vector3.ForwardLH * seitenlaenge)
-            new Quadrat(name, ursprung, p2, p3, p4, color)
+        static member InXZPlane (name:string, origin:Vector3, seitenlaenge:float32, color:Color) =
+            let p2 = origin + (Vector3.Right * seitenlaenge)
+            let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.ForwardLH * seitenlaenge)
+            let p4 = origin + (Vector3.ForwardLH * seitenlaenge)
+            new Quadrat(name, origin, p2, p3, p4, color)
 
-        static member InPlanePosition (name:string, ursprung:Vector3, seitenlaenge:float32, planePosition:PlanePosition, color:Color) =
+        static member InPlanePosition (name:string, origin:Vector3, seitenlaenge:float32, planePosition:PlanePosition, color:Color) =
             match planePosition with
-            | FRONT  -> Quadrat.InXYPlane (name, ursprung,                                      seitenlaenge, color)
-            | BACK   -> Quadrat.InXYPlane (name, ursprung + (Vector3.ForwardLH * seitenlaenge), seitenlaenge, color)
-            | LEFT   -> Quadrat.InYZPlane (name, ursprung,                                      seitenlaenge, color)
-            | RIGHT  -> Quadrat.InYZPlane (name, ursprung + (Vector3.Right * seitenlaenge),     seitenlaenge, color)
-            | BOTTOM -> Quadrat.InXYPlane (name, ursprung,                                      seitenlaenge, color)
-            | TOP    -> Quadrat.InXYPlane (name, ursprung + (Vector3.Up * seitenlaenge),        seitenlaenge, color)
+            | FRONT  -> Quadrat.InXYPlane (name, origin,                                      seitenlaenge, color)
+            | BACK   -> Quadrat.InXYPlane (name, origin + (Vector3.ForwardLH * seitenlaenge), seitenlaenge, color)
+            | LEFT   -> Quadrat.InYZPlane (name, origin,                                      seitenlaenge, color)
+            | RIGHT  -> Quadrat.InYZPlane (name, origin + (Vector3.Right * seitenlaenge),     seitenlaenge, color)
+            | BOTTOM -> Quadrat.InXYPlane (name, origin,                                      seitenlaenge, color)
+            | TOP    -> Quadrat.InXYPlane (name, origin + (Vector3.Up * seitenlaenge),        seitenlaenge, color)
             | _ -> raise (GeometryException("Plane-Position für Quadrat nicht ermittelt"))    
 
         member this.SeitenLaenge
@@ -901,11 +910,11 @@ module GeometricModel =
     // Beispiel: WavefrontShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type PatchShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
-        inherit FileBased(name, ursprung, vertices , indices, size, quality)     
+    type PatchShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
+        inherit FileBased(name, origin, vertices , indices, size, quality)     
         
-        new(name: string,  ursprung: Vector3,  size: Vector3, quality:Quality) =
-            new PatchShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
+        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) =
+            new PatchShape(name , origin , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "PatchShape (x " + this.Size.ToString() + ") " + this.Name 
 
@@ -914,11 +923,11 @@ module GeometricModel =
     // Beispiel: SimpleShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TriangularShape(name: string, ursprung: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
-        inherit FileBased(name, ursprung, vertices, indices, size, quality)  
+    type TriangularShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
+        inherit FileBased(name, origin, vertices, indices, size, quality)  
         
-        new(name: string,  ursprung: Vector3,  size: Vector3, quality:Quality) = 
-            new TriangularShape(name , ursprung , List<Vertex>(), List<int>(), size, quality)
+        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) = 
+            new TriangularShape(name , origin , List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "TriangularShape: " + this.Name 
 

@@ -83,6 +83,7 @@ module GraficController =
         let mutable frameLight : DirectionalLight = DirectionalLight(Color4.White)
         let mutable graficWindow = graficWindow
         let mutable status = ControllerStatus.New
+        let mutable idle = false
         let mutable lightDir = Vector4.Zero
         let mutable myGpu = new MasterGPU()
         let mutable rasterizationFactor = 8.0f
@@ -269,6 +270,10 @@ module GraficController =
             with get() = status
             and set(value) = status <- value
 
+        member this.Idle
+            with get() = idle
+            and set(value) = idle <- value
+
         member this.Objects
             with get() = objects
 
@@ -445,19 +450,20 @@ module GraficController =
         member this.Start() =
             logInfo("Start")
             status <- ControllerStatus.Running
+            idle <- false
 
         member this.SetIdle() =
             logInfo("Idle")
-            status <- ControllerStatus.Idle
+            this.Idle <- true
 
         member this.isRunning() =
             status = ControllerStatus.Running
 
         member this.notIdle() =
-            status <> ControllerStatus.Idle
+            this.Idle = false
 
         member this.isIdle() =
-            status = ControllerStatus.Idle
+            this.Idle = true
 
         abstract member Run:unit->Unit
         default this.Run() =

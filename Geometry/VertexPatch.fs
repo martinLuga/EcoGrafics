@@ -186,20 +186,21 @@ module TriPatch =
             triContext (p1, p2, p3, color, isTransparent)
         ) 
 
-module IcosahedronPatch =
+module OctahedronPatch =
 
     open Generic 
 
     // ----------------------------------------------------------------------------------------------------
     //  Erzeugen der Meshdaten für ein Icosahedron
     // ----------------------------------------------------------------------------------------------------
-    let icosahedronContext (center:Vector3, radius:float32, color:Color, isTransparent) = 
-        let p1 = Vector3(center.X - radius, center.Y,            center.Z + radius)    // vorn links
-        let p2 = Vector3(center.X + radius, center.Y,            center.Z + radius)    // vorn rechts
-        let p3 = Vector3(center.X + radius, center.Y,            center.Z - radius)    // hinten rechts
-        let p4 = Vector3(center.X - radius, center.Y,            center.Z - radius)    // hinten links
-        let p5 = Vector3(center.X,          center.Y + radius,   center.Z         )    // oben
-        let p6 = Vector3(center.X,          center.Y - radius,   center.Z         )    // unten
+    let octahedronContext (p1, p2, p3, p4, p5, p6, color:Color, isTransparent) = 
+
+        // p1   vorn links
+        // p2   vorn rechts
+        // p3   hinten rechts
+        // p4   hinten links
+        // p5   oben
+        // p6   unten
 
         let triangleVertexList = new List<TriangleType>()
         let triangleIndexList = new List<TriangleIndexType>()
@@ -226,10 +227,10 @@ module IcosahedronPatch =
 
         vertices, indices 
         
-    let CreateMeshData(center:Vector3, radius:float32, color:Color,  visibility:Visibility) =
+    let CreateMeshData(p1, p2, p3, p4, p5, p6, color:Color,  visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
         new MeshData<Vertex>(   
-            icosahedronContext (center, radius, color, isTransparent)
+            octahedronContext (p1, p2, p3, p4, p5, p6, color, isTransparent)
         ) 
 
 module CorpusPatch =
@@ -246,9 +247,10 @@ module CorpusPatch =
     let shiftPoints(contour:Vector3[]) (height:float32) = 
         contour |> Array.map (fun (vec:Vector3) -> Vector3.Add(vec, height * Vector3.Up )) 
 
-    let corpusContext (center: Vector3, lowerContour: Vector3[], height, colorBasis, colorTop, colorBorder, topology, topologyType, isTransparent) =
+    let shiftContour(contour:Vector3[], height:Vector3) = 
+        contour |> Array.map (fun (vec:Vector3) -> Vector3.Add(vec, height)) 
 
-        let upperContour = shiftPoints lowerContour height
+    let corpusContext (center: Vector3, lowerContour: Vector3[], upperContour: Vector3[], height, colorBasis, colorTop, colorBorder, topology, topologyType, isTransparent) =
 
         let halfHeight = height / 2.0f
         let halfUp = Vector3.Up * halfHeight
@@ -281,6 +283,6 @@ module CorpusPatch =
         let lowerAndUpper = MeshData.Compose(meshLower, meshUpper)
         MeshData.Compose(lowerAndUpper, meshBorder)
 
-    let CreateMeshData(center: Vector3, lowerContour: Vector3[], height, colorBasis, colorTop, colorBorder, topology, topologyType, visibility:Visibility) =
+    let CreateMeshData(center: Vector3, lowerContour: Vector3[], upperContour: Vector3[], height, colorBasis, colorTop, colorBorder, topology, topologyType, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        corpusContext (center, lowerContour, height, colorBasis, colorTop, colorBorder, topology, topologyType, isTransparent)
+        corpusContext (center, lowerContour, upperContour, height, colorBasis, colorTop, colorBorder, topology, topologyType, isTransparent)

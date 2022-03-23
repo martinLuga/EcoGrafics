@@ -66,11 +66,22 @@ module ObjectBase =
         abstract member OnUpdateBody:Unit -> Unit
         default this.OnUpdateBody () = ()
 
+        member this.CenterOrigin() =
+            this.Center - this.Position 
+
+        member this.OriginCenter() =
+            this.Position - this.Center  
+
         member this.Position
             with get () = position
             and set (aValue) = 
                 position <- aValue
                 translation <- position.ToArray()
+
+        member this.Translation
+            with get () = translation
+            and set (aValue) = 
+                translation <- aValue 
 
         member this.Scale
             with get () = scale

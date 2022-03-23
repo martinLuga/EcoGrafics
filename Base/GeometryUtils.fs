@@ -239,7 +239,6 @@ module GeometryUtils =
     
     // Beide gleich ?
     let getTranslationOf(matrix:Matrix) =
-        matrix.TranslationVector
         Vector3(matrix.Column4.X, matrix.Column4.Y, matrix.Column4.Z)
 
     let getScaleOf(matrix:Matrix) =

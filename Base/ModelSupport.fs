@@ -286,7 +286,8 @@ module ModelSupport =
             with get () = animated
             and set (value) = animated <- value
 
-        member this.Origin
+        abstract member Origin : Vector3 with get , set
+        default this.Origin
             with get () = origin
             and set (value) = origin <- value
 
