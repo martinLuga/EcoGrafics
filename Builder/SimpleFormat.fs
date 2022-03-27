@@ -153,6 +153,8 @@ module SimpleFormat =
             // ----------------------------------------------------------------------------------------------------
             this.adjustXYZ()
 
+            this.Resize(0.5f)
+
             // ----------------------------------------------------------------------------------------------------
             //  Erzeugen des Parts
             // ----------------------------------------------------------------------------------------------------
@@ -216,3 +218,9 @@ module SimpleFormat =
            let min = computeMinimum(vertices|> Seq.toList) 
            vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
            ()
+
+        member this.Resize(aFactor: float32) =
+            for i = 0 to vertices.Count - 1 do
+                let mutable resizedVertex = vertices.Item(i)
+                resizedVertex.Position <- vertices.Item(i).Position * aFactor
+                vertices.Item(i) <- resizedVertex

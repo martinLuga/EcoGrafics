@@ -169,6 +169,10 @@ module Wavefront =
            for i in 0..size-1 do
                 points[i] <- points[i] - minimum
 
+        member this.Resize(aFactor: float32) =
+            for i in 0..size-1 do
+                points[i] <- points[i] * aFactor
+
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // GeometryBuilder
@@ -278,6 +282,10 @@ module Wavefront =
 
             this.ParseGeoData()
 
+            geoCache.AdjustPosition()
+
+            geoCache.Resize(0.5f)
+
             this.ParseFile()
 
             match augmentation with
@@ -348,8 +356,6 @@ module Wavefront =
                     idxN <- idxN + 1
         
                 | _ -> ()
-
-            geoCache.AdjustPosition()
 
         member this.ParseFile() =
 
