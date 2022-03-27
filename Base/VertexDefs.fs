@@ -13,6 +13,8 @@ open SharpDX
 
 open Framework
 
+open PrintSupport
+
 // ----------------------------------------------------------------------------------------------------
 // Vertex Typ  
 // ----------------------------------------------------------------------------------------------------
@@ -64,6 +66,9 @@ module VertexDefs =
                         )
 
             override this.ToString() = "Vertex P(" + formatVector(this.Position) + ")" + " N(" + formatVector(this.Normal) + ") T(" + formatVector2(this.Texture) + ")"
+            member this.Shifted(amount:Vector3) =
+                this.Position <- this.Position + amount
+                this
         end
 
     let vertexLength = Utilities.SizeOf<Vertex>()
@@ -89,15 +94,6 @@ module VertexDefs =
             vert.Color,
             vert.Texture
         )
-
-    let shiftAllVertex(points:Vertex list, shift:Vector3) =
-        points |> List.map (fun v -> shiftVertex(v, shift))
-
-    let computeMinimum (points: Vertex list) =
-        if points.Length = 0 then new Vertex()
-        else 
-            let min = points |> List.reduce minVertex  
-            min
 
     let maxVecInY (point1:Vertex) (point2:Vertex) =
         if point1.Position.Y > point2.Position.Y then point1 else point2
@@ -134,6 +130,12 @@ module VertexDefs =
         else 
             let min = points |> List.reduce minVecInZ  
             min
+    
+    let computeMinimum (points: Vertex list) =
+        if points.Length = 0 then new Vertex()
+        else 
+            let min = points |> Seq.reduce minVertex  
+            min
 
     let computeMaximum (points: Vertex list) =
         if points.Length = 0 then new Vertex()
@@ -148,19 +150,6 @@ module VertexDefs =
         if points.Length = 0 then []
         else 
             points |> List.sortBy (fun v -> v.Position.X, v.Position.Z)
-
-    let adjustXYZ(vertices: Vertex list) =
-        let minX = computeMinimumInX(vertices)
-        let minY = computeMinimumInY(vertices)
-        let minZ = computeMinimumInZ(vertices)
-
-        let deltaX = Vector3(minX.Position.X, 0.0f, 0.0f)
-        let deltaY = Vector3(0.0f, minY.Position.Y, 0.0f)
-        let deltaZ = Vector3(0.0f, 0.0f, minZ.Position.Z)
-
-        let v1 = shiftAllVertex(vertices, -deltaX) 
-        let v2 = shiftAllVertex(v1,-deltaY) 
-        shiftAllVertex(v2, -deltaZ)
 
     //-----------------------------------------------------------------------------------------------------
     // Lokale Extrema

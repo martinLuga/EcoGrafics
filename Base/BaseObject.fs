@@ -66,10 +66,10 @@ module ObjectBase =
         abstract member OnUpdateBody:Unit -> Unit
         default this.OnUpdateBody () = ()
 
-        member this.CenterOrigin() =
+        member this.OriginCenter() =
             this.Center - this.Position 
 
-        member this.OriginCenter() =
+        member this.CenterOrigin() =
             this.Position - this.Center  
 
         member this.Position

@@ -94,7 +94,7 @@ module GroundPlaneSurfaces =
                     normal = Vector3.BackwardLH,
                     color = Color.Transparent
                 ),
-            material = MAT_DARKSLATEGRAY,
+            material = MAT_DSGRAY,
             visibility = Visibility.Transparent
         )
 
@@ -290,7 +290,7 @@ module TestScenariosCommon =
                                 hoehe= GROUND_HEIGHT,
                                 color=Color.Black
                             ),
-                            material=MAT_DARKSLATEGRAY,
+                            material=MAT_DSGRAY,
                             texture=TEXT_WALL
                         )
                     ]
@@ -319,7 +319,7 @@ module TestScenariosCommon =
                                 hoehe= GROUND_HEIGHT,
                                 color=Color.Black
                             ),
-                            material=MAT_LIGHT_BLUE,
+                            material=MAT_LT_BLUE,
                             texture=TEXT_WATER
                         )
                     ]

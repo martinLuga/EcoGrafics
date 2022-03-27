@@ -90,7 +90,7 @@ module GeometricModel =
 
         override this.resize(newSize) = this.Size <- this.Radius * newSize
 
-        override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " U= " + this.Origin.ToString()
+        override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " o= " + this.Origin.ToString()
         
         override this.CreateVertexData(visibility:Visibility) =
             VertexSphere.CreateMeshData(origin, color, radius, Shape.Raster, visibility)
@@ -702,7 +702,14 @@ module GeometricModel =
         member this.p5 = Vector3(this.Origin.X + halfLength,    this.Origin.Y + length,         this.Origin.Z + halfLength)     // oben
         member this.p6 = Vector3(this.Origin.X + halfLength,    this.Origin.Y,                  this.Origin.Z + halfLength)     // unten
 
-        override this.ToString() = this.Name 
+        override this.ToString() =
+            "Oktaeder " +  _name  
+            + " L: "  
+            + sprintf "%4.2f" length
+            + " B: "
+            + sprintf "%4.2f" length
+            + " H: "
+            + sprintf "%4.2f" length
 
         override this.Minimum
             with get () = this.Origin 

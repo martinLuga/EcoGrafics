@@ -523,7 +523,7 @@ module GraficController =
         member this.updatePerPart(idx:int, displayable:BaseObject, part:Part) = 
             logDebug("Update part " + idx.ToString() + " " + part.Shape.Name)
 
-            let _world          = displayable.World            
+            let _world          = displayable.World  * part.Transform          
 
             let _view           = Camera.Instance.View
             let _proj           = Camera.Instance.Proj

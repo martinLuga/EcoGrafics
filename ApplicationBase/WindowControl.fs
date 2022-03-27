@@ -9,18 +9,22 @@
 open GraficBase.CameraControl
 open GraficBase.Camera
 open Base.ObjectBase
-open Base.Framework
 open Base.LoggingSupport
 open Base.ModelSupport
-open Base.ShaderSupport
+open Base.PrintSupport
+
 open GraficBase.GraficController
 open GraficBase.GraficWindow
+
 open log4net
-open ScenarioSupport
+
 open SharpDX
+
 open System 
 open System.Windows.Forms
+
 open WindowLayout 
+open ScenarioSupport
  
 // ----------------------------------------------------------------------------------------------------
 //  Window-Actions
@@ -238,10 +242,11 @@ module WindowControl =
         newLineOutputWindow()
         writeToOutputWindow("Objekt....: "   + objekt.Name) 
         for part in objekt.Display.Parts do
-            writeToOutputWindow("  Shape...: "   + part.Shape.ToString())
-            writeToOutputWindow("     Size..: "   + part.Shape.Size.ToString())
-            writeToOutputWindow("     Min...: "   + formatVector(part.Shape.Minimum))
-            writeToOutputWindow("     Max...: "   + formatVector(part.Shape.Maximum))
+            writeToOutputWindow("  Shape......: "   + part.Shape.ToString())
+            writeToOutputWindow("     Size....: "   + part.Shape.Size.ToString())
+            writeToOutputWindow("     Min.....: "   + formatVector(part.Shape.Minimum))
+            writeToOutputWindow("     Max.....: "   + formatVector(part.Shape.Maximum))
+            writeToOutputWindow("     Diameter: "   + (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString())
             writeToOutputWindow("  Material.: "   + part.Material.ToString())
             writeToOutputWindow("  Texture..: "   + part.Texture.ToString())
             writeToOutputWindow("  Visibilty: "  + part.Visibility.ToString())

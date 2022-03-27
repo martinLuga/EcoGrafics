@@ -55,6 +55,7 @@ module ModelSupport =
         | Hilite
         | Dotted
         | Blinking
+        | ShowCenter
         | None
 
     type Visibility =
@@ -241,7 +242,7 @@ module ModelSupport =
     [<AllowNullLiteral>]
     [<AbstractClass>]
     type Shape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, color: Color, tessFactor: float32, raster: int, size: Vector3, quality:Quality) =
-        let mutable (world: Matrix) = Matrix.Identity
+        let mutable transform = Matrix.Identity
         let mutable color = color
         let mutable name = name
         let mutable origin = origin
@@ -274,10 +275,6 @@ module ModelSupport =
         member this.Points = 
             vertices |> Seq.map (fun v -> v.Position)
 
-        member this.World
-            with get () = world
-            and set (value) = world <- value
-
         member this.Name
             with get () = name
             and set (value) = name <- value
@@ -285,6 +282,10 @@ module ModelSupport =
         member this.Animated
             with get () = animated
             and set (value) = animated <- value
+        
+        member this.Transform  
+            with get() = transform
+            and set(value) = transform <- value
 
         abstract member Origin : Vector3 with get , set
         default this.Origin
@@ -481,7 +482,8 @@ module ModelSupport =
         let mutable material    = material
         let mutable texture     = texture
         let mutable visibility  = visibility
-        let mutable shaders = shaders
+        let mutable shaders     = shaders
+        let mutable transform   = Matrix.Identity
 
         new(name, shape, material, texture, visibility) = Part(name, shape, material, texture, visibility, ShaderConfiguration.CreateNoTesselation()) 
         new(name, shape, material, visibility, shaders) = Part(name, shape, material, new Texture(), visibility, shaders)
@@ -542,6 +544,10 @@ module ModelSupport =
 
         member this.Center  
             with get() = shape.Center
+
+        member this.Transform  
+            with get() = transform
+            and set(value) = transform <- value
 
         member this.hasTexture()  = this.Texture <> null && not (this.Texture.isEmpty )
         member this.hasMaterial() = not (this.Material.isEmpty )

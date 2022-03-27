@@ -151,8 +151,7 @@ module SimpleFormat =
             // ----------------------------------------------------------------------------------------------------
             //  Position an XYZ ausrichten
             // ----------------------------------------------------------------------------------------------------
-            let v = adjustXYZ(vertices.ToArray() |> Array.toList) 
-            vertices <- v |> ResizeArray
+            this.adjustXYZ()
 
             // ----------------------------------------------------------------------------------------------------
             //  Erzeugen des Parts
@@ -168,9 +167,14 @@ module SimpleFormat =
                 )
             parts.Add(part)
 
-            if augmentation = Augmentation.Hilite then
+            match augmentation with
+            | Augmentation.Hilite ->
                 let hp = this.createHilitePart(part) 
                 parts.Add(hp)
+            | Augmentation.ShowCenter ->
+                let hp = this.createCenterPart(part) 
+                parts.Add(hp)
+            | _ ->()
 
         member this.Parts =
             parts 
@@ -189,6 +193,26 @@ module SimpleFormat =
             new Part(
                 name + "-hilite",
                 shape = Quader.NewFromMinMax(name + "-hilite", part.Shape.Minimum, part.Shape.Maximum , Color.White),
-                material = MAT_LIGHT_BLUE,
+                material = MAT_LT_BLUE,
                 visibility = Visibility.Transparent
             )
+
+        member this.createCenterPart(part: Part) =
+            let radius = (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum))/2.0f
+            let mutable box = BoundingBox()
+            box.Minimum <- part.Shape.Minimum 
+            box.Maximum <- part.Shape.Maximum 
+            let center = box.Center
+            let center = part.Center
+
+            new Part(
+                name + "-hilite",
+                shape = new Kugel(name + "-center", center, 0.5f, Color.Red),
+                material = MAT_RED,
+                visibility = Visibility.Opaque
+            )
+
+        member this.adjustXYZ()=
+           let min = computeMinimum(vertices|> Seq.toList) 
+           vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
+           ()

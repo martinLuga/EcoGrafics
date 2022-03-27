@@ -114,11 +114,11 @@ module MathSupport =
             max
 
     let computeSchwerpunkt(vektoren:Vector3 list) =
-        let summe = 
-            vektoren
-            |> Seq.reduce (fun v1 v2 -> Vector3.Add(v1, v2))
-        let einsdurchM = 1.0f / (float32) vektoren.Length
-        summe * einsdurchM
+        let m = (float32)vektoren.Length
+        let mutable result = Vector3.Zero
+        for vect in vektoren do
+            result <- Vector3.Add(result, vect/m) 
+        result
 
     let  _random = new Random() 
     let Rand(minValue:int, maxValue:int) = _random.Next(minValue, maxValue)

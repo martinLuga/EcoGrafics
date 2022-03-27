@@ -14,7 +14,7 @@ open SharpDX
 open VGltf
 open VGltf.Types
 
-open Base.Framework
+open Base.PrintSupport
 open Base.VertexDefs
 
 open Common

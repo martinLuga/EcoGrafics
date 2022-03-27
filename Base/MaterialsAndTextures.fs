@@ -67,16 +67,6 @@ module MaterialsAndTextures =
 
     let MAT_EARTH = MAT("EARTH")
 
-    let MAT_GROUND = 
-        new Material( 
-            name="GROUND",
-            ambient=Color4(9.2f),
-            diffuse=Color4.White,
-            specular=Color4.White,
-            specularPower=5.0f,
-            emissive=Color4(0.1f)
-        )
-
     let MAT_WATER = 
         new Material( 
             name="WATER",
@@ -89,27 +79,28 @@ module MaterialsAndTextures =
     let MAT_FRONT = MATERIAL("FRONT", Color.DarkSlateGray)
     let MAT_NONE = MATERIAL("NONE", Color.Transparent)
 
-    let MAT_BLUE = MATERIAL("BLUE", Color.Blue)
-    let MAT_BEIGE = MATERIAL("BEIGE",Color.Beige)
-    let MAT_BROWN = MATERIAL("BROWN", Color.Brown) 
-    let MAT_BLACK = MATERIAL("BLACK", Color.Black)
-    let MAT_CYAN = MATERIAL("CYAN", Color.Cyan)
-    let MAT_DARKGOLDENROD = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
-    let MAT_DARKSLATEGRAY = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
-    let MAT_GREEN = MATERIAL("GREEN", Color.DarkGreen)
-    let MAT_GRAY = MATERIAL("GRAY", Color.Gray)
-    let MAT_LIGHT_BLUE = MATERIAL("LIGHT_BLUE", Color.LightBlue)
+    let MAT_BLUE    = MATERIAL("BLUE", Color.Blue)
+    let MAT_BEIGE   = MATERIAL("BEIGE",Color.Beige)
+    let MAT_BROWN   = MATERIAL("BROWN", Color.Brown) 
+    let MAT_BLACK   = MATERIAL("BLACK", Color.Black)
+    let MAT_CYAN    = MATERIAL("CYAN", Color.Cyan)
+    let MAT_DGROD   = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
+    let MAT_DSGRAY  = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
+    let MAT_GREEN   = MATERIAL("GREEN", Color.DarkGreen)
+    let MAT_GRAY    = MATERIAL("GRAY", Color.Gray)
+    let MAT_LT_BLUE = MATERIAL("LIGHT_BLUE", Color.LightBlue)
     let MAT_MAGENTA = MATERIAL("MAGENTA", Color.Magenta)
-    let MAT_ORANGE = MATERIAL("ORANGE", Color.Orange)
-    let MAT_RED = MATERIAL("RED", Color.Red)
-    let MAT_SILVER = MATERIAL("MAT_SILVER", Color.Silver) 
-    let MAT_WHITE = MATERIAL("WHITE", Color.White)
-    let MAT_YELLOW = MATERIAL("YELLOW", Color.Yellow)
+    let MAT_ORANGE  = MATERIAL("ORANGE", Color.Orange)
+    let MAT_RED     = MATERIAL("RED", Color.Red)
+    let MAT_SILVER  = MATERIAL("MAT_SILVER", Color.Silver) 
+    let MAT_WHITE   = MATERIAL("WHITE", Color.White)
+    let MAT_YELLOW  = MATERIAL("YELLOW", Color.Yellow)
     
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
-    let MAT_ANT = MAT("ANT")
-    let MAT_HILL = MATERIAL("HILL", Color.Transparent)
-    let MAT_PRED = MATERIAL("PRED", Color.Black)
+    let MAT_ANT     = MAT("ANT")
+    let MAT_HILL    = MATERIAL("HILL", Color.Transparent)
+    let MAT_PRED    = MATERIAL("PRED", Color.Black)
+    let MAT_GROUND  = MATERIAL("GROUND", Color.DarkSlateGray)
 
     let MATERIAL_LIMIT (name, color: Color) =
         new Material(
@@ -175,7 +166,7 @@ module MaterialsAndTextures =
     let TEXT_GRASS = TEXTURE("GRASS", "grass.jpg", false)
     let TEXT_SKY   = TEXTURE("SKY", "grasscube1024.dds", true)
     let TEXT_WATER = TEXTURE("WATER", "water1.dds", false)
-    let TEXT_GROUND = TEXTURE("GROUND", "grass.jpg", false)
+    let TEXT_GROUND = TEXTURE("GROUND", "texture_140.jpg", false)
     let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg", false)
     let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg", false)
     let TEXT_WOOD = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
@@ -186,15 +177,15 @@ module MaterialsAndTextures =
             MAT_FRONT ;
             MAT_NONE   ;
             MAT_BLUE  ;
-            MAT_LIGHT_BLUE   ;
+            MAT_LT_BLUE   ;
             MAT_RED  ;
             MAT_ORANGE   ;
             MAT_YELLOW   ;
             MAT_GREEN   ;
             MAT_MAGENTA   ;
             MAT_CYAN   ;
-            MAT_DARKGOLDENROD  ;
-            MAT_DARKSLATEGRAY  ;
+            MAT_DGROD  ;
+            MAT_DSGRAY  ;
             MAT_BLACK;
             MAT_WHITE      
         ]

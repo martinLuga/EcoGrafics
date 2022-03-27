@@ -24,6 +24,7 @@ open Base.FileSupport
 open Base.LoggingSupport 
 open Base.ShaderSupport 
 open Base.StringConvert
+open Base.MathSupport
 
 open Base.MaterialsAndTextures
 
@@ -136,7 +137,6 @@ module Wavefront =
     // ----------------------------------------------------------------------------------------------------
     type GeoCache(size:int) =
 
-        let mutable fileName = ""
         let mutable points  :Vector3[] = Array.zeroCreate size
         let mutable normals :Vector3[] = Array.zeroCreate size
         let mutable textures:Vector2[] = Array.zeroCreate size
@@ -164,6 +164,11 @@ module Wavefront =
             normals     <- Array.zeroCreate size
             textures    <- Array.zeroCreate size
 
+        member this.AdjustPosition() =
+           let minimum = computeMinimum(points|>Array.toList) 
+           for i in 0..size-1 do
+                points[i] <- points[i] - minimum
+
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // GeometryBuilder
@@ -189,6 +194,9 @@ module Wavefront =
         let mutable generalSizeFactor = Vector3.One
         let mutable augmentation = Augmentation.None
         let mutable isTransparent = false
+        let mutable visibility = Visibility.Opaque
+        let mutable quality = Quality.Medium
+        let mutable shaders:ShaderConfiguration = null
 
         let mutable lastTopology : PrimitiveTopology = PrimitiveTopology.Undefined
         let mutable lastTopologyType : PrimitiveTopologyType = PrimitiveTopologyType.Undefined
@@ -235,7 +243,7 @@ module Wavefront =
             new Part(
                 name + "-hilite",
                 shape = Quader.NewFromMinMax(name + "-hilite", minimum, maximum , Color.White),
-                material = MAT_LIGHT_BLUE, 
+                material = MAT_LT_BLUE, 
                 visibility = Visibility.Transparent
             )
 
@@ -251,11 +259,11 @@ module Wavefront =
         // Build the Displayable deep 
         // Also the MeshData
         // ----------------------------------------------------------------------------------------------------
-        member this.Build (material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this.Build (material:Material, texture:Texture, sizeFactor: Vector3, _visibility:Visibility, augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
 
             augmentation <- augment 
 
-            isTransparent <- TransparenceFromVisibility(visibility)
+            isTransparent <- TransparenceFromVisibility(_visibility)
 
             generalSizeFactor <- sizeFactor
             
@@ -267,135 +275,15 @@ module Wavefront =
             actualTexture <- texture
         
             geoCache.Erase()
+
             fileName <- fileName
+            visibility <- _visibility  
+            quality <- _quality
+            shaders <- _shaders
 
-            atEnd <- false
+            this.ParseFile()
 
-            let mutable idxV = 0 
-            let mutable idxT = 0 
-            let mutable idxN = 0 
-          
-            let mutable faceCount = 0
-            let mutable idx = 0
-
-            let shapeName() = "Shape-" + faceCount.ToString()
-
-            // All Lines of Wavefront-File
-            for line in lines do
-
-                match  (line.FirstColumn()) with
-
-                | "#"         (* isComment *)       -> 
-                    ()   
-                
-                | "o"         (*isObject *)         -> 
-                    groupName <- line.SecondColumn() 
-                    // triggert Gruppenwechsel bei faces
-                    lastTopology <- PrimitiveTopology.Undefined
-                    lastTopologyType <- PrimitiveTopologyType.Undefined
-
-                | "g"         (*isGroup *)          ->   
-                    groupName <- line.SecondColumn() 
-                    // triggert Gruppenwechsel bei faces
-                    lastTopology <- PrimitiveTopology.Undefined
-                    lastTopologyType <- PrimitiveTopologyType.Undefined
-
-                | "v"         (*isVertex    *)      ->  
-                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-                    let point =
-                        Vector3(
-                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
-                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture),
-                            Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture)
-                        )
-                    geoCache.Points.[idxV] <- point
-                    idxV <- idxV + 1
-
-                | "vt"        (*isVertexTexture *)  -> 
-                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-                    let texture =
-                        Vector2(
-                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
-                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture)
-                        )
-                    geoCache.Textures.[idxT] <- texture
-                    idxT <- idxT + 1 
-
-                | "vn"        (*isVertexNormal *)   ->  
-                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-                    let norm =
-                        Vector3(
-                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
-                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture),
-                            Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture)
-                        )
-                    geoCache.Normals.[idxN] <- norm
-                    idxN <- idxN + 1
-
-                | "f"         (*isFace *)           -> 
-                    let face = lineAsFace (line)
-                    let actualTopology, actualTopologyType = getTopologyFace (face)
-
-                    // Gruppenwechsel: es folgen faces mit einer anderen Vertex-Anzahl
-                    if (actualTopology <> (lastTopology)) || (groupName <> "") then
-                        faceCount <- faceCount + 1
-                        let faceName = if groupName <> "" then groupName else shapeName()  
-
-                        part <- new Part(faceName, actualMaterial, actualTexture, visibility, shaders)
-                        
-                        let mutable shape:Shape = null
-                        match actualTopologyType with
-                        | PrimitiveTopologyType.Triangle -> 
-                            shape <- new TriangularShape(name + faceName, Vector3.Zero, generalSizeFactor, quality)
-                        |_ ->
-                            shape <- new PatchShape(name + faceName, Vector3.Zero, generalSizeFactor, quality)                        
-                        
-                        shape.Topology <- actualTopology
-                        shape.TopologyType <- actualTopologyType
-                        part.Shape <- shape                        
-                        parts.Add(part)
-
-                        if groupName = "" then
-                            logDebug (
-                                "Shape:" + shape.Name +
-                                " Topology:" + shape.Topology.ToString() + 
-                                " Material:" + actualMaterial.Name +
-                                " by topology change to " + actualTopology.ToString()
-                            )
-                        else 
-                            logDebug (
-                                "Shape:" + shape.Name +
-                                " Topology:" + shape.Topology.ToString() + 
-                                " Material:" + actualMaterial.Name +
-                                " by new Group= " + groupName
-                            )
-                        groupName <- ""
-                        idx <- 0
-
-                    // Verarbeitung für ein face
-                    let vertexe = seq {for index in face do this.makeVertex (index)} |> ResizeArray<Vertex>
-                    part.Shape.AddVertices(vertexe)
-                    
-                    // Reverse (Clockwise)
-                    let indexe = seq {for i in 0..face.Length-1 do yield idx + i} |> Seq.toList |> List.rev |> ResizeArray<int>
-
-                    part.Shape.AddIndices(indexe)
-                    idx <- idx + face.Length
-
-                    lastTopology <- actualTopology
-                    lastTopologyType <- actualTopologyType
-
-                | "mtllib"    (*isMaterialLib*)     ->
-                    ()
-                
-                | "usemtl"    (*isMaterial*)        ->  
-                    let materialName = (line.Replace("usemtl ", "")).Trim()
-                    actualMaterial <-  
-                        try
-                            materials.Item(materialName) 
-                        with :? KeyNotFoundException -> defaultMaterial      
-
-                | _ -> ()
+            geoCache.AdjustPosition()
 
             match augmentation with
             | Augmentation.Hilite ->
@@ -412,20 +300,140 @@ module Wavefront =
 
             logDebug ("Build complete --------------------------------------------")
 
-            //this.LogVertices()
+            this.LogVertices()
 
-        // ----------------------------------------------------------------------------------------------------
+        member this.ParseFile() =
+
+            let mutable idxV = 0 
+            let mutable idxT = 0 
+            let mutable idxN = 0 
+          
+            let mutable faceCount = 0
+            let mutable idx = 0
+
+            atEnd <- false
+
+            let shapeName() = "Shape-" + faceCount.ToString()
+
+            for line in lines do
+        
+                match  (line.FirstColumn()) with
+        
+                | "#"         (* isComment *)       -> 
+                    ()   
+                        
+                | "o"         (*isObject *)         -> 
+                    groupName <- line.SecondColumn() 
+                    // triggert Gruppenwechsel bei faces
+                    lastTopology <- PrimitiveTopology.Undefined
+                    lastTopologyType <- PrimitiveTopologyType.Undefined
+        
+                | "g"         (*isGroup *)          ->   
+                    groupName <- line.SecondColumn() 
+                    // triggert Gruppenwechsel bei faces
+                    lastTopology <- PrimitiveTopology.Undefined
+                    lastTopologyType <- PrimitiveTopologyType.Undefined
+        
+                | "v"         (*isVertex    *)      ->  
+                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
+                    let point =
+                        Vector3(
+                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
+                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture),
+                            Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture)
+                        )
+                    geoCache.Points.[idxV] <- point
+                    idxV <- idxV + 1
+        
+                | "vt"        (*isVertexTexture *)  -> 
+                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
+                    let texture =
+                        Vector2(
+                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
+                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture)
+                        )
+                    geoCache.Textures.[idxT] <- texture
+                    idxT <- idxT + 1 
+        
+                | "vn"        (*isVertexNormal *)   ->  
+                    let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
+                    let norm =
+                        Vector3(
+                            Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
+                            Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture),
+                            Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture)
+                        )
+                    geoCache.Normals.[idxN] <- norm
+                    idxN <- idxN + 1
+        
+                | "f"         (*isFace *)           -> 
+                    let face = lineAsFace (line)
+                    let actualTopology, actualTopologyType = getTopologyFace (face)
+        
+                    // Gruppenwechsel: es folgen faces mit einer anderen Vertex-Anzahl
+                    if (actualTopology <> (lastTopology)) || (groupName <> "") then
+                        faceCount <- faceCount + 1
+                        let faceName = if groupName <> "" then groupName else shapeName()  
+        
+                        part <- new Part(faceName, actualMaterial, actualTexture, visibility, shaders)
+                                
+                        let mutable shape:Shape = null
+                        match actualTopologyType with
+                        | PrimitiveTopologyType.Triangle -> 
+                            shape <- new TriangularShape(name + faceName, Vector3.Zero, generalSizeFactor, quality)
+                        |_ ->
+                            shape <- new PatchShape(name + faceName, Vector3.Zero, generalSizeFactor, quality)                        
+                                
+                        shape.Topology <- actualTopology
+                        shape.TopologyType <- actualTopologyType
+                        part.Shape <- shape                        
+                        parts.Add(part)
+        
+                        if groupName = "" then
+                            logDebug (
+                                "Shape:" + shape.Name +
+                                " Topology:" + shape.Topology.ToString() + 
+                                " Material:" + actualMaterial.Name +
+                                " by topology change to " + actualTopology.ToString()
+                            )
+                        else 
+                            logDebug (
+                                "Shape:" + shape.Name +
+                                " Topology:" + shape.Topology.ToString() + 
+                                " Material:" + actualMaterial.Name +
+                                " by new Group= " + groupName
+                            )
+                        groupName <- ""
+                        idx <- 0
+        
+                    // Verarbeitung für ein face
+                    let vertexe = seq {for index in face do this.makeVertex (index)} |> ResizeArray<Vertex>
+                    part.Shape.AddVertices(vertexe)
+                            
+                    // Reverse (Clockwise)
+                    let indexe = seq {for i in 0..face.Length-1 do yield idx + i} |> Seq.toList |> List.rev |> ResizeArray<int>
+        
+                    part.Shape.AddIndices(indexe)
+                    idx <- idx + face.Length
+        
+                    lastTopology <- actualTopology
+                    lastTopologyType <- actualTopologyType
+        
+                | "mtllib"    (*isMaterialLib*)     ->
+                    ()
+                        
+                | "usemtl"    (*isMaterial*)        ->  
+                    let materialName = (line.Replace("usemtl ", "")).Trim()
+                    actualMaterial <-  
+                        try
+                            materials.Item(materialName) 
+                        with :? KeyNotFoundException -> defaultMaterial      
+        
+                | _ -> ()
+        
         // ----------------------------------------------------------------------------------------------------
         // Material 
         // ----------------------------------------------------------------------------------------------------
-        // ----------------------------------------------------------------------------------------------------
-
-        //  Ka: specifies ambient color, to account for light that is scattered about the entire scene [see Wikipedia entry for Phong Reflection Model] using values between 0 and 1 for the RGB components.
-        //  Kd: specifies diffuse color, which typically contributes most of the color to an object [see Wikipedia entry for Diffuse Reflection]. In this example, Kd represents a grey color, which will get modified by a colored texture map specified in the map_Kd statement
-        //  Ks: specifies specular color, the color seen where the surface is shiny and mirror-like [see Wikipedia entry for Specular Reflection].
-        //  Ns: defines the focus of specular highlights in the material. Ns values normally range from 0 to 1000, with a high value resulting in a tight, concentrated highlight.
-        //  Ni: defines the optical density (aka index of refraction) in the current material. The values can range from 0.001 to 10. A value of 1.0 means that light does not bend as it passes through an object.
-        //  d : specifies a factor for dissolve, how much this material dissolves into the background. A factor of 1.0 is fully opaque. A factor of 0.0 is completely transparent.
 
         //  Eine Material-Zeile auswerten
         member this.matValueOf(line: string) =
@@ -443,6 +451,13 @@ module Wavefront =
             (new Color(blocks.[1] |> float32, blocks.[2] |> float32, blocks.[3] |> float32) ).ToColor4() 
 
         //  Material aus den gesammelten Lines
+        //  Ka: specifies ambient color, to account for light that is scattered about the entire scene [see Wikipedia entry for Phong Reflection Model] using values between 0 and 1 for the RGB components.
+        //  Kd: specifies diffuse color, which typically contributes most of the color to an object [see Wikipedia entry for Diffuse Reflection]. In this example, Kd represents a grey color, which will get modified by a colored texture map specified in the map_Kd statement
+        //  Ks: specifies specular color, the color seen where the surface is shiny and mirror-like [see Wikipedia entry for Specular Reflection].
+        //  Ns: defines the focus of specular highlights in the material. Ns values normally range from 0 to 1000, with a high value resulting in a tight, concentrated highlight.
+        //  Ni: defines the optical density (aka index of refraction) in the current material. The values can range from 0.001 to 10. A value of 1.0 means that light does not bend as it passes through an object.
+        //  d : specifies a factor for dissolve, how much this material dissolves into the background. A factor of 1.0 is fully opaque. A factor of 0.0 is completely transparent.
+
         member this.makeMaterial(header:string, materialLines:string list) =
             materialCount <- materialCount + 1
             let hdrName = 

@@ -66,7 +66,7 @@ module ModelExtension =
             new Part(
                 name + "-hilite",
                 shape = Quader.NewFromMinMax(name + "-hilite", minimum, maximum , Color.White),
-                material = MAT_LIGHT_BLUE,
+                material = MAT_LT_BLUE,
                 visibility = Visibility.Transparent
             )
 

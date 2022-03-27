@@ -6,7 +6,10 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 
 open System
-open log4net 
+
+open log4net
+
+open SharpDX
 
 // ----------------------------------------------------------------------------------------------------
 // PrintSupport
@@ -84,3 +87,39 @@ module PrintSupport =
             line <- line + sprintf "(%i,%i) " index.[0] index.[1]
 
         logger.Debug(line)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Pretty print
+    // ----------------------------------------------------------------------------------------------------
+    let printList(list:float32 list) =
+        List.fold (fun rstring (litem:float32) -> rstring + litem.ToString()) "" list
+
+    let printArray(array:'T[]) =
+        (Array.fold (fun rstring (litem:'T) -> rstring + " " + litem.ToString()) "" array).TrimStart()
+
+    let formatVector (v: Vector3) =
+        let xs = sprintf "%6.2f" v.X
+        let ys = sprintf "%6.2f" v.Y
+        let zs = sprintf "%6.2f" v.Z
+        "X:" + xs + " Y:" + ys + " Z:" + zs  
+
+    let formatMatrix (m:Matrix) =
+        let matf = m.ToArray()
+        dmatrix(matf, 4, 4)
+
+    let formatVector2 (v: Vector2) =
+        let xs = sprintf "%6.2f" v.X
+        let ys = sprintf "%6.2f" v.Y
+        "X:" + xs + " Y:" + ys   
+
+    let fromArray4(x:float32[]) =
+        Vector4( x.[0],   x.[1],   x.[2],   x.[3])
+
+    let toArray4fromArray3(x:float32[]) =
+        Vector4( x.[0],   x.[1],   x.[2], 0.0f)
+
+    let fromArray3(x:float32[]) =
+        Vector3( x.[0],   x.[1],   x.[2])
+
+    let fromArray2(x:float32[]) =
+        Vector2( x.[0], x.[1])

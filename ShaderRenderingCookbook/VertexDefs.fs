@@ -12,6 +12,7 @@ open System.Runtime.InteropServices
 open SharpDX 
 
 open Base.Framework
+open Base.PrintSupport
 
 // ----------------------------------------------------------------------------------------------------
 // Vertex Typ  
