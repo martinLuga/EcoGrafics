@@ -261,29 +261,24 @@ module Wavefront =
         // ----------------------------------------------------------------------------------------------------
         member this.Build (material:Material, texture:Texture, sizeFactor: Vector3, _visibility:Visibility, augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
 
-            augmentation <- augment 
-
             isTransparent <- TransparenceFromVisibility(_visibility)
-
+            augmentation <- augment 
             generalSizeFactor <- sizeFactor
             
-            AnalyzeFile(fileName, lines, logDebug)
-
             actualMaterial  <- material
             defaultMaterial <- material
-
             actualTexture <- texture
         
-            geoCache.Erase()
-
             fileName <- fileName
             visibility <- _visibility  
             quality <- _quality
             shaders <- _shaders
 
-            this.ParseFile()
+            AnalyzeFile(fileName, lines, logDebug)
 
-            geoCache.AdjustPosition()
+            this.ParseGeoData()
+
+            this.ParseFile()
 
             match augmentation with
             | Augmentation.Hilite ->
@@ -300,16 +295,17 @@ module Wavefront =
 
             logDebug ("Build complete --------------------------------------------")
 
-            this.LogVertices()
+            //this.LogVertices()
 
-        member this.ParseFile() =
+        member this.ParseGeoData() =
 
             let mutable idxV = 0 
             let mutable idxT = 0 
             let mutable idxN = 0 
           
             let mutable faceCount = 0
-            let mutable idx = 0
+
+            geoCache.Erase()
 
             atEnd <- false
 
@@ -318,21 +314,6 @@ module Wavefront =
             for line in lines do
         
                 match  (line.FirstColumn()) with
-        
-                | "#"         (* isComment *)       -> 
-                    ()   
-                        
-                | "o"         (*isObject *)         -> 
-                    groupName <- line.SecondColumn() 
-                    // triggert Gruppenwechsel bei faces
-                    lastTopology <- PrimitiveTopology.Undefined
-                    lastTopologyType <- PrimitiveTopologyType.Undefined
-        
-                | "g"         (*isGroup *)          ->   
-                    groupName <- line.SecondColumn() 
-                    // triggert Gruppenwechsel bei faces
-                    lastTopology <- PrimitiveTopology.Undefined
-                    lastTopologyType <- PrimitiveTopologyType.Undefined
         
                 | "v"         (*isVertex    *)      ->  
                     let vals = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
@@ -365,6 +346,38 @@ module Wavefront =
                         )
                     geoCache.Normals.[idxN] <- norm
                     idxN <- idxN + 1
+        
+                | _ -> ()
+
+            geoCache.AdjustPosition()
+
+        member this.ParseFile() =
+
+            let mutable faceCount = 0
+            let mutable idx = 0
+
+            atEnd <- false
+
+            let shapeName() = "Shape-" + faceCount.ToString()
+
+            for line in lines do
+        
+                match  (line.FirstColumn()) with
+        
+                | "#"         (* isComment *)       -> 
+                    ()   
+                        
+                | "o"         (*isObject *)         -> 
+                    groupName <- line.SecondColumn() 
+                    // triggert Gruppenwechsel bei faces
+                    lastTopology <- PrimitiveTopology.Undefined
+                    lastTopologyType <- PrimitiveTopologyType.Undefined
+        
+                | "g"         (*isGroup *)          ->   
+                    groupName <- line.SecondColumn() 
+                    // triggert Gruppenwechsel bei faces
+                    lastTopology <- PrimitiveTopology.Undefined
+                    lastTopologyType <- PrimitiveTopologyType.Undefined
         
                 | "f"         (*isFace *)           -> 
                     let face = lineAsFace (line)
@@ -435,7 +448,6 @@ module Wavefront =
         // Material 
         // ----------------------------------------------------------------------------------------------------
 
-        //  Eine Material-Zeile auswerten
         member this.matValueOf(line: string) =
             let blocks = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
 
