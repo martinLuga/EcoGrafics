@@ -14,6 +14,7 @@ open SharpDX
 
 open Base.ModelSupport
 open Base.ShaderSupport
+open Base.VertexDefs
 
 open Geometry.GeometricModel
 
@@ -23,7 +24,7 @@ open GltfBase.Gltf2Reader
 open GltfBase.BaseObject
 
 // ----------------------------------------------------------------------------------------------------
-// Support für das Einlesen von glb-Files
+// Support für das Einlesen von glb-Files in der EcoGrafics Technologie
 // ----------------------------------------------------------------------------------------------------
 module GlTf =
 
@@ -64,6 +65,9 @@ module GlTf =
                     } 
                 this.AddPart(node.Node.Name, vertexe |> ResizeArray , mesh.Indices, _material, texture, _visibility, _shaders) 
 
+            this.adjustXYZ()
+            this.Resize(0.1f)
+
         member this.Initialize() =  
             objekt <- null
             objectName <- "" 
@@ -100,3 +104,12 @@ module GlTf =
             |> Seq.map(fun p -> p.Shape.Vertices)   
             |> Seq.concat
             |> Seq.toList 
+
+        member this.adjustXYZ()=
+           let min = computeMinimum(this.Vertices|> Seq.toList) 
+           for part in parts do 
+                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
+
+        member this.Resize(aFactor: float32) =
+            for part in parts do 
+                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(aFactor)) |> ResizeArray 

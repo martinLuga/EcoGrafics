@@ -56,7 +56,7 @@ module GlbBuilder =
 
 module GltfBuilder = 
     // ----------------------------------------------------------------------------------------------------
-    // Builder für das gltf Format
+    // Builder für das gltf Format in der EcoGrafics Technologie
     // ----------------------------------------------------------------------------------------------------
     let logger = LogManager.GetLogger("Builder.Gltf")
     let logInfo = Info(logger)

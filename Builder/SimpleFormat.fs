@@ -167,15 +167,16 @@ module SimpleFormat =
                     visibility,
                     shaders
                 )
-            parts.Add(part)
 
             match augmentation with
             | Augmentation.Hilite ->
                 let hp = this.createHilitePart(part) 
-                parts.Add(hp)
+                parts.Add(part)
+                parts.Add(hp)                
             | Augmentation.ShowCenter ->
                 let hp = this.createCenterPart(part) 
                 parts.Add(hp)
+                parts.Add(part)
             | _ ->()
 
         member this.Parts =
@@ -208,8 +209,8 @@ module SimpleFormat =
             let center = part.Center
 
             new Part(
-                name + "-hilite",
-                shape = new Kugel(name + "-center", center, 0.5f, Color.Red),
+                name + "-center",
+                shape = new Kugel(name + "-center", center, 0.1f, Color.Red),
                 material = MAT_RED,
                 visibility = Visibility.Opaque
             )
