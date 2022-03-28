@@ -226,7 +226,7 @@ module GraficController =
             let axes = makeAxes(halfLength) 
             if axes <> null then
                 this.AddObject(axes)
-            let ground = makeGround(origin, halfLength * 2.0f)
+            let ground = makeGround(origin, halfLength)
             if ground <> null then
                 this.AddObject(ground) 
 

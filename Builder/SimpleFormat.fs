@@ -153,7 +153,7 @@ module SimpleFormat =
             // ----------------------------------------------------------------------------------------------------
             this.adjustXYZ()
 
-            this.Resize(0.5f)
+            this.Resize()
 
             // ----------------------------------------------------------------------------------------------------
             //  Erzeugen des Parts
@@ -177,7 +177,8 @@ module SimpleFormat =
                 let hp = this.createCenterPart(part) 
                 parts.Add(hp)
                 parts.Add(part)
-            | _ ->()
+            | _ ->
+                parts.Add(part)
 
         member this.Parts =
             parts 
@@ -220,7 +221,19 @@ module SimpleFormat =
            vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
            ()
 
-        member this.Resize(aFactor: float32) =
+        member this.ComputeFactor() =
+            let min = computeMinimum(vertices|> Seq.toList)
+            let max= computeMaximum(vertices|> Seq.toList)
+            let mutable box = BoundingBox()
+            box.Minimum <- min.Position 
+            box.Maximum <- max.Position  
+            
+            let actualHeight = box.Maximum.Y - box.Minimum
+            let standardHeight = 1.0f
+            standardHeight / actualHeight 
+
+        member this.Resize() =
+            let aFactor = this.ComputeFactor()
             for i = 0 to vertices.Count - 1 do
                 let mutable resizedVertex = vertices.Item(i)
                 resizedVertex.Position <- vertices.Item(i).Position * aFactor

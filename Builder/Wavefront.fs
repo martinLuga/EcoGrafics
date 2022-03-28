@@ -25,7 +25,6 @@ open Base.LoggingSupport
 open Base.ShaderSupport 
 open Base.StringConvert
 open Base.MathSupport
-
 open Base.MaterialsAndTextures
 
 open Geometry.GeometricModel
@@ -169,10 +168,22 @@ module Wavefront =
            for i in 0..size-1 do
                 points[i] <- points[i] - minimum
 
-        member this.Resize(aFactor: float32) =
+        member this.Resize() =
+            let mutable aFactor = this.ComputeFactor()
             for i in 0..size-1 do
                 points[i] <- points[i] * aFactor
 
+        member this.ComputeFactor() =
+            let minimum = computeMinimum(points|>Array.toList)
+            let maximum  = computeMaximum(points|>Array.toList)
+            let actualHeight = maximum.Y - minimum.Y
+            let actualWidt = maximum.X - minimum.X
+            let actualDepth = maximum.Z - minimum.Z
+            let actualWidt = maximum.X - minimum.X
+            let mutable actualSize = max actualHeight actualWidt             
+            actualSize <- max actualSize   actualDepth 
+            let standardHeight = 1.0f
+            standardHeight / actualSize 
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // GeometryBuilder
@@ -251,6 +262,16 @@ module Wavefront =
                 visibility = Visibility.Transparent
             )
 
+        member this.createCenterPart(part: Part) =
+            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
+            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
+            new Part(
+                name + "-center",
+                shape = new Kugel(name + "-center", minimum, 0.1f, Color.Red),
+                material = MAT_RED,
+                visibility = Visibility.Opaque
+            )
+
         member this.LogVertices() =
             logFile("Vertices of "+  fileName + " ---------------------------------------------------------")
             logFile("Test-Run at "+  DateTime.Now.ToString() + " ---------------------------------------------------------")
@@ -284,7 +305,7 @@ module Wavefront =
 
             geoCache.AdjustPosition()
 
-            geoCache.Resize(0.5f)
+            geoCache.Resize()
 
             this.ParseFile()
 
@@ -293,13 +314,11 @@ module Wavefront =
                 let hp = this.createHilitePart() 
                 parts.Add(hp)
                 logDebug ("Augmentation Hilte " + hp.Shape.Name )
-            | Dotted ->
-                for part in parts do
-                    part.Shape.TopologyType <- PrimitiveTopologyType.Triangle                
-                    part.Shape.Topology     <- PrimitiveTopology.PointList
-                logDebug ("Augmentation Dotted ")
-            | None -> ()
-            | _ -> raise (System.Exception("Augmentation not supported"))
+            | Augmentation.ShowCenter ->
+                let cp = this.createCenterPart(part) 
+                parts.Add(cp)
+            | _ -> 
+                ()
 
             logDebug ("Build complete --------------------------------------------")
 

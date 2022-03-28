@@ -15,6 +15,7 @@ open SharpDX
 open Base.ModelSupport
 open Base.ShaderSupport
 open Base.VertexDefs
+open Base.MaterialsAndTextures
 
 open Geometry.GeometricModel
 
@@ -68,6 +69,18 @@ module GlTf =
             this.adjustXYZ()
             this.Resize(0.1f)
 
+            match _augment with
+            | Augmentation.Hilite ->
+                let hp = this.createHilitePart() 
+                parts.Add(hp)
+                logDebug ("Augmentation Hilte " + hp.Shape.Name )
+            | Augmentation.ShowCenter ->
+                  let hp = this.createCenterPart(part) 
+                  parts.Add(hp)
+                  parts.Add(part)
+            | None -> ()
+            | _ -> raise (System.Exception("Augmentation not supported"))
+
         member this.Initialize() =  
             objekt <- null
             objectName <- "" 
@@ -111,5 +124,38 @@ module GlTf =
                 part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
 
         member this.Resize(aFactor: float32) =
+            let mutable aFactor = this.ComputeFactor()
             for part in parts do 
                 part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(aFactor)) |> ResizeArray 
+
+        member this.ComputeFactor() =
+            let minimum = computeMinimum(this.Vertices|> Seq.toList)
+            let maximum = computeMaximum(this.Vertices|> Seq.toList)
+            let actualHeight = maximum.Position.Y - minimum.Position.Y
+            let actualWidt = maximum.Position.X - minimum.Position.X
+            let actualDepth = maximum.Position.Z - minimum.Position.Z
+            let actualWidt = maximum.Position.X - minimum.Position.X
+            let mutable actualSize = max actualHeight actualWidt             
+            actualSize <- max actualSize   actualDepth 
+            let standardHeight = 1.0f
+            standardHeight / actualSize 
+
+        member this.createHilitePart() =
+            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
+            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
+            new Part(
+                objectName + "-hilite",
+                shape = Quader.NewFromMinMax(objectName + "-hilite", minimum, maximum , Color.White),
+                material = MAT_LT_BLUE, 
+                visibility = Visibility.Transparent
+            )
+
+        member this.createCenterPart(part: Part) =
+            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
+            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
+            new Part(
+                objectName + "-center",
+                shape = new Kugel(objectName + "-center", minimum, 0.1f, Color.Red),
+                material = MAT_RED,
+                visibility = Visibility.Opaque
+            )

@@ -217,7 +217,8 @@ module TestScenariosCommon =
         )
 
     let DEFAULT_AXES(halfLength) =
-        createAXES(-halfLength , halfLength ) 
+        //createAXES(-halfLength , halfLength ) 
+        createCross("AXES", Vector3.Zero, halfLength)
 
     let NO_AXES(extent) =
         let result:BaseObject = null
