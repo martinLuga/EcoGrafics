@@ -67,7 +67,7 @@ module GlTf =
                 this.AddPart(node.Node.Name, vertexe |> ResizeArray , mesh.Indices, _material, texture, _visibility, _shaders) 
 
             this.adjustXYZ()
-            this.Resize(0.1f)
+            this.Resize()
 
             match _augment with
             | Augmentation.Hilite ->
@@ -123,7 +123,7 @@ module GlTf =
            for part in parts do 
                 part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
 
-        member this.Resize(aFactor: float32) =
+        member this.Resize() =
             let mutable aFactor = this.ComputeFactor()
             for part in parts do 
                 part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(aFactor)) |> ResizeArray 
@@ -137,7 +137,7 @@ module GlTf =
             let actualWidt = maximum.Position.X - minimum.Position.X
             let mutable actualSize = max actualHeight actualWidt             
             actualSize <- max actualSize   actualDepth 
-            let standardHeight = 1.0f
+            let standardHeight = 5.0f
             standardHeight / actualSize 
 
         member this.createHilitePart() =

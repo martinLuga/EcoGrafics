@@ -98,6 +98,7 @@ module MaterialsAndTextures =
     
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
     let MAT_ANT     = MAT("ANT")
+    let MAT_ANTGRD  = MATERIAL("ANTGRD", Color.Transparent) 
     let MAT_HILL    = MATERIAL("HILL", Color.Transparent)
     let MAT_PRED    = MATERIAL("PRED", Color.Black)
     let MAT_GROUND  = MATERIAL("GROUND", Color.DarkSlateGray)
