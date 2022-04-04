@@ -79,6 +79,7 @@ module BitmapSupport =
         
         member this.IsCube
             with get() = isCube
+            and set(value) = isCube  <- value
 
         member this.FromArray
             with get() = fromArray

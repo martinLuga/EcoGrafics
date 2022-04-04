@@ -144,6 +144,11 @@ module GeometryUtils =
         let rotArray = oRotationQuat.ToArray()
         Vector4(rotArray)
 
+    // Generate a rotation around X-axis
+    let rotationVector(vector, angle) = 
+        let oRotationQuat = Quaternion.RotationAxis(vector, angle)
+        oRotationQuat.ToArray()
+
     //-----------------------------------------------------------------------------------------------------
     // Drehung eines Objekts, so dass es zwischen Punkt p1 und p2 liegt
     //-----------------------------------------------------------------------------------------------------     
@@ -219,19 +224,28 @@ module GeometryUtils =
         let tv = Vector3(trans)
         Matrix.Translation(tv)
 
-    let createRotationMatrix (rot: float32 []) = 
-        let rot = Quaternion(rot)
-        Matrix.RotationQuaternion(rot)
+    // Es muss um den Mittelpunkt gedreht werden
+    //  1. Verschiebung des Centers auf den Origin = t2
+    //  2. Drehung = r
+    //  3. Wieder zurückschieben                   = t1
+    
+    let createRotationMatrix (rot: float32 [], originCenter:Vector3) =        
+        let t1 = Matrix.Translation (originCenter)      
+        let t2 = Matrix.Translation (-originCenter)  
+        let r  = Matrix.RotationQuaternion(Quaternion(rot))
+        t2 * r * t1
 
     let createScaleMatrix (scale: float32 []) = 
         let sv = Vector3(scale)
         Matrix.Scaling(sv)
 
-    let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 []) =
+    let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 [], originCenter:Vector3) =
         let s = createScaleMatrix (scale)
-        let r = createRotationMatrix (rot)
-        let t = createTranslationMatrix (trans)  
-        s * r * t
+        let r = createRotationMatrix (rot, originCenter)
+        let t = createTranslationMatrix (trans) 
+        let sr = 
+            Matrix.Multiply(s,r) 
+        sr * t
 
     //-----------------------------------------------------------------------------------------------------
     // Extract from Matrix
@@ -245,15 +259,13 @@ module GeometryUtils =
         matrix.ScaleVector 
 
     let getRotationOf(matrix:Matrix) =
-        let sx = sqrt(matrix.M11**2.0f + matrix.M12**2.0f + matrix.M13**2.0f) 
-        let sy = sqrt(matrix.M21**2.0f + matrix.M22**2.0f + matrix.M23**2.0f) 
-        let sz = sqrt(matrix.M31**2.0f + matrix.M32**2.0f + matrix.M33**2.0f) 
-
-        let scale = matrix.ScaleVector
+        let sx = sqrt(matrix.M11**2.0f + matrix.M21**2.0f + matrix.M31**2.0f) 
+        let sy = sqrt(matrix.M12**2.0f + matrix.M22**2.0f + matrix.M23**2.0f) 
+        let sz = sqrt(matrix.M13**2.0f + matrix.M23**2.0f + matrix.M33**2.0f) 
 
         let mutable result = new Matrix()
-        result.Row1 <- Vector4(matrix.M11/sx, matrix.M12/sx, matrix.M13/sx, 0.0f)
-        result.Row2 <- Vector4(matrix.M21/sy, matrix.M22/sy, matrix.M23/sy, 0.0f)
-        result.Row3 <- Vector4(matrix.M31/sz, matrix.M32/sz, matrix.M33/sz, 0.0f)
-        result.Row4 <- Vector4(0.0f, 0.0f,0.0f,0.0f)
+        result.Row1 <- Vector4(matrix.M11/sx, matrix.M12/sy, matrix.M13/sz, 0.0f)
+        result.Row2 <- Vector4(matrix.M21/sx, matrix.M22/sy, matrix.M23/sz, 0.0f)
+        result.Row3 <- Vector4(matrix.M31/sx, matrix.M32/sy, matrix.M33/sz, 0.0f)
+        result.Row4 <- Vector4(0.0f, 0.0f, 0.0f, 1.0f)
         result

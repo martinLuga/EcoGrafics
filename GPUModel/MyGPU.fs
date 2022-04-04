@@ -324,12 +324,12 @@ module MyGPU =
         // ----------------------------------------------------------------------------------------------------
         // Texture
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) =            
+        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) = 
+            this.HasCube <- isCube
+            bitmapManager.IsCube <- isCube
             if data.Length > 0 then
-                this.HasCube <- isCube
                 bitmapManager.InitFromByteArray(mimeType, data) 
             else 
-                this.HasCube <- isCube
                 bitmapManager.InitFromFileSystem(textureFilename)
             
             bitmapManager.CreateTexture()

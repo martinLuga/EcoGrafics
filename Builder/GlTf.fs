@@ -137,7 +137,7 @@ module GlTf =
             let actualWidt = maximum.Position.X - minimum.Position.X
             let mutable actualSize = max actualHeight actualWidt             
             actualSize <- max actualSize   actualDepth 
-            let standardHeight = 5.0f
+            let standardHeight = 1.0f
             standardHeight / actualSize 
 
         member this.createHilitePart() =

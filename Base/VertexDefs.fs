@@ -65,7 +65,7 @@ module VertexDefs =
                         new Vector2(u, v)
                         )
 
-            override this.ToString() = "Vertex P(" + formatVector(this.Position) + ")" + " N(" + formatVector(this.Normal) + ") T(" + formatVector2(this.Texture) + ")"
+            override this.ToString() = "Vertex P(" + formatVector3(this.Position) + ")" + " N(" + formatVector3(this.Normal) + ") T(" + formatVector2(this.Texture) + ")"
             member this.Shifted(amount:Vector3) =
                 this.Position <- this.Position + amount
                 this

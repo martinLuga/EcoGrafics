@@ -197,7 +197,7 @@ module NodeAdapter =
 
         member this.UpdatePos (idx, _parentMatrix:Matrix) =
             let mynode = gltf.Nodes[ idx ]
-            let myTransform = createLocalTransform (mynode.Translation , mynode.Rotation,  mynode.Scale) 
+            let myTransform = createLocalTransform (mynode.Translation , mynode.Rotation,  mynode.Scale, Vector3.Zero)  // HACK
             let newMatrix = myTransform * _parentMatrix
             mynode.Matrix <- newMatrix.ToArray()
 

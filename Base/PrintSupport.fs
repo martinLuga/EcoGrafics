@@ -97,12 +97,6 @@ module PrintSupport =
     let printArray(array:'T[]) =
         (Array.fold (fun rstring (litem:'T) -> rstring + " " + litem.ToString()) "" array).TrimStart()
 
-    let formatVector (v: Vector3) =
-        let xs = sprintf "%6.2f" v.X
-        let ys = sprintf "%6.2f" v.Y
-        let zs = sprintf "%6.2f" v.Z
-        "X:" + xs + " Y:" + ys + " Z:" + zs  
-
     let formatMatrix (m:Matrix) =
         let matf = m.ToArray()
         dmatrix(matf, 4, 4)
@@ -111,6 +105,19 @@ module PrintSupport =
         let xs = sprintf "%6.2f" v.X
         let ys = sprintf "%6.2f" v.Y
         "X:" + xs + " Y:" + ys   
+
+    let formatVector3 (v: Vector3) =
+        let xs = sprintf "%6.2f" v.X
+        let ys = sprintf "%6.2f" v.Y
+        let zs = sprintf "%6.2f" v.Z
+        "X:" + xs + " Y:" + ys + " Z:" + zs  
+
+    let formatVector4 (v: Vector4) =
+        let xs = sprintf "%6.2f" v.X
+        let ys = sprintf "%6.2f" v.Y
+        let zs = sprintf "%6.2f" v.Z
+        let ws = sprintf "%6.2f" v.W
+        "X:" + xs + " Y:" + ys + " Z:" + zs + " W:" + ws 
 
     let fromArray4(x:float32[]) =
         Vector4( x.[0],   x.[1],   x.[2],   x.[3])

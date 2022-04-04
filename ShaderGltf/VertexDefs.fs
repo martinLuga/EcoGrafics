@@ -41,10 +41,10 @@ module VertexDefs =
 
             override this.ToString() =
                 "Vertex P("
-                + formatVector (Vector3(this.Position.X, this.Position.Y, this.Position.Z ))
+                + formatVector3 (Vector3(this.Position.X, this.Position.Y, this.Position.Z ))
                 + ")"
                 + " N("
-                + formatVector (this.Normal)
+                + formatVector3 (this.Normal)
                 + ") T("
                 + formatVector2 (this.Texture)
                 + ")"

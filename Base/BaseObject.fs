@@ -34,10 +34,11 @@ module ObjectBase =
         new (name) = BaseObject(name, new Display(), Vector3.Zero, Vector4.Zero, Vector3.One) 
         new (name, position) = BaseObject(name, new Display(), position, Vector4.Zero, Vector3.One)
         new (name, display, position) = BaseObject(name, display, position, Vector4.Zero, Vector3.One)
+        new (name, display, position, rotation) = BaseObject(name, display, position, rotation, Vector3.One)
         new (name, display, position, scale) = BaseObject(name, display, position, Vector4.Zero, scale)
 
         member this.LocalTransform() =
-            createLocalTransform (translation, rotation, scale) 
+            createLocalTransform (translation, rotation, scale, this.OriginCenter) 
         
         abstract member Copy:unit -> BaseObject  
         default this.Copy () = this
@@ -66,10 +67,10 @@ module ObjectBase =
         abstract member OnUpdateBody:Unit -> Unit
         default this.OnUpdateBody () = ()
 
-        member this.OriginCenter() =
+        member this.OriginCenter =
             this.Center - this.Position 
 
-        member this.CenterOrigin() =
+        member this.CenterOrigin =
             this.Position - this.Center  
 
         member this.Position

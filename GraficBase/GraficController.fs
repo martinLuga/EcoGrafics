@@ -17,10 +17,12 @@ open SharpDX.Direct3D12
 open SharpDX.Mathematics.Interop
 
 open Base.ModelSupport
+open Base.PrintSupport
 open Base.LoggingSupport
 open Base.ObjectBase 
 open Base.ShaderSupport
 open Base.GameTimer
+open Base.GeometryUtils
 
 open DirectX.D3DUtilities
 open DirectX.Assets
@@ -523,7 +525,24 @@ module GraficController =
         member this.updatePerPart(idx:int, displayable:BaseObject, part:Part) = 
             logDebug("Update part " + idx.ToString() + " " + part.Shape.Name)
 
-            let _world          = displayable.World  * part.Transform          
+            let mutable scleP = Vector3.One
+            let mutable rotP  = Quaternion.Identity
+            let mutable tranP = Vector3.One
+            let parentTransform = displayable.LocalTransform().Decompose(&scleP, &rotP, &tranP)
+            let mutable testRotation  = rotationVector(rotP.Axis, rotP.Angle)
+
+            let mutable sclePt = Vector3.One
+            let mutable rotPt  = Quaternion.Identity
+            let mutable tranPt = Vector3.One
+            let partTransform  = part.Transform.Decompose(&sclePt, &rotPt, &tranPt) 
+
+            let _world          = displayable.World  * part.Transform 
+            if displayable.Name = "sphere1" then
+                logDebug("Name=      "    + displayable.Name)
+                //logDebug("World= "  + formatMatrix(displayable.World)+ "\n" )
+                logDebug("Pos=       "    + displayable.Position.ToString()) 
+                logDebug("DispRot  = "    + formatVector4(Vector4(displayable.Rotation))  )
+                logDebug("TransfRot= "    + formatVector4(Vector4(testRotation))+ "\n" )
 
             let _view           = Camera.Instance.View
             let _proj           = Camera.Instance.Proj

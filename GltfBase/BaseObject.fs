@@ -33,6 +33,7 @@ module BaseObject =
         let mutable name = _name 
         let mutable idx=0
         let mutable position=_position
+        let mutable center=Vector3.Zero
         let mutable direction=_direction
         let mutable scale:float32[] =_scale.ToArray()
         let mutable velocity=_velocity
@@ -70,6 +71,16 @@ module BaseObject =
             with get() = position
             and set(value)  = position <- value 
 
+        abstract member Center: Vector3 with get
+        default this.Center 
+            with get() = position + center  
+
+        member this.OriginCenter =
+            this.Center - this.Position 
+
+        member this.CenterOrigin =
+            this.Position - this.Center  
+
         member this.LeafNodes() =
             tree.LeafAdapters() 
 
@@ -89,7 +100,7 @@ module BaseObject =
              this.LocalTransform()
 
         member this.LocalTransform() =
-            createLocalTransform (translation, rotation, scale) 
+            createLocalTransform (translation, rotation, scale, this.OriginCenter) 
 
         member this.GlobalTransforms() = 
             tree.UpdatePositionsDeep(this.World) 

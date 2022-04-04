@@ -244,16 +244,16 @@ module WindowControl =
         for part in objekt.Display.Parts do
             writeToOutputWindow("  Shape......: "   + part.Shape.ToString())
             writeToOutputWindow("     Size....: "   + part.Shape.Size.ToString())
-            writeToOutputWindow("     Min.....: "   + formatVector(part.Shape.Minimum))
-            writeToOutputWindow("     Max.....: "   + formatVector(part.Shape.Maximum))
+            writeToOutputWindow("     Min.....: "   + formatVector3(part.Shape.Minimum))
+            writeToOutputWindow("     Max.....: "   + formatVector3(part.Shape.Maximum))
             writeToOutputWindow("     Diameter: "   + (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString())
             writeToOutputWindow("  Material.: "   + part.Material.ToString())
             writeToOutputWindow("  Texture..: "   + part.Texture.ToString())
             writeToOutputWindow("  Visibilty: "  + part.Visibility.ToString())
-        writeToOutputWindow("Position..: "   + formatVector(objekt.Position))
-        writeToOutputWindow("Center....: "   + formatVector(objekt.Center))
-        writeToOutputWindow("Bounds.min: "   + formatVector(objekt.BoundingBox.Minimum))
-        writeToOutputWindow("Bounds.max: "   + formatVector(objekt.BoundingBox.Maximum))
+        writeToOutputWindow("Position..: "   + formatVector3(objekt.Position))
+        writeToOutputWindow("Center....: "   + formatVector3(objekt.Center))
+        writeToOutputWindow("Bounds.min: "   + formatVector3(objekt.BoundingBox.Minimum))
+        writeToOutputWindow("Bounds.max: "   + formatVector3(objekt.BoundingBox.Maximum))
         newLineOutputWindow()
 
     let writeReportObjects(displayables:BaseObject list) =        
