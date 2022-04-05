@@ -90,7 +90,7 @@ module GeometricModel =
 
         override this.resize(newSize) = this.Size <- this.Radius * newSize
 
-        override this.ToString() = "Kugel:" + this.Name + " r= " + this.Radius.ToString() + " o= " + this.Origin.ToString()
+        override this.ToString() = "Kugel:" + " r= " + this.Radius.ToString() + " o= " + this.Origin.ToString()
         
         override this.CreateVertexData(visibility:Visibility) =
             VertexSphere.CreateMeshData(origin, color, radius, Shape.Raster, visibility)
@@ -197,7 +197,7 @@ module GeometricModel =
             )
 
         override this.ToString() =
-            "Quader " +  name  
+            "Quader "  
             + " L: "  
             + sprintf "%4.2f" this.Laenge
             + " B: "
@@ -923,7 +923,7 @@ module GeometricModel =
         new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) =
             new PatchShape(name , origin , List<Vertex>(), List<int>(), size, quality)
 
-        override this.ToString() = "PatchShape (x " + this.Size.ToString() + ") " + this.Name 
+        override this.ToString() = "PatchShape:" + this.Name 
 
     // ----------------------------------------------------------------------------------------------------
     // TopologyType=Triangle

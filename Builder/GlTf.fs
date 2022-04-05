@@ -132,11 +132,10 @@ module GlTf =
             let minimum = computeMinimum(this.Vertices|> Seq.toList)
             let maximum = computeMaximum(this.Vertices|> Seq.toList)
             let actualHeight = maximum.Position.Y - minimum.Position.Y
-            let actualWidt = maximum.Position.X - minimum.Position.X
             let actualDepth = maximum.Position.Z - minimum.Position.Z
             let actualWidt = maximum.Position.X - minimum.Position.X
             let mutable actualSize = max actualHeight actualWidt             
-            actualSize <- max actualSize   actualDepth 
+            actualSize <- max actualSize actualDepth 
             let standardHeight = 1.0f
             standardHeight / actualSize 
 

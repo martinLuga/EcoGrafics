@@ -177,7 +177,6 @@ module Wavefront =
             let minimum = computeMinimum(points|>Array.toList)
             let maximum  = computeMaximum(points|>Array.toList)
             let actualHeight = maximum.Y - minimum.Y
-            let actualWidt = maximum.X - minimum.X
             let actualDepth = maximum.Z - minimum.Z
             let actualWidt = maximum.X - minimum.X
             let mutable actualSize = max actualHeight actualWidt             

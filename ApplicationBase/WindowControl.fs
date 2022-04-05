@@ -241,6 +241,10 @@ module WindowControl =
     let writeObjectReport(objekt:BaseObject) =
         newLineOutputWindow()
         writeToOutputWindow("Objekt....: "   + objekt.Name) 
+        writeToOutputWindow("Position..: "   + formatVector3(objekt.Position))
+        writeToOutputWindow("Center....: "   + formatVector3(objekt.Center))
+        writeToOutputWindow("Bounds.min: "   + formatVector3(objekt.BoundingBox.Minimum))
+        writeToOutputWindow("Bounds.max: "   + formatVector3(objekt.BoundingBox.Maximum))
         for part in objekt.Display.Parts do
             writeToOutputWindow("  Shape......: "   + part.Shape.ToString())
             writeToOutputWindow("     Size....: "   + part.Shape.Size.ToString())
@@ -250,10 +254,6 @@ module WindowControl =
             writeToOutputWindow("  Material.: "   + part.Material.ToString())
             writeToOutputWindow("  Texture..: "   + part.Texture.ToString())
             writeToOutputWindow("  Visibilty: "  + part.Visibility.ToString())
-        writeToOutputWindow("Position..: "   + formatVector3(objekt.Position))
-        writeToOutputWindow("Center....: "   + formatVector3(objekt.Center))
-        writeToOutputWindow("Bounds.min: "   + formatVector3(objekt.BoundingBox.Minimum))
-        writeToOutputWindow("Bounds.max: "   + formatVector3(objekt.BoundingBox.Maximum))
         newLineOutputWindow()
 
     let writeReportObjects(displayables:BaseObject list) =        

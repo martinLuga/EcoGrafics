@@ -306,6 +306,9 @@ module ModelSupport =
             with get () = raise (System.Exception("Nicht implementiert"))
             and set(value) = raise (System.Exception("Nicht implementiert"))
 
+        member this.CenterOrigin =
+            this.Origin - this.Center  
+
         abstract member Update: GameTimer -> Unit
         default this.Update(gt: GameTimer) = raise (System.Exception("Nicht implementiert"))
 
