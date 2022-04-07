@@ -26,6 +26,11 @@ module ScenarioSupport =
     let logger = LogManager.GetLogger("Scenario")
     let logDebug = Debug(logger)
 
+    let DEFAULT_GRAVITY = new Vector3(0.0f, -1.8f, 0.0f)
+    let ZERO_GRAVITY = new Vector3(0.0f, 0.0f, 0.0f)
+    let EARTH_GRAVITY = new Vector3(0.0f, -9.81f, 0.0f)
+    let MOON_GRAVITY = new Vector3(0.0f, -1.62f, 0.0f)
+
     let mutable iActiveScenario  = -1
     let mutable iScenarioObjects = 2
 

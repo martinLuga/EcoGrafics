@@ -11,17 +11,16 @@ open System.Diagnostics
 module GameTimer = 
 
     type GameTimer() =
-    
-        let mutable _secondsPerCount:double = 0.0 
-        let mutable _deltaTime:double =  -1.0 
 
-        let mutable _baseTime:int64   =  0L
-        let mutable _pausedTime:int64 =  0L
-        let mutable _stopTime:int64 =  0L
-        let mutable _prevTime:int64 =  0L
-        let mutable _currTime:int64 =  0L
+        let mutable _secondsPerCount: double = 0.0
+        let mutable _deltaTime: double = -1.0
 
-        let mutable  _stopped = false
+        let mutable _baseTime: int64 = 0L
+        let mutable _pausedTime: int64 = 0L
+        let mutable _stopTime: int64 = 0L
+        let mutable _prevTime: int64 = 0L
+        let mutable _currTime: int64 = 0L
+        let mutable _stopped = false
 
         do        
             Debug.Assert(Stopwatch.IsHighResolution, "System does not support high-resolution performance counter")

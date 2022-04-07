@@ -9,6 +9,7 @@
 open SharpDX
 open GeometryUtils
 open ModelSupport
+open GameTimer
 
 module ObjectBase = 
 
@@ -38,7 +39,7 @@ module ObjectBase =
         new (name, display, position, scale) = BaseObject(name, display, position, Vector4.Zero, scale)
 
         member this.LocalTransform() =
-            createLocalTransform (translation, rotation, scale, this.OriginCenter) 
+            createLocalTransform (translation, this.Rotation, scale, this.OriginCenter) 
         
         abstract member Copy:unit -> BaseObject  
         default this.Copy () = this
@@ -53,11 +54,6 @@ module ObjectBase =
         default this.Center 
             with get() = position + display.Center  
 
-        abstract member Orientation: Vector3 with get,set
-        default this.Orientation
-            with get() = Vector3.UnitX
-            and set(value) = orientation <- value
-        
         abstract member Changed:bool with get, set 
         default this.Changed
             with get () = changed
@@ -66,6 +62,10 @@ module ObjectBase =
         // Body has changed: update Grafic
         abstract member OnUpdateBody:Unit -> Unit
         default this.OnUpdateBody () = ()
+
+        // Simulation step
+        abstract member Step:GameTimer -> Unit
+        default this.Step (timer:GameTimer) = ()
 
         member this.OriginCenter =
             this.Center - this.Position 
@@ -119,6 +119,7 @@ module ObjectBase =
         override this.ToString() = 
             this.Name
 
-        member this.Rotation
+        abstract member Rotation : float32[] with get, set
+        default this.Rotation
             with get() = rotation
             and set(value) = rotation <- value

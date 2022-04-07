@@ -354,10 +354,10 @@ module GeometricModel =
             this.Hoehe <- this.Hoehe * newSize.Y 
 
         override this.Minimum
-            with get () = Vector3(this.Origin.X - radius, this.Origin.Y , this.Origin.Z - radius)
+            with get () = Vector3(this.Origin.X, this.Origin.Y , this.Origin.Z)
 
         override this.Maximum  
-            with get () = Vector3( this.Origin.X +  radius,  this.Origin.Y + hoehe,  this.Origin.Z + radius)
+            with get () = Vector3(this.Origin.X + 2.0f * radius,  this.Origin.Y + hoehe,  this.Origin.Z + + 2.0f * radius)
 
         override this.CreateVertexData(visibility:Visibility) =
             VertexCylinder.CreateMeshData(this.Origin, colorCone, colorCap, hoehe, radius , withCap, Shape.Raster, visibility)  
@@ -650,6 +650,7 @@ module GeometricModel =
             and set (value) = base.Origin <- new Vector3(value.X - this.Seitenlaenge , value.Y - this.Seitenlaenge, value.Z - this.Seitenlaenge)
 
         override this.Update(gt:GameTimer)  = 
+           logInfo("Update "  + _tBase.ToString() )
            if ((gt.TotalTime - _tBase) >= 0.25f) then
     
                Increment(&_tBase, 0.25f)
@@ -659,7 +660,9 @@ module GeometricModel =
 
                let r = MathHelper.Randf(0.2f, 0.5f)
 
-               this.Waves.Disturb(i, j, r)    
+               this.Waves.Disturb(i, j, r)  
+               logDebug("TotalTime: " + gt.TotalTime.ToString())
+               logDebug("TBase: " + _tBase.ToString())
 
            // Update the wave simulation.
            this.Waves.Update(gt.DeltaTime) 
