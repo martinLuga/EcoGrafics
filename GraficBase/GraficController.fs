@@ -541,8 +541,8 @@ module GraficController =
                 logDebug("Name=      "    + displayable.Name)
                 //logDebug("World= "  + formatMatrix(displayable.World)+ "\n" )
                 logDebug("Pos=       "    + displayable.Position.ToString()) 
-                logDebug("DispRot  = "    + formatVector4(Vector4(displayable.Rotation))  )
-                logDebug("TransfRot= "    + formatVector4(Vector4(testRotation))+ "\n" )
+                logDebug("DispRot  = "    + formatMatrix(displayable.Rotation)  )
+                logDebug("TransfRot= "    + formatMatrix(testRotation)+ "\n" )
 
             let _view           = Camera.Instance.View
             let _proj           = Camera.Instance.Proj

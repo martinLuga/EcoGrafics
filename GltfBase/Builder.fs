@@ -44,10 +44,10 @@ module Build =
                 instance
             and set(value) = instance <- value
 
-        static member Build(_objectName, _path:string, _position:Vector3, _rotation:Vector4, _scale:Vector3) =
+        static member Build(_objectName, _path:string, _position:Vector3, _rotation:Matrix, _scale:Vector3) =
             Builder.Instance.Build(_objectName, _path, _position, _rotation, _scale)
 
-        member this.Build( _objectName, _path:string, _position:Vector3, _rotation:Vector4, _scale:Vector3) =  
+        member this.Build( _objectName, _path:string, _position:Vector3, _rotation:Matrix, _scale:Vector3) =  
             let correctorGtlf = correctorGltf(_path)
             store <- Builder.Instance.Read(_objectName, _path)
             objekt <- new Objekt(objectName, store.Gltf, _position, _rotation, _scale)   // Objekt ist durch gltf initialisiert

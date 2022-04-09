@@ -47,7 +47,7 @@ module GlTf =
             scale <- _scale
             let correctorGtlf = correctorGltf(fileName)
             store <- this.Read(_objectName, fileName)
-            objekt <- new Objekt(objectName, store.Gltf, Vector3.Zero, Vector4.Zero, _scale)
+            objekt <- new Objekt(objectName, store.Gltf, Vector3.Zero, Matrix.Identity, _scale)
             Deployer.Deploy(objekt, store, correctorGtlf)
 
             for node in objekt.LeafNodes() do

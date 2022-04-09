@@ -21,22 +21,21 @@ module ObjectBase =
     // Moveable, Immoveable 
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>] 
-    type BaseObject(name: string, display: Display, position:Vector3, rotation:Vector4, scale:Vector3) =  
+    type BaseObject(name: string, display: Display, position:Vector3, rotation:Matrix, scale:Vector3) =  
         let mutable position=position
         let mutable display = display
         let mutable name=name
         let mutable idx=0
-        let mutable changed=true
-        let mutable orientation=Vector3.UnitX         
-        let mutable rotation = rotation.ToArray()
+        let mutable changed=true       
+        let mutable rotation = rotation 
         let mutable translation = position.ToArray()
         let mutable scale = scale.ToArray()
 
-        new (name) = BaseObject(name, new Display(), Vector3.Zero, Vector4.Zero, Vector3.One) 
-        new (name, position) = BaseObject(name, new Display(), position, Vector4.Zero, Vector3.One)
-        new (name, display, position) = BaseObject(name, display, position, Vector4.Zero, Vector3.One)
+        new (name) = BaseObject(name, new Display(), Vector3.Zero, Matrix.Identity, Vector3.One) 
+        new (name, position) = BaseObject(name, new Display(), position, Matrix.Identity, Vector3.One)
+        new (name, display, position) = BaseObject(name, display, position, Matrix.Identity, Vector3.One)
         new (name, display, position, rotation) = BaseObject(name, display, position, rotation, Vector3.One)
-        new (name, display, position, scale) = BaseObject(name, display, position, Vector4.Zero, scale)
+        new (name, display, position, scale) = BaseObject(name, display, position, Matrix.Identity, scale)
 
         member this.LocalTransform() =
             createLocalTransform (translation, this.Rotation, scale, this.OriginCenter) 
@@ -119,7 +118,7 @@ module ObjectBase =
         override this.ToString() = 
             this.Name
 
-        abstract member Rotation : float32[] with get, set
+        abstract member Rotation : Matrix with get, set
         default this.Rotation
             with get() = rotation
             and set(value) = rotation <- value

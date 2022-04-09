@@ -124,8 +124,7 @@ module GeometryUtils =
     // Generate a rotation around Y-axis
     let rotationHorizontal(rotHorizontal) = 
         let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, rotHorizontal)
-        let rotArray = oRotationQuat.ToArray()
-        Vector4(rotArray)
+        Matrix.RotationQuaternion(oRotationQuat)
 
     // Generate a rotation matrix for rotation around X-axis
     let rotationMatrixVert(angle) = 
@@ -135,20 +134,17 @@ module GeometryUtils =
     // Generate a rotation around X-axis
     let rotationVertical(angle) = 
         let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, angle)
-        let rotArray = oRotationQuat.ToArray()
-        Vector4(rotArray)
+        Matrix.RotationQuaternion(oRotationQuat)
 
     // Generate a rotation around X-axis
     let rotationDepth(angle) = 
         let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitZ, angle)
-        let rotArray = oRotationQuat.ToArray()
-        Vector4(rotArray)
+        Matrix.RotationQuaternion(oRotationQuat)
 
     // Generate a rotation around X-axis
     let rotationVector(vector, angle) = 
         let oRotationQuat = Quaternion.RotationAxis(vector, angle)
-        oRotationQuat.ToArray()
-
+        Matrix.RotationQuaternion(oRotationQuat)
     //-----------------------------------------------------------------------------------------------------
     // Drehung eines Objekts, so dass es zwischen Punkt p1 und p2 liegt
     //-----------------------------------------------------------------------------------------------------     
@@ -220,38 +216,6 @@ module GeometryUtils =
     //-----------------------------------------------------------------------------------------------------
     // Transform
     //-----------------------------------------------------------------------------------------------------     
-    let createTranslationMatrix (trans: float32 []) = 
-        let tv = Vector3(trans)
-        Matrix.Translation(tv)
-
-    // Es muss um den Mittelpunkt gedreht werden
-    //  1. Verschiebung des Centers auf den Origin = t2
-    //  2. Drehung = r
-    //  3. Wieder zurückschieben                   = t1
-    
-    let createRotationMatrix (rot: float32 [], originCenter:Vector3) =        
-        let t1 = Matrix.Translation (originCenter)      
-        let t2 = Matrix.Translation (-originCenter)  
-        let r  = Matrix.RotationQuaternion(Quaternion(rot))
-        t2 * r * t1
-
-    let createScaleMatrix (scale: float32 []) = 
-        let sv = Vector3(scale)
-        Matrix.Scaling(sv)
-
-    let createLocalTransform (trans: float32 [], rot: float32 [], scale: float32 [], originCenter:Vector3) =
-        let s = createScaleMatrix (scale)
-        let r = createRotationMatrix (rot, originCenter)
-        let t = createTranslationMatrix (trans) 
-        let sr = 
-            Matrix.Multiply(s,r) 
-        sr * t
-
-    //-----------------------------------------------------------------------------------------------------
-    // Extract from Matrix
-    //----------------------------------------------------------------------------------------------------- 
-    
-    // Beide gleich ?
     let getTranslationOf(matrix:Matrix) =
         Vector3(matrix.Column4.X, matrix.Column4.Y, matrix.Column4.Z)
 
@@ -269,3 +233,31 @@ module GeometryUtils =
         result.Row3 <- Vector4(matrix.M31/sx, matrix.M32/sy, matrix.M33/sz, 0.0f)
         result.Row4 <- Vector4(0.0f, 0.0f, 0.0f, 1.0f)
         result
+
+    //-----------------------------------------------------------------------------------------------------
+    // LocalTransform
+    //----------------------------------------------------------------------------------------------------- 
+    let createTranslationMatrix (trans: float32 []) = 
+        let tv = Vector3(trans)
+        Matrix.Translation(tv)
+
+    // Es muss um den Mittelpunkt gedreht werden
+    //  1. Verschiebung des Centers auf den Origin = t2
+    //  2. Drehung = r
+    //  3. Wieder zurückschieben                   = t1
+    
+    let createRotationMatrix (rot: Matrix, originCenter:Vector3) =        
+        let t1 = Matrix.Translation (originCenter)      
+        let t2 = Matrix.Translation (-originCenter) 
+        t2 * rot * t1
+
+    let createScaleMatrix (scale: float32 []) = 
+        let sv = Vector3(scale)
+        Matrix.Scaling(sv) 
+    let createLocalTransform (trans: float32 [], rot: Matrix, scale: float32 [], originCenter:Vector3) =
+        let s = createScaleMatrix (scale)
+        let r = createRotationMatrix (rot, originCenter)
+        let t = createTranslationMatrix (trans) 
+        let sr = 
+            Matrix.Multiply(s,r) 
+        sr * t
