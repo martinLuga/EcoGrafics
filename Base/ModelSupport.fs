@@ -62,33 +62,39 @@ module ModelSupport =
         | Opaque
         | Transparent
         | Invisible
+        | NotSet
 
     let  blendTypeFromVisibility(visibility:Visibility) =
         match visibility with 
         | Visibility.Opaque       -> BlendType.Opaque
         | Visibility.Transparent  -> BlendType.Transparent
         | Visibility.Invisible    -> BlendType.Transparent
+        | Visibility.NotSet       -> BlendType.Opaque
 
     let blendStateFromVisibility(visibility:Visibility) =
         match visibility with 
         | Visibility.Opaque       -> blendStateOpaque
         | Visibility.Transparent  -> blendStateTransparent
         | Visibility.Invisible    -> blendStateTransparent
+        | Visibility.NotSet       -> blendStateOpaque
 
     let blendDescriptionFromVisibility(visibility:Visibility) =
         match visibility with 
+        | Visibility.NotSet       -> BlendDescription(BlendType.Opaque, blendStateOpaque)
         | Visibility.Opaque       -> BlendDescription(BlendType.Opaque, blendStateOpaque)
         | Visibility.Transparent  -> BlendDescription(BlendType.Transparent, blendStateTransparent)
         | Visibility.Invisible    -> BlendDescription(BlendType.Transparent, blendStateTransparent)
 
     let rasterDescriptionFromVisibility(visibility:Visibility) =
         match visibility with 
+        | Visibility.NotSet         -> RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
         | Visibility.Opaque         -> RasterizerDescription(RasterType.Solid, rasterizerStateSolid)
         | Visibility.Transparent    -> RasterizerDescription(RasterType.Transparent, rasterizerStateSolid)
         | Visibility.Invisible      -> RasterizerDescription(RasterType.Transparent, rasterizerStateTransparent)
 
     let TransparenceFromVisibility(visibility:Visibility) =
-        match visibility with 
+        match visibility with
+        | Visibility.NotSet         -> false 
         | Visibility.Opaque         -> false
         | Visibility.Transparent    -> true
         | Visibility.Invisible      -> true
@@ -580,12 +586,15 @@ module ModelSupport =
         let mutable parts = parts
         let mutable visibility = visibility
         let mutable augmentation=augmentation
+        do  
+            if visibility <> Visibility.NotSet then
+                parts |> List.iter(fun p -> p.Visibility <- visibility)
 
-        new() = new Display([], Visibility.Opaque, Vector3.One, Augmentation.None)
-        new(parts) = new Display(parts, Visibility.Opaque, Vector3.One, Augmentation.None)
+        new() = new Display([], Visibility.NotSet, Vector3.One, Augmentation.None)
+        new(parts) = new Display(parts, Visibility.NotSet, Vector3.One, Augmentation.None)
         new(parts, visibility) = new Display(parts, visibility, Vector3.One, Augmentation.None)
         new(parts, visibility, size) = new Display(parts, visibility, size, Augmentation.None)
-        new(parts, augmentation) = new Display(parts, Visibility.Opaque, Vector3.One, augmentation)
+        new(parts, augmentation) = new Display(parts, Visibility.NotSet, Vector3.One, augmentation)
 
         member this.Size
             with get () = size
@@ -608,7 +617,9 @@ module ModelSupport =
                     
         member this.Visibility
             with get() = visibility
-            and set(value) = visibility <- value
+            and set(value) = 
+                visibility <- value
+                this.Parts |> List.iter(fun p -> p.Visibility <- visibility)
 
         member this.Center =                 
             let alleZentren = this.Parts |> Seq.map (fun p -> p.Center) |> Seq.toList

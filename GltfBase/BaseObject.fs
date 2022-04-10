@@ -35,7 +35,7 @@ module BaseObject =
         let mutable position=_position
         let mutable center=Vector3.Zero
         let mutable direction=_direction
-        let mutable scale:float32[] =_scale.ToArray()
+        let mutable scale  =_scale 
         let mutable velocity=_velocity
         let mutable rotation:Matrix = _rotation 
         let mutable translation = position.ToArray()
@@ -100,7 +100,7 @@ module BaseObject =
              this.LocalTransform()
 
         member this.LocalTransform() =
-            createLocalTransform (translation, rotation, scale, this.OriginCenter) 
+            createLocalTransform (Vector3(translation), rotation, scale,  this.OriginCenter) 
 
         member this.GlobalTransforms() = 
             tree.UpdatePositionsDeep(this.World) 

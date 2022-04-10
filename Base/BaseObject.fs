@@ -15,6 +15,8 @@ module ObjectBase =
 
     exception ObjectDuplicateException of string
 
+    let UNDEF = Vector3(7777.0f, 8888.0f, 9999.0f)
+
     // ----------------------------------------------------------------------------------------------------
     // Oberklasse für alle graphisch anzeigbaren Objekte
     // Subklassen: 
@@ -28,8 +30,8 @@ module ObjectBase =
         let mutable idx=0
         let mutable changed=true       
         let mutable rotation = rotation 
-        let mutable translation = position.ToArray()
-        let mutable scale = scale.ToArray()
+        let mutable scale = scale
+        let mutable originCenter = UNDEF
 
         new (name) = BaseObject(name, new Display(), Vector3.Zero, Matrix.Identity, Vector3.One) 
         new (name, position) = BaseObject(name, new Display(), position, Matrix.Identity, Vector3.One)
@@ -38,7 +40,7 @@ module ObjectBase =
         new (name, display, position, scale) = BaseObject(name, display, position, Matrix.Identity, scale)
 
         member this.LocalTransform() =
-            createLocalTransform (translation, this.Rotation, scale, this.OriginCenter) 
+            createLocalTransform (this.Position, this.Rotation, this.Scale, this.OriginCenter) 
         
         abstract member Copy:unit -> BaseObject  
         default this.Copy () = this
@@ -67,21 +69,16 @@ module ObjectBase =
         default this.Step (timer:GameTimer) = ()
 
         member this.OriginCenter =
-            this.Center - this.Position 
+            if originCenter = UNDEF then
+                originCenter <- this.Center - this.Position 
+            originCenter
 
         member this.CenterOrigin =
-            this.Position - this.Center  
+            - this.OriginCenter  
 
         member this.Position
             with get () = position
-            and set (aValue) = 
-                position <- aValue
-                translation <- position.ToArray()
-
-        member this.Translation
-            with get () = translation
-            and set (aValue) = 
-                translation <- aValue 
+            and set (aValue) = position <- aValue
 
         member this.Scale
             with get () = scale

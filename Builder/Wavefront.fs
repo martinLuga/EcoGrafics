@@ -163,7 +163,7 @@ module Wavefront =
             normals     <- Array.zeroCreate size
             textures    <- Array.zeroCreate size
 
-        member this.AdjustPosition() =
+        member this.adjustXYZ() =
            let minimum = computeMinimum(points|>Array.toList) 
            for i in 0..size-1 do
                 points[i] <- points[i] - minimum
@@ -183,6 +183,7 @@ module Wavefront =
             actualSize <- max actualSize   actualDepth 
             let standardHeight = 1.0f
             standardHeight / actualSize 
+
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------
     // GeometryBuilder
@@ -302,7 +303,7 @@ module Wavefront =
 
             this.ParseGeoData()
 
-            geoCache.AdjustPosition()
+            geoCache.adjustXYZ()
 
             geoCache.Resize()
 

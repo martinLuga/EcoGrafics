@@ -251,13 +251,12 @@ module GeometryUtils =
         let t2 = Matrix.Translation (-originCenter) 
         t2 * rot * t1
 
-    let createScaleMatrix (scale: float32 []) = 
-        let sv = Vector3(scale)
-        Matrix.Scaling(sv) 
-    let createLocalTransform (trans: float32 [], rot: Matrix, scale: float32 [], originCenter:Vector3) =
-        let s = createScaleMatrix (scale)
-        let r = createRotationMatrix (rot, originCenter)
-        let t = createTranslationMatrix (trans) 
-        let sr = 
-            Matrix.Multiply(s,r) 
-        sr * t
+    let createScaleMatrix (scale: Vector3) = 
+        Matrix.Scaling(scale) 
+
+    let createLocalTransform (trans: Vector3, rot: Matrix, scale:Vector3, originCenter:Vector3) =
+        let s = createScaleMatrix (scale) 
+        let oc = originCenter * scale               // muss auch skaliert werden
+        let r = createRotationMatrix (rot, oc)
+        let t = Matrix.Translation(trans) 
+        s * r * t
