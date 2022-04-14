@@ -276,6 +276,10 @@ module GraficController =
             with get() = idle
             and set(value) = idle <- value
 
+        member this.Status
+            with get() = status
+            and set(value) = status <- value
+
         member this.Objects
             with get() = objects
 

@@ -197,7 +197,7 @@ module GeometricModel =
             )
 
         override this.ToString() =
-            "Quader "  
+            "Quader: " + this.Name   
             + " L: "  
             + sprintf "%4.2f" this.Laenge
             + " B: "
@@ -730,9 +730,6 @@ module GeometricModel =
     // ----------------------------------------------------------------------------------------------------
     //  Corpus
     // ----------------------------------------------------------------------------------------------------
-    let makeUpperContour(contour: Vector3[], height) =
-        contour |> Array.map (fun point -> Vector3(point.X, point.Y + height, point.Z))
-
     type Corpus(name: string, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
         inherit Geometry(name, Vector3.Zero, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
@@ -753,6 +750,12 @@ module GeometricModel =
         member this.ColorBottom=colorBottom
         member this.ColorTop=colorTop
         member this.ColorSide=colorSide
+
+        member this.UpperContour
+            with get() = upperContour  
+
+        member this.LowerContour
+            with get() = lowerContour
         
         override this.Minimum with get() = minimum
         override this.Maximum with get() = maximum
