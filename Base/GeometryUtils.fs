@@ -145,9 +145,16 @@ module GeometryUtils =
     let rotationVector(vector, angle) = 
         let oRotationQuat = Quaternion.RotationAxis(vector, angle)
         Matrix.RotationQuaternion(oRotationQuat)
+
     //-----------------------------------------------------------------------------------------------------
     // Drehung eines Objekts, so dass es zwischen Punkt p1 und p2 liegt
-    //-----------------------------------------------------------------------------------------------------     
+    //-----------------------------------------------------------------------------------------------------   
+    let angleBetween(p1:Vector3, p2:Vector3) =   
+        p1.Normalize()
+        p2.Normalize()
+        let mutable v = Vector3.Cross(p1,p2)            // Vektor, senkrecht zu beiden
+        acos(Vector3.Dot(p1, p2))                       // Winkel zwischen v1, v2  ACHTUNG: <= 180 Grad
+
     let rotateBetween(p1:Vector3, p2:Vector3) =   
         p1.Normalize()
         p2.Normalize()
@@ -156,7 +163,7 @@ module GeometryUtils =
         Quaternion.RotationAxis(v, angle)               // Drehung um die Achse v mit Winkel w  
 
     let euler(v1: Vector3, v2: Vector3) =            
-        let q = rotateBetween(v1, v2)                      // Winkel zwischen v1, v2  
+        let q = rotateBetween(v1, v2)                   // Winkel zwischen v1, v2  
         toPitchYawRoll(q)     
 
     //-----------------------------------------------------------------------------------------------------
