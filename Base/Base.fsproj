@@ -26,6 +26,7 @@
     <Compile Include="GameTimer.fs" />
     <Compile Include="MathHelper.fs" />
     <Compile Include="ShaderSupport.fs" />
+    <Compile Include="StringSupport.fs" />
     <Compile Include="FileSupport.fs" />
     <Compile Include="ShaderCompile.fs" />
     <Compile Include="LoggingSupport.fs" />
@@ -37,7 +38,6 @@
     <Compile Include="QuaderSupport.fs" />
     <Compile Include="ModelSupport.fs" />
     <Compile Include="MaterialsAndTextures.fs" />
-    <Compile Include="StringSupport.fs" />
     <Compile Include="RecordSupport.fs" />
     <Compile Include="Configuration.fs" />
     <Compile Include="GeometryUtils.fs" />
@@ -58,6 +58,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+    <PackageReference Update="FSharp.Core" Version="6.0.4" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,8 @@
 
 open System.IO
 
+open StringSupport
+
 // ----------------------------------------------------------------------------
 // File convenience functions
 // ----------------------------------------------------------------------------
@@ -128,6 +130,30 @@ module FileSupport =
         while not sr.EndOfStream do
             yield sr.ReadLine ()
     }
+
+    // ----------------------------------------------------------------------------
+    // File zeilenweise lesen
+    // ----------------------------------------------------------------------------
+    let readLinesCSV (filePath:string) = seq {
+        use sr = new StreamReader (filePath)
+        while not sr.EndOfStream do
+            yield getElementsSeparatedBy (sr.ReadLine (), ',')
+    }
+
+    // ----------------------------------------------------------------------------
+    // Erste Zeile lesen
+    // ----------------------------------------------------------------------------
+    let readFirstLine (filePath:string) = seq {
+        use sr = new StreamReader (filePath)
+        yield sr.ReadLine ()
+    }
+
+    // ----------------------------------------------------------------------------
+    // Erste Zeile lesen
+    // ----------------------------------------------------------------------------
+    let readFirstLineCSV (filePath:string) = 
+        let sr = new StreamReader (filePath)
+        getElementsSeparatedBy (sr.ReadLine (), ',') 
 
     // ----------------------------------------------------------------------------
     // Anzahl Zeilen in text-File

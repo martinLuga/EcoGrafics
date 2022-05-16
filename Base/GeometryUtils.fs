@@ -267,3 +267,14 @@ module GeometryUtils =
         let r = createRotationMatrix (rot, oc)
         let t = Matrix.Translation(trans) 
         s * r * t
+
+    let createOrientation (direction) =
+        let angle = angleBetween (Vector3.UnitX, direction)
+        direction.Normalize()
+        let mutable v = Vector3.Cross(Vector3.UnitX, direction)
+        let angle = acos (Vector3.Dot(Vector3.UnitX, direction))
+
+        if direction.Z < 0.0f then
+            Quaternion.RotationAxis(Vector3.Up, angle)
+        else
+            Quaternion.RotationAxis(Vector3.Up,-angle)
