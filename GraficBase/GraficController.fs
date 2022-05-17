@@ -409,7 +409,7 @@ module GraficController =
                     let meshData = part.Shape.CreateVertexData(part.Visibility)
                     myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology) 
                     logDebug("Refresh Mesh for " + part.Shape.Name)
-            //myGpu.FinalizeMeshCache() 
+            myGpu.FinalizeMeshCache() 
             myGpu.ExecuteInstall()
 
         // ----------------------------------------------------------------------------------------------------

@@ -164,7 +164,15 @@ module GeometryUtils =
 
     let euler(v1: Vector3, v2: Vector3) =            
         let q = rotateBetween(v1, v2)                   // Winkel zwischen v1, v2  
-        toPitchYawRoll(q)     
+        toPitchYawRoll(q)   
+        
+    let rotationBetween(point1:Vector3, point2:Vector3) = 
+        let mutable _p1 = Vector3(point1.X, point1.Y + 1.0f, point1.Z)
+        let mutable _p2 = point2
+        _p1 <- _p1 - point1 
+        _p2 <- point2 - point1 
+        let quat = rotateBetween (_p1, _p2)
+        Matrix.RotationQuaternion(quat)
 
     //-----------------------------------------------------------------------------------------------------
     // Die Euler-Winkel bestimmen die Lage des Objekts im Raum 
