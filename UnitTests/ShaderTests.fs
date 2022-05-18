@@ -12,8 +12,6 @@ open NUnit.Framework
 open Base.VertexDefs
 open Base.ShaderCompile
 
-open Shader.Connector
-
 open ShaderCommons 
 open Initializations
 
@@ -81,32 +79,6 @@ module ShaderTests =
             let shader = shaderFromStringAndFile (shString, "shaders", fileShaderCode, "PS", "ps_5_1")            
             Assert.NotNull (shader)
             logger.Info("Shader compiled from string")
-
-    [<TestFixture>]
-    type ConnectorTests() = 
-        
-        [<DefaultValue>] val mutable logger: ILog
-        
-        [<SetUp>]
-        member this.setUp() =            
-            logger.Info("ConnectorTests set up ")
-
-        [<Test>]
-        member this.CreateSignatureTest() =
-            let vertex = new Vertex()
-            let constant = new Constant("VertexIn", vertex)
-            let connector  =  new Connector()
-            connector.AddConstant(constant)
-            let signature = connector.GetRootSignatureDesc()
-            Assert.NotNull (signature)
-            logger.Info("Signature created")
-
-        [<Test>]
-        member this.ConnectorAPITest() =
-            let vertex = new Vertex()
-            let constant = new Constant("VertexIn", vertex)
-            let shaderStruct = constant.AsShaderStruct()            
-            logger.Info("Shader Struct:   \n" + shaderStruct)
 
     [<TestFixture>]
     type AnalyzeTests() = 

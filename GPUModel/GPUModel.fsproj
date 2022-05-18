@@ -37,7 +37,6 @@
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\DirectX\DirectX.fsproj" />
     <ProjectReference Include="..\ShaderRenderingCookbook\ShaderRenderingCookbook.fsproj" />
-    <ProjectReference Include="..\Shader\Shader.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

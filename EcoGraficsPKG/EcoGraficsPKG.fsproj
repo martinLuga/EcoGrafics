@@ -26,7 +26,6 @@
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
     <ProjectReference Include="..\GraficBase\GraficBase.fsproj" />
-    <ProjectReference Include="..\Shader\Shader.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,7 +24,6 @@
     <ProjectReference Include="..\DirectX\DirectX.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GraficBase\GraficBase.fsproj" />
-    <ProjectReference Include="..\Shader\Shader.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework" />
