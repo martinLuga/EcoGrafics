@@ -152,28 +152,17 @@ module GeometryUtils =
     let angleBetween(p1:Vector3, p2:Vector3) =   
         p1.Normalize()
         p2.Normalize()
-        let mutable v = Vector3.Cross(p1,p2)            // Vektor, senkrecht zu beiden
         acos(Vector3.Dot(p1, p2))                       // Winkel zwischen v1, v2  ACHTUNG: <= 180 Grad
 
     let rotateBetween(p1:Vector3, p2:Vector3) =   
-        p1.Normalize()
-        p2.Normalize()
+        let angle = angleBetween(p1, p2)                // Winkel zwischen v1, v2 
         let mutable v = Vector3.Cross(p1,p2)            // Vektor, senkrecht zu beiden
-        let angle = acos(Vector3.Dot(p1, p2))           // Winkel zwischen v1, v2 
         Quaternion.RotationAxis(v, angle)               // Drehung um die Achse v mit Winkel w  
 
     let euler(v1: Vector3, v2: Vector3) =            
         let q = rotateBetween(v1, v2)                   // Winkel zwischen v1, v2  
         toPitchYawRoll(q)   
         
-    let rotationBetween(point1:Vector3, point2:Vector3) = 
-        let mutable _p1 = Vector3(point1.X, point1.Y + 1.0f, point1.Z)
-        let mutable _p2 = point2
-        _p1 <- _p1 - point1 
-        _p2 <- point2 - point1 
-        let quat = rotateBetween (_p1, _p2)
-        Matrix.RotationQuaternion(quat)
-
     //-----------------------------------------------------------------------------------------------------
     // Die Euler-Winkel bestimmen die Lage des Objekts im Raum 
     //

@@ -111,7 +111,6 @@ module ModelSupport =
         let mutable path = pathName 
         let mutable isCube = isCube 
         let mutable data:byte[] = _data
-
         
         new(name, fileName, pathName, isCube, data, mimeType) = Texture(name, fileName, pathName, 0, data, mimeType, isCube)
         new(name, fileName, pathName, isCube, data) = Texture(name, fileName, pathName, 0, data, "", isCube)
@@ -130,7 +129,7 @@ module ModelSupport =
         member this.FileName = fileName
         member this.Path =
             if path <> "" then path
-            else "textures/" + this.FileName
+            else "texture/" + this.FileName
 
         member this.IsCube = isCube = true 
 

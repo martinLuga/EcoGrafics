@@ -538,7 +538,7 @@ module GraficController =
             let mutable sclePt = Vector3.One
             let mutable rotPt  = Quaternion.Identity
             let mutable tranPt = Vector3.One
-            let partTransform  = part.Transform.Decompose(&sclePt, &rotPt, &tranPt) 
+            part.Transform.Decompose(&sclePt, &rotPt, &tranPt) |> ignore
 
             let _world          = displayable.World  * part.Transform 
             if displayable.Name = "sphere1" then
