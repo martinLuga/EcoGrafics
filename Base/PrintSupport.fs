@@ -130,3 +130,8 @@ module PrintSupport =
 
     let fromArray2(x:float32[]) =
         Vector2( x.[0], x.[1])
+
+    let formatQuaternion(quaternion:Quaternion) =
+        let axis  = quaternion.Axis
+        let angle = quaternion.Angle
+        "AXIS ("  + formatVector3 (axis) + "), ANGLE " + angle.ToString()

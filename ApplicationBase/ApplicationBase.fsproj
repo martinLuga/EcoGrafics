@@ -11,6 +11,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Logging.fs" />
      <Compile Include="ScenarioSupport.fs" />
     <Compile Include="WindowLayout.fs" />
     <Compile Include="WindowControl.fs" />
