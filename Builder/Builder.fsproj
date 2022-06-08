@@ -10,6 +10,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="PolygonFormat.fs" />
     <Compile Include="GlbFormat.fs" />
     <Compile Include="WavefrontFormat.fs" />
     <Compile Include="SimpleFormat.fs" />

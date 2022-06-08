@@ -14,6 +14,7 @@ open Base.ShaderSupport
  
 open Wavefront
 open SimpleFormat
+open PolygonFormat
 open Glb
 open GlTf
 
@@ -36,6 +37,22 @@ module SimpleBuilder =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new SimpleBuilder(name, fileName)  
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.Parts
+
+module PolygonBuilder = 
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für Polygone aus Datei
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Polygon")
+    let logInfo = Info(logger)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Polygon für eine vorgegebene Menge an Punkten erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (name, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
+        let builder = new PolygonBuilder(name, fileName)  
+        builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
 
 module GlbBuilder = 
