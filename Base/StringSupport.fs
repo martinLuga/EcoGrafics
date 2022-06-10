@@ -54,6 +54,12 @@ module StringSupport =
     let  onlyDigits(currentLine:string) = 
          new String(currentLine.Where(Char.IsDigit).ToArray())
 
+    let NoLetter(c:char) =
+        not (Char.IsLetter(c))
+
+    let  noLetters(currentLine:string) = 
+         new String(currentLine.Where(NoLetter).ToArray())
+
     let  onlyLetters(currentLine:string) = 
          new String(currentLine.Where(Char.IsLetter).ToArray())
 

@@ -15,6 +15,7 @@ open Base.ShaderSupport
 open Wavefront
 open SimpleFormat
 open PolygonFormat
+open SVGFormat
 open Glb
 open GlTf
 
@@ -52,6 +53,22 @@ module PolygonBuilder =
     let Build (name, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new PolygonBuilder(name, fileName)  
+        builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.Parts
+
+module SvgBuilder = 
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für Polygone aus Svg-Datei
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Svg")
+    let logInfo = Info(logger)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Polygon für eine vorgegebene Menge an Punkten erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (name, number, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating polygon from Svg-File:" + fileName  )
+        let builder = new SvgBuilder(name, number, fileName)  
         builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
 
