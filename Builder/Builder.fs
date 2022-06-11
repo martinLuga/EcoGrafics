@@ -6,6 +6,9 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
+open System
+open System.Globalization
+
 open log4net
 
 open Base.LoggingSupport
@@ -66,9 +69,14 @@ module SvgBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Polygon für eine vorgegebene Menge an Punkten erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, number, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let Build (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating polygon from Svg-File:" + fileName  )
-        let builder = new SvgBuilder(name, number, fileName)  
+        let builder = 
+            if element = "*" then
+                new SvgBuilder(fileName, name)  
+            else
+                let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
+                new SvgBuilder(fileName, name, elem)
         builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
 

@@ -66,18 +66,16 @@ module SVGFormat =
     // ----------------------------------------------------------------------------------------------------
     // SVGBuilder
     // ----------------------------------------------------------------------------------------------------
-    // 1. EINLESEN: Satz Vertexe einlesen
-    // ----------------------------------------------------------------------------------------------------
+    // 1. Points aus *.svg einlesen
     // 2. Kontur erstellen 
-    // ----------------------------------------------------------------------------------------------------
     // 3. Ein Part erstellen
     // ----------------------------------------------------------------------------------------------------    
-    type SvgBuilder(element:string, number:int, fileName:String) =
+    type SvgBuilder(fileName:String, element:string, ?number:int) =
         let mutable element = element
-        let mutable elementNumber = number
+        let mutable elementNumber = defaultArg number -1
         let mutable fileName = fileName
-        let mutable points = new List<Vector3>()
         let mutable part : Part = null
+        let mutable partNr = 0
         let mutable parts : List<Part> = new List<Part>()
         let mutable shape : Shape = null 
         let mutable document:SVGDocument = null
@@ -86,54 +84,63 @@ module SVGFormat =
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Kontur für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
-        member this.Build(height:float32, material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-            size <-  sizeFactor
-            document <-  new SVGDocument (fileName) 
+        member this.Build
+            (
+                height: float32,
+                material: Material,
+                texture: Texture,
+                sizeFactor: Vector3,
+                visibility: Visibility,
+                augment: Augmentation,
+                quality: Quality,
+                shaders: ShaderConfiguration
+            ) =
+            size <- sizeFactor
+            document <- new SVGDocument(fileName)
             let svgElement = document.RootElement
 
             for node in svgElement.Children do
                 if node.ClassName = element then
                     let values = node.Attributes.Item(1)
-                    input <- noLetters(values.Value).Trim()
-                    let vals = input.Split(' ') 
-                    
-                    points <- new List<Vector3>() 
-                    for i in 0..2..vals.Length-2 do
-                        let point = 
-                            Vector3(
-                                Convert.ToSingle(vals.[i].Trim(), CultureInfo.InvariantCulture),
-                                0.0f, 
-                                Convert.ToSingle(vals.[i+1].Trim(), CultureInfo.InvariantCulture)
-                            )
-                        points.Add(point)
-                    this.addPart(height, material, texture, visibility, shaders)
-                else 
-                    let named = node.Attributes.GetNamedItem("name") 
+                    this.createPoints (values, height, material, texture, visibility, shaders)
+                else
+                    // TODO
+                    let named = node.Attributes.GetNamedItem("name")
                     if named <> null && named.TextContent = element then
                         let values = node.Attributes.GetNamedItem("d")
-                        input <- noLetters(values.Value).Trim()
-                        let vals = input.Split(' ') 
-                    
-                        points <- new List<Vector3>() 
-                        for i in 0..2..vals.Length-2 do
-                            let point = 
-                                Vector3(
-                                    Convert.ToSingle(vals.[i].Trim(), CultureInfo.InvariantCulture),
-                                    0.0f, 
-                                    Convert.ToSingle(vals.[i+1].Trim(), CultureInfo.InvariantCulture)
-                                )
-                            points.Add(point)
-                        this.addPart(height, material, texture, visibility, shaders)
+                        this.createPoints (values, height, material, texture, visibility, shaders)
 
-        member this.addPart(height, material, texture, visibility, shaders) =
-                    
-            this.adjustXYZ()
+        member this.createPoints(values: Attr, height, material, texture, visibility, shaders) =
+            input <- noLetters(values.Value).Trim()
+            let vals = input.Split(' ')
 
-            this.Resize()
+            let mutable points = new List<Vector3>()
 
-            shape <- 
+            for i in 0..2 .. vals.Length - 2 do
+                let point =
+                    Vector3(
+                        Convert.ToSingle(vals.[i].Trim(), CultureInfo.InvariantCulture),
+                        0.0f,
+                        Convert.ToSingle(vals.[i + 1].Trim(), CultureInfo.InvariantCulture)
+                    )
+
+                points.Add(point)
+
+            this.addPart (&points, height, material, texture, visibility, shaders)
+
+        member this.addPart(points: List<Vector3> byref, height, material, texture, visibility, shaders) =
+
+            if elementNumber >= 0 then
+                this.adjustXYZ (&points)
+
+            this.Resize(&points)
+
+            let partName = element + partNr.ToString()
+            partNr <- partNr + 1
+
+            shape <-
                 new Corpus(
-                    name = element,
+                    name = partName,
                     contour = points.ToArray(),
                     height = height,
                     colorBottom = Color.White,
@@ -141,40 +148,23 @@ module SVGFormat =
                     colorSide = Color.White
                 )
 
-            part <- 
-                new Part(
-                    element,
-                    shape,
-                    material,
-                    texture,
-                    visibility,
-                    shaders
-                    )
+            part <- new Part(partName, shape, material, texture, visibility, shaders)
 
             parts.Add(part)               
 
         member this.Parts =
-            [parts.Item(elementNumber)] 
+            if elementNumber < 0 then
+                parts |> Seq.toList
+            else
+                [parts.Item(elementNumber)] 
 
-        member this.adjustXYZ()=
+        member this.adjustXYZ(points: List<Vector3> byref)=
            let min = computeMinimum(points|> Seq.toList) 
            points <- points |> Seq.map (fun p -> p-min) |> ResizeArray
            ()
 
-        member this.ComputeFactor() =
-            let min = computeMinimum(points|> Seq.toList)
-            let max= computeMaximum(points|> Seq.toList)
-            let mutable box = BoundingBox()
-            box.Minimum <- min  
-            box.Maximum <- max   
-            
-            let actualSize = box.Maximum.X - box.Minimum
-            let standardSize = 5.0f
-            standardSize / actualSize 
-
-        member this.Resize() =
-            let aFactor = this.ComputeFactor() * size 
+        member this.Resize(points: List<Vector3> byref) =
             for i = 0 to points.Count - 1 do
                 let mutable resizedVertex = points.Item(i)
-                resizedVertex  <- points.Item(i) * aFactor
+                resizedVertex  <- points.Item(i) * size
                 points.Item(i) <- resizedVertex

@@ -238,7 +238,7 @@ module WindowControl =
     // ---------------------------------------------------------------------------------------------------- 
     //  Text-Nachrichten Ausgabe
     // ---------------------------------------------------------------------------------------------------- 
-    let writeObjectReport(objekt:BaseObject) =
+    let writeReport(objekt:BaseObject) =
         newLineOutputWindow()
         writeToOutputWindow("Objekt....: "   + objekt.Name) 
         writeToOutputWindow("Position..: "   + formatVector3(objekt.Position))
@@ -260,7 +260,7 @@ module WindowControl =
     let writeReportObjects(displayables:BaseObject list) =        
         clearOutputWindow()
         for disp in displayables do
-            writeObjectReport(disp)
+            writeReport(disp)
 
     let printScenario(scenarioName) =
         logInfo("Start Scenario: " + scenarioName) 
