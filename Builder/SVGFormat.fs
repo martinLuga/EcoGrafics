@@ -27,6 +27,7 @@ open Base.MaterialsAndTextures
 
 open Aspose.Svg
 open Aspose.Svg.Dom
+open Aspose.Svg.Paths
 open Aspose.Svg.Dom.Traversal.Filters
 
 // ----------------------------------------------------------------------------------------------------
@@ -76,10 +77,11 @@ module SVGFormat =
         let mutable fileName = fileName
         let mutable part : Part = null
         let mutable partNr = 0
+        let mutable matNr = 0
         let mutable parts : List<Part> = new List<Part>()
         let mutable shape : Shape = null 
         let mutable document:SVGDocument = null
-        let mutable size =Vector3.One
+        let mutable size = Vector3.One
         
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Kontur für eine Menge von Punkten
@@ -100,57 +102,98 @@ module SVGFormat =
             let svgElement = document.RootElement
 
             for node in svgElement.Children do
-                if node.ClassName = element then
-                    let values = node.Attributes.Item(1)
-                    this.createPoints (values, height, material, texture, visibility, shaders)
-                else
-                    // TODO
-                    let named = node.Attributes.GetNamedItem("name")
-                    if named <> null && named.TextContent = element then
-                        let values = node.Attributes.GetNamedItem("d")
-                        this.createPoints (values, height, material, texture, visibility, shaders)
+                if node.LocalName = "path" then
 
-        member this.createPoints(values: Attr, height, material, texture, visibility, shaders) =
-            input <- noLetters(values.Value).Trim()
-            let vals = input.Split(' ')
+                    let mat = this.getMaterial(element, material)
+                    partNr <- partNr + 1
+                            
+                    if node.ClassName = "" then
+                        let named = node.Attributes.GetNamedItem("name")
+                        let name = node.Attributes.GetNamedItem("name").Value
+                        if name = element || element = "*" then
+                            let partName = name + partNr.ToString()
+                            if named <> null then                            
+                                let pathElement = node :?>SVGPathElement 
+                                let points = this.parseSegments(pathElement)
+                                this.addPart (points, partName, height, mat, texture, visibility, shaders)
+                    else  
+                        if node.ClassName = element || element = "*" then
+                            let partName = node.ClassName + partNr.ToString()
+                            let values = node.Attributes.GetNamedItem("d")
+                            let points = this.createPoints (values.Value)
+                            this.addPart (points, partName, height, mat, texture, visibility, shaders)
 
+        member this.parseSegments(element:SVGPathElement) = 
             let mutable points = new List<Vector3>()
+            let pathSegList = element.PathSegList |> Seq.toList
+            let move = pathSegList.Head :?> SVGPathSegMovetoAbs
+            let rels = pathSegList.Tail 
 
-            for i in 0..2 .. vals.Length - 2 do
-                let point =
-                    Vector3(
-                        Convert.ToSingle(vals.[i].Trim(), CultureInfo.InvariantCulture),
-                        0.0f,
-                        Convert.ToSingle(vals.[i + 1].Trim(), CultureInfo.InvariantCulture)
+            let mutable lastPoint = Vector3(move.X, 0.0f, move.Y)
+            points.Add(lastPoint)
+
+            for relSeg in rels do
+                match relSeg.PathSegType with
+                | SVGPathSeg.PATHSEG_LINETO_REL -> 
+                    let rel = relSeg :?> SVGPathSegLinetoRel
+                    let nextPoint = lastPoint + Vector3(rel.X , 0.0f, rel.Y)
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint   
+                | _ -> ()
+            points
+
+        member this.getMaterial(element, material) =
+            if element = "*" then
+                matNr <- 
+                    if matNr < DefaultMaterials.Length - 1 then 
+                        matNr + 1
+                    else 0
+                DefaultMaterials.[matNr]
+            else 
+                material
+
+        member this.createPoints(values: string ) =
+            let mutable points = new List<Vector3>()
+            input <- noLetters(values).Trim()
+            if input.Length > 0 then
+                let vals = input.Split(' ')               
+
+                for i in 0..2 .. vals.Length - 2 do
+                    let point =
+                        Vector3(
+                            Convert.ToSingle(vals.[i].Trim(), CultureInfo.InvariantCulture),
+                            0.0f,
+                            Convert.ToSingle(vals.[i + 1].Trim(), CultureInfo.InvariantCulture)
+                        )
+
+                    points.Add(point)
+            points
+
+        member this.addPart(points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
+
+            if points.Count > 0 then
+
+                //if elementNumber >= 0 then
+                //    this.adjustXYZ (&points)
+
+                this.Resize(points)
+
+                let origin = points[0]
+
+                shape <-
+                    new Corpus(
+                        name = partName,
+                        origin = origin,
+                        contour = points.ToArray(),
+                        height = height,
+                        colorBottom = Color.White,
+                        colorTop = Color.White,
+                        colorSide = Color.White
                     )
 
-                points.Add(point)
+                part <- new Part(partName, shape, material, texture, visibility, shaders)
 
-            this.addPart (&points, height, material, texture, visibility, shaders)
-
-        member this.addPart(points: List<Vector3> byref, height, material, texture, visibility, shaders) =
-
-            if elementNumber >= 0 then
-                this.adjustXYZ (&points)
-
-            this.Resize(&points)
-
-            let partName = element + partNr.ToString()
-            partNr <- partNr + 1
-
-            shape <-
-                new Corpus(
-                    name = partName,
-                    contour = points.ToArray(),
-                    height = height,
-                    colorBottom = Color.White,
-                    colorTop = Color.White,
-                    colorSide = Color.White
-                )
-
-            part <- new Part(partName, shape, material, texture, visibility, shaders)
-
-            parts.Add(part)               
+                parts.Add(part)               
 
         member this.Parts =
             if elementNumber < 0 then
@@ -163,7 +206,7 @@ module SVGFormat =
            points <- points |> Seq.map (fun p -> p-min) |> ResizeArray
            ()
 
-        member this.Resize(points: List<Vector3> byref) =
+        member this.Resize(points: List<Vector3>) =
             for i = 0 to points.Count - 1 do
                 let mutable resizedVertex = points.Item(i)
                 resizedVertex  <- points.Item(i) * size

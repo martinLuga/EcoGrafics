@@ -730,21 +730,20 @@ module GeometricModel =
     // ----------------------------------------------------------------------------------------------------
     //  Corpus
     // ----------------------------------------------------------------------------------------------------
-    type Corpus(name: string, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
-        inherit Geometry(name, Vector3.Zero, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+    type Corpus(name: string, origin, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
+        inherit Geometry(name, origin, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
         let mutable lowerContour = contour 
         let mutable upperContour = contour 
         do  
             minimum <- Base.MathSupport.computeMinimum(lowerContour |> Array.toList )
-            lowerContour <- shiftContour(contour, -minimum)
-            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Array.toList )
-
             upperContour <- shiftPoints lowerContour height
             maximum <- Base.MathSupport.computeMaximum(upperContour |> Array.toList)
 
+        new (name, contour, height, colorBottom, colorTop, colorSide) = Corpus (name, Vector3.Zero, contour, height, colorBottom , colorTop , colorSide)
         new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
+        new (name, origin, contour, height, color) = Corpus (name, origin, contour, height, color, color, color)
 
         member this.Contour=contour 
         member this.ColorBottom=colorBottom
@@ -777,13 +776,7 @@ module GeometricModel =
         member   this.Length = this.Maximum.X - this.Minimum.X
 
         override this.ToString() =
-            "Corpus " +  name  
-            + " L:"  
-            + sprintf "%4.2f" this.Length
-            + " B:"
-            + sprintf "%4.2f" this.Width
-            + " H:"
-            + sprintf "%4.2f" this.Height
+            "Corpus " + name
 
         override this.TopologyType = PrimitiveTopologyType.Patch
 

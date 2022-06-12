@@ -154,25 +154,25 @@ module MaterialsAndTextures =
             isCube=isCube
         ) 
 
-    let TEXT_ANT        = TEXTURE("ANT", "Ant_color.jpg", false)
-    let TEXT_ANTHILL    = TEXTURE("ANTHILL", "texture_140.jpg", false)
-    let TEXT_EARTH      = TEXTURE("EARTH", "8081_earthmap2k.jpg", false)
-    let TEXT_EARTH_HR   = TEXTURE("EARTHHR", "8081_earthmap10k.jpg", false)
-    let TEXT_EMPTY      = TEXTURE("", "", false)
-    let TEXT_FOOD       = TEXTURE("FOOD", "ebonykate.jpg", false)
-    let TEXT_GRASS      = TEXTURE("GRASS", "grass.jpg", false)
-    let TEXT_GROUND     = TEXTURE("GROUND", "texture_140.jpg", false)
-    let TEXT_HILL       = TEXTURE("HILL", "texture_140.jpg", false)
-    let TEXT_KUGEL      = TEXTURE("KUGEL", "water_texture.jpg", false)
-    let TEXT_PRED       = TEXTURE("PRED", "Predator1.jpg", false)
-    let TEXT_QUADER     = TEXTURE("QUADER", "crate.jpg", false)
-    let TEXT_SKY        = TEXTURE("SKY", "grasscube1024.dds", true)
-    let TEXT_SPHERE     = TEXTURE("SPHERE", "water_texture.jpg", false)
-    let TEXT_WALL       = TEXTURE("WALL", "texture_140.jpg", false)
-    let TEXT_WATER      = TEXTURE("WATER", "water1.dds", false)
-    let TEXT_WOOD       = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
+    let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg", false)
+    let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg", false)
+    let TEXT_EARTH = TEXTURE("EARTH", "8081_earthmap2k.jpg", false)
+    let TEXT_EARTH_HR = TEXTURE("EARTHHR", "8081_earthmap10k.jpg", false)
+    let TEXT_EMPTY = TEXTURE("", "", false)
+    let TEXT_FOOD = TEXTURE("FOOD", "ebonykate.jpg", false)
+    let TEXT_GRASS = TEXTURE("GRASS", "grass.jpg", false)
+    let TEXT_GROUND = TEXTURE("GROUND", "texture_140.jpg", false)
+    let TEXT_HILL = TEXTURE("HILL", "texture_140.jpg", false)
+    let TEXT_KUGEL = TEXTURE("KUGEL", "water_texture.jpg", false)
+    let TEXT_PRED = TEXTURE("PRED", "Predator1.jpg", false)
+    let TEXT_QUADER = TEXTURE("QUADER", "crate.jpg", false)
+    let TEXT_SKY = TEXTURE("SKY", "grasscube1024.dds", true)
+    let TEXT_SPHERE = TEXTURE("SPHERE", "water_texture.jpg", false)
+    let TEXT_WALL = TEXTURE("WALL", "texture_140.jpg", false)
+    let TEXT_WATER = TEXTURE("WATER", "water_texture.jpg", false)
+    let TEXT_WOOD = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
 
-    let DefaultMaterials () =
+    let DefaultMaterials  =
         [ MAT_BLACK
           MAT_BLUE
           MAT_CYAN
@@ -187,4 +187,4 @@ module MaterialsAndTextures =
           MAT_ORANGE
           MAT_RED
           MAT_WHITE
-          MAT_YELLOW ]
+          MAT_YELLOW ] 

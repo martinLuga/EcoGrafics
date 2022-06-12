@@ -325,7 +325,7 @@ module TestScenariosCommon =
                                 hoehe= GROUND_HEIGHT,
                                 color=Color.Black
                             ),
-                            material=MAT_LT_BLUE,
+                            material=MAT_BLUE,
                             texture=TEXT_WATER
                         )
                     ]

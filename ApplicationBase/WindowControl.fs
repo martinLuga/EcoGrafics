@@ -246,15 +246,21 @@ module WindowControl =
         writeToOutputWindow("Center....: "   + formatVector3(objekt.Center))
         writeToOutputWindow("Bounds.min: "   + formatVector3(objekt.BoundingBox.Minimum))
         writeToOutputWindow("Bounds.max: "   + formatVector3(objekt.BoundingBox.Maximum))
+        
+        let mutable partText = ""
         for part in objekt.Display.Parts do
-            writeToOutputWindow("  Shape......: "   + part.Shape.ToString())
-            writeToOutputWindow("     Size....: "   + part.Shape.Size.ToString())
-            writeToOutputWindow("     Min.....: "   + formatVector3(part.Shape.Minimum))
-            writeToOutputWindow("     Max.....: "   + formatVector3(part.Shape.Maximum))
-            writeToOutputWindow("     Diameter: "   + (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString())
-            writeToOutputWindow("  Material.: "   + part.Material.ToString())
-            writeToOutputWindow("  Texture..: "   + part.Texture.ToString())
-            writeToOutputWindow("  Visibilty: "   + part.Visibility.ToString())
+            partText <- partText + 
+                "  Shape......: "   + part.Shape.ToString() + "\n"
+                + "     Size....: "   + part.Shape.Size.ToString()+ "\n" 
+                + "     Min.....: "   + formatVector3(part.Shape.Minimum)+ "\n" 
+                + "     Max.....: "   + formatVector3(part.Shape.Maximum)+ "\n" 
+                + "     Diameter: "   + (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString()+ "\n" 
+                + "  Material.: "   + part.Material.ToString()+ "\n" 
+                + "  Texture..: "   + part.Texture.ToString()+ "\n" 
+                + "  Visibilty: "   + part.Visibility.ToString()+ "\n" 
+
+        writeToOutputWindow(partText)
+
         newLineOutputWindow()
 
     let writeReportObjects(displayables:BaseObject list) =        
