@@ -6,13 +6,14 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open System
+
+open System.Collections.Generic
 
 open SharpDX
 
 open GlobalDefs
-
 open Framework
+open MathSupport
 
 // ----------------------------------------------------------------------------------------------------
 // Utility 
@@ -275,3 +276,13 @@ module GeometryUtils =
             Quaternion.RotationAxis(Vector3.Up, angle)
         else
             Quaternion.RotationAxis(Vector3.Up,-angle)
+
+    let axisAligned(points: List<Vector3>)=
+       let min = computeMinimum(points|> Seq.toList) 
+       for i = 0 to points.Count - 1 do
+           let mutable resized = points.Item(i)
+           resized  <- points.Item(i) - min
+           points.Item(i) <- resized
+
+    let shift(points: List<Vector3>, height:float32) = 
+        points |> Seq.map (fun vec -> Vector3.Add(vec, height * Vector3.Up )) |> ResizeArray 

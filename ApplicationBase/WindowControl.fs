@@ -247,7 +247,7 @@ module WindowControl =
 
     let formatPart (name, size, min, max, diameter, material, texture, visibility) =
         sprintf
-            " Shape......: %s \n     Size....: %s \n     Min.....: %s \n     Max.....: %s \n     Diameter: %s\n     Material.: %s \n     Texture..: %s \n     Visibilty: %s\n"
+            " Shape.......: %s \n     Size....: %s \n     Min.....: %s \n     Max.....: %s \n     Diameter: %s\n     Material: %s \n     Texture.: %s \n     Visiblty: %s\n"
             name
             size
             min

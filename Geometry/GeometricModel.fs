@@ -24,6 +24,7 @@ open Base.MeshObjects
 open Base.VertexDefs
 open Base.MathHelper
 open Base.Framework
+open Base.GeometryUtils
 
 open CorpusPatch
 
@@ -734,12 +735,15 @@ module GeometricModel =
         inherit Geometry(name, origin, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
-        let mutable lowerContour = contour 
-        let mutable upperContour = contour 
+        let mutable lowerContour:List<Vector3> = contour |> ResizeArray
+        let mutable upperContour:List<Vector3> = contour |> ResizeArray
         do  
-            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Array.toList )
-            upperContour <- shiftPoints lowerContour height
-            maximum <- Base.MathSupport.computeMaximum(upperContour |> Array.toList)
+            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Seq.toList )
+            axisAligned(lowerContour)
+            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Seq.toList )
+
+            upperContour <- shift(lowerContour, height)
+            maximum <- Base.MathSupport.computeMaximum(upperContour |> Seq.toList)
 
         new (name, contour, height, colorBottom, colorTop, colorSide) = Corpus (name, Vector3.Zero, contour, height, colorBottom , colorTop , colorSide)
         new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
@@ -786,7 +790,7 @@ module GeometricModel =
             () 
 
         override this.CreateVertexData(visibility:Visibility) =
-            CorpusPatch.CreateMeshData(this.Center, lowerContour, upperContour, height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
+            CorpusPatch.CreateMeshData(this.Center, lowerContour.ToArray(), upperContour.ToArray(), height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
 
     // ----------------------------------------------------------------------------------------------------
     // Linie

@@ -104,7 +104,7 @@ module PrintSupport =
     let formatVector2 (v: Vector2) = sprintf "X: %6.2f Y: %6.2f " v.X v.Y
 
     let formatVector3 (v: Vector3) =
-        sprintf "X: %6.2f Y: %6.2f Z: %6.2f" v.X v.Y v.Z
+        sprintf "X: %07.2f Y: %07.2f Z: %07.2f" v.X v.Y v.Z
 
     let formatVector4 (v: Vector4) =
         sprintf "X: %6.2f Y: %6.2f Z: %6.2f W: %6.2f" v.X v.Y v.Z v.W

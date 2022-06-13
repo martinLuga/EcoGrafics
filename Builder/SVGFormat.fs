@@ -21,6 +21,7 @@ open Base.ModelSupport
 open Base.StringSupport
 open Base.MathSupport
 open Base.ObjectBase
+open Base.GeometryUtils
 
 open Geometry.GeometricModel
 
@@ -84,6 +85,7 @@ module SVGFormat =
         let mutable shape : Shape = null 
         let mutable document:SVGDocument = null
         let mutable size = Vector3.One
+        let mutable normalized = false
         
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen von Konturen für eine Menge von Punkten als Parts
@@ -97,8 +99,10 @@ module SVGFormat =
                 visibility: Visibility,
                 augment: Augmentation,
                 quality: Quality,
+                _normalized: bool,
                 shaders: ShaderConfiguration
             ) =
+            normalized <- _normalized
             size <- sizeFactor
             document <- new SVGDocument(fileName)
             let svgElement = document.RootElement
@@ -117,14 +121,14 @@ module SVGFormat =
                             if named <> null then                            
                                 let pathElement = node :?>SVGPathElement 
                                 let points = this.parseSegments(pathElement)
-                                part <- this.createPart (points, partName, height, mat, texture, visibility, shaders)
+                                part <- this.createPart (points[0], points, partName, height, mat, texture, visibility, shaders)
                                 parts.Add(part) 
                     else  
                         if node.ClassName = element || element = "*" then
                             let partName = node.ClassName + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
                             let points = this.createPoints (values.Value)
-                            part <- this.createPart (points, partName, height, mat, texture, visibility, shaders)
+                            part <- this.createPart (points[0], points, partName, height, mat, texture, visibility, shaders)
                             parts.Add(part) 
 
         // ----------------------------------------------------------------------------------------------------
@@ -135,6 +139,7 @@ module SVGFormat =
                 height: float32,
                 material: Material,
                 texture: Texture,
+                position: Vector3,
                 sizeFactor: Vector3,
                 visibility: Visibility,
                 augment: Augmentation,
@@ -159,18 +164,18 @@ module SVGFormat =
                             if named <> null then                            
                                 let pathElement = node :?>SVGPathElement 
                                 let points = this.parseSegments(pathElement)
-                                let object = this.createObject (points, objectName, height, mat, texture, visibility, shaders)
+                                let object = this.createObject (position + points[0], points, objectName, height, mat, texture, visibility, shaders)
                                 objects.Add(object) 
                     else  
                         if node.ClassName = element || element = "*" then
                             let objectName = node.ClassName + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
                             let points = this.createPoints (values.Value)
-                            let object = this.createObject (points, objectName, height, mat, texture, visibility, shaders)
+                            let object = this.createObject (position + points[0], points, objectName, height, mat, texture, visibility, shaders)
                             objects.Add(object) 
             ()
 
-        member this.parseSegments(element:SVGPathElement) = 
+        member this.parseSegments(element:SVGPathElement):List<Vector3> = 
             let mutable points = new List<Vector3>()
             let pathSegList = element.PathSegList |> Seq.toList
             let move = pathSegList.Head :?> SVGPathSegMovetoAbs
@@ -199,7 +204,7 @@ module SVGFormat =
             else 
                 material
 
-        member this.createPoints(values: string ) =
+        member this.createPoints(values: string):List<Vector3> =
             let mutable points = new List<Vector3>()
             input <- noLetters(values).Trim()
             if input.Length > 0 then
@@ -216,16 +221,14 @@ module SVGFormat =
                     points.Add(point)
             points
 
-        member this.createPart(points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
+        member this.createPart(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
 
             if points.Count > 0 then
 
-                //if elementNumber >= 0 then
-                //    this.adjustXYZ (&points)
+                if normalized then
+                    axisAligned (points)
 
                 this.Resize(points)
-
-                let origin = points[0]
 
                 shape <-
                     new Corpus(
@@ -242,8 +245,8 @@ module SVGFormat =
             else 
                 null
                 
-        member this.createObject(points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
-            let part = this.createPart (points, partName, height, material, texture, visibility, shaders)
+        member this.createObject(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
+            let part = this.createPart (Vector3.Zero, points, partName, height, material, texture, visibility, shaders)
             let objekt = 
                 new BaseObject(
                     name=partName,
@@ -251,7 +254,7 @@ module SVGFormat =
                         new Display(
                             parts = [part]
                         ), 
-                    position = part.Shape.Origin
+                    position = origin
                 ) 
             objekt  
 
@@ -267,13 +270,15 @@ module SVGFormat =
             else
                 [objects.Item(elementNumber)] 
 
-        member this.adjustXYZ(points: List<Vector3> byref)=
+        member this.adjustXYZ(points: List<Vector3>)=
            let min = computeMinimum(points|> Seq.toList) 
-           points <- points |> Seq.map (fun p -> p-min) |> ResizeArray
-           ()
+           for i = 0 to points.Count - 1 do
+               let mutable resized = points.Item(i)
+               resized  <- points.Item(i) - min
+               points.Item(i) <- resized
 
         member this.Resize(points: List<Vector3>) =
             for i = 0 to points.Count - 1 do
-                let mutable resizedVertex = points.Item(i)
-                resizedVertex  <- points.Item(i) * size
-                points.Item(i) <- resizedVertex
+                let mutable resized = points.Item(i)
+                resized  <- points.Item(i) * size
+                points.Item(i) <- resized

@@ -69,7 +69,7 @@ module SvgBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Polygon für eine vorgegebene Menge an Punkten erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let CreateParts (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let CreateParts (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, normalized, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating polygons from Svg-File:" + fileName  )
         let builder = 
             if element = "*" then
@@ -77,10 +77,10 @@ module SvgBuilder =
             else
                 let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
                 new SvgBuilder(fileName, name, elem)
-        builder.CreateParts(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.CreateParts(height, material, texture, sizeFactor, visibility, augmentation, quality, normalized, shaders)  
         builder.Parts
 
-    let CreateObjects (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let CreateObjects (name, element:string, fileName, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating polygons from Svg-File:" + fileName  )
         let builder = 
             if element = "*" then
@@ -88,7 +88,7 @@ module SvgBuilder =
             else
                 let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
                 new SvgBuilder(fileName, name, elem)
-        builder.CreateObjects(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.CreateObjects(height, material, texture, position, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Objects
 
 module GlbBuilder = 
