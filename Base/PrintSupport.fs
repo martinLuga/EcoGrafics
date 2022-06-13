@@ -101,23 +101,13 @@ module PrintSupport =
         let matf = m.ToArray()
         dmatrix(matf, 4, 4)
 
-    let formatVector2 (v: Vector2) =
-        let xs = sprintf "%6.2f" v.X
-        let ys = sprintf "%6.2f" v.Y
-        "X:" + xs + " Y:" + ys   
+    let formatVector2 (v: Vector2) = sprintf "X: %6.2f Y: %6.2f " v.X v.Y
 
     let formatVector3 (v: Vector3) =
-        let xs = sprintf "%6.2f" v.X
-        let ys = sprintf "%6.2f" v.Y
-        let zs = sprintf "%6.2f" v.Z
-        "X:" + xs + " Y:" + ys + " Z:" + zs  
+        sprintf "X: %6.2f Y: %6.2f Z: %6.2f" v.X v.Y v.Z
 
     let formatVector4 (v: Vector4) =
-        let xs = sprintf "%6.2f" v.X
-        let ys = sprintf "%6.2f" v.Y
-        let zs = sprintf "%6.2f" v.Z
-        let ws = sprintf "%6.2f" v.W
-        "X:" + xs + " Y:" + ys + " Z:" + zs + " W:" + ws 
+        sprintf "X: %6.2f Y: %6.2f Z: %6.2f W: %6.2f" v.X v.Y v.Z v.W
 
     let fromArray4(x:float32[]) =
         Vector4( x.[0],   x.[1],   x.[2],   x.[3])

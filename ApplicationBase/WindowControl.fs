@@ -235,38 +235,78 @@ module WindowControl =
         logDebug("MainWindow bounds: " + mainWindow.Bounds.ToString() + " " + mainWindow.Location.ToString())
         mainWindow.Show()
 
+    let formatObject (name, position, scale, center, min, max) =
+        sprintf
+            "Objekt....:  %s \n Position..:  %s \n Scale.....:  %s \n Center....:  %s \n Bounds.min:  %s \n Bounds.max:  %s \n"
+            name
+            position
+            scale
+            center
+            min
+            max
+
+    let formatPart (name, size, min, max, diameter, material, texture, visibility) =
+        sprintf
+            " Shape......: %s \n     Size....: %s \n     Min.....: %s \n     Max.....: %s \n     Diameter: %s\n     Material.: %s \n     Texture..: %s \n     Visibilty: %s\n"
+            name
+            size
+            min
+            max
+            diameter
+            material
+            texture
+            visibility
+
     // ---------------------------------------------------------------------------------------------------- 
-    //  Text-Nachrichten Ausgabe
+    //  Text-String für ein Objekt mit seinen Parts
     // ---------------------------------------------------------------------------------------------------- 
-    let writeReport(objekt:BaseObject) =
-        newLineOutputWindow()
-        writeToOutputWindow("Objekt....: "   + objekt.Name) 
-        writeToOutputWindow("Position..: "   + formatVector3(objekt.Position))
-        writeToOutputWindow("Scale.....: "   + formatVector3(objekt.Scale))
-        writeToOutputWindow("Center....: "   + formatVector3(objekt.Center))
-        writeToOutputWindow("Bounds.min: "   + formatVector3(objekt.BoundingBox.Minimum))
-        writeToOutputWindow("Bounds.max: "   + formatVector3(objekt.BoundingBox.Maximum))
+    let createObjectReport (objekt: BaseObject) =
+
+        let object = 
+            formatObject (
+                objekt.Name,
+                formatVector3 (objekt.Position),
+                formatVector3 (objekt.Scale),
+                formatVector3 (objekt.Center),
+                formatVector3 (objekt.BoundingBox.Minimum),
+                formatVector3 (objekt.BoundingBox.Maximum)
+            )
         
-        let mutable partText = ""
-        for part in objekt.Display.Parts do
-            partText <- partText + 
-                "  Shape......: "   + part.Shape.ToString() + "\n"
-                + "     Size....: "   + part.Shape.Size.ToString()+ "\n" 
-                + "     Min.....: "   + formatVector3(part.Shape.Minimum)+ "\n" 
-                + "     Max.....: "   + formatVector3(part.Shape.Maximum)+ "\n" 
-                + "     Diameter: "   + (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString()+ "\n" 
-                + "  Material.: "   + part.Material.ToString()+ "\n" 
-                + "  Texture..: "   + part.Texture.ToString()+ "\n" 
-                + "  Visibilty: "   + part.Visibility.ToString()+ "\n" 
+        let parts = 
+            seq 
+                {for part in objekt.Display.Parts do 
+                    yield 
+                        formatPart (
+                            part.Shape.ToString(),
+                            part.Shape.Size.ToString(),
+                            formatVector3 (part.Shape.Minimum),
+                            formatVector3 (part.Shape.Maximum),
+                            (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString(),
+                            part.Material.ToString(),
+                            part.Texture.ToString(),
+                            part.Visibility.ToString()
+                    )
+                }
+        object, parts
 
-        writeToOutputWindow(partText)
+    // ---------------------------------------------------------------------------------------------------- 
+    //  Text-String für den gesamten Report erzeugen und ausgeben
+    // ---------------------------------------------------------------------------------------------------- 
+    let writeReportObjects (displayables: BaseObject list) =
+        clearOutputWindow ()
 
-        newLineOutputWindow()
+        let mutable reportString = ""
 
-    let writeReportObjects(displayables:BaseObject list) =        
-        clearOutputWindow()
         for disp in displayables do
-            writeReport(disp)
+            let (ostring, partstring) = createObjectReport (disp)
+            reportString <- reportString + ostring
+
+            for part in partstring do
+                reportString <- reportString + part
+
+            reportString <- reportString + "\n"
+
+        writeToOutputWindow (reportString)
 
     let printScenario(scenarioName) =
         logInfo("Start Scenario: " + scenarioName) 

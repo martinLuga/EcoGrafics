@@ -69,16 +69,27 @@ module SvgBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Polygon für eine vorgegebene Menge an Punkten erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-        logInfo ("Creating polygon from Svg-File:" + fileName  )
+    let CreateParts (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating polygons from Svg-File:" + fileName  )
         let builder = 
             if element = "*" then
                 new SvgBuilder(fileName, name)  
             else
                 let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
                 new SvgBuilder(fileName, name, elem)
-        builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.CreateParts(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
+
+    let CreateObjects (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating polygons from Svg-File:" + fileName  )
+        let builder = 
+            if element = "*" then
+                new SvgBuilder(fileName, name)  
+            else
+                let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
+                new SvgBuilder(fileName, name, elem)
+        builder.CreateObjects(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.Objects
 
 module GlbBuilder = 
     // ----------------------------------------------------------------------------------------------------
