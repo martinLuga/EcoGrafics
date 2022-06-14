@@ -53,10 +53,10 @@ module PolygonBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Polygon für eine vorgegebene Menge an Punkten erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, fileName, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let Build (name, fileName, origin, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new PolygonBuilder(name, fileName)  
-        builder.Build(height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
+        builder.Build(origin, height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts
 
 module SvgBuilder = 

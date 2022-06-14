@@ -73,7 +73,7 @@ module PolygonFormat =
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Kontur für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
-        member this. Build(height:float32, material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this. Build(origin:Vector3, height:float32, material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
             reader <- new StreamReader(fileName) 
         
             // Anz points
@@ -103,6 +103,7 @@ module PolygonFormat =
             shape <- 
                 new Corpus(
                     name = name,
+                    origin = origin,
                     contour = kontur.ToArray(),
                     height = height,
                     colorBottom = Color.White,

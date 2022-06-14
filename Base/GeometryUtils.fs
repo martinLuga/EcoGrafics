@@ -278,11 +278,20 @@ module GeometryUtils =
             Quaternion.RotationAxis(Vector3.Up,-angle)
 
     let axisAligned(points: List<Vector3>)=
-       let min = computeMinimum(points|> Seq.toList) 
+       let min = computeMinimumXYZ(points|> Seq.toList) 
        for i = 0 to points.Count - 1 do
            let mutable resized = points.Item(i)
            resized  <- points.Item(i) - min
            points.Item(i) <- resized
 
-    let shift(points: List<Vector3>, height:float32) = 
+    let  resize(points: List<Vector3>, size) =
+        for i = 0 to points.Count - 1 do
+            let mutable resized = points.Item(i)
+            resized  <- points.Item(i) * size
+            points.Item(i) <- resized
+
+    let shiftUp(points: List<Vector3>, height:float32) = 
         points |> Seq.map (fun vec -> Vector3.Add(vec, height * Vector3.Up )) |> ResizeArray 
+
+    let shiftVector(points: List<Vector3>, amount:Vector3) = 
+        points |> Seq.map (fun vec -> Vector3.Add(vec, amount)) |> ResizeArray 

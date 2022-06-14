@@ -94,12 +94,34 @@ module MathSupport =
     let minVector3 (vec1:Vector3) (vec2:Vector3) =
         Vector3.Min(vec1,vec2)
 
+    let minFloat (vec1:float32) (vec2:float32) =
+        Math.Min(vec1,vec2)
+
+    let maxFloat (vec1:float32) (vec2:float32) =
+        Math.Max(vec1,vec2)
+
     let computeCenter (minV:Vector3) (maxV:Vector3)  =
         Vector3(
             minV.X + (maxV.X - minV.X) / 2.0f,
             minV.Y+  (maxV.Y - minV.Y) / 2.0f,
             minV.Z+  (maxV.Z - minV.Z) / 2.0f 
         )
+
+    let computeMinimumXYZ (points: Vector3 list) =
+        if points.Length = 0 then Vector3.Zero
+        else 
+            let minX = points|> List.map(fun p -> p.X)|> List.reduce minFloat 
+            let minY = points|> List.map(fun p -> p.Y)|> List.reduce minFloat 
+            let minZ = points|> List.map(fun p -> p.Z)|> List.reduce minFloat 
+            Vector3(minX, minY, minZ)
+
+    let computeMaximumXYZ (points: Vector3 list) =
+        if points.Length = 0 then Vector3.Zero
+        else 
+            let minX = points|> List.map(fun p -> p.X)|> List.reduce maxFloat 
+            let minY = points|> List.map(fun p -> p.Y)|> List.reduce maxFloat 
+            let minZ = points|> List.map(fun p -> p.Z)|> List.reduce maxFloat 
+            Vector3(minX, minY, minZ)
 
     let computeMinimum (points: Vector3 list) =
         if points.Length = 0 then Vector3.Zero

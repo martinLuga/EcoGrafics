@@ -735,21 +735,21 @@ module GeometricModel =
         inherit Geometry(name, origin, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
-        let mutable lowerContour:List<Vector3> = contour |> ResizeArray
-        let mutable upperContour:List<Vector3> = contour |> ResizeArray
+        let mutable lowerContour = new List<Vector3>()
+        let mutable upperContour = new List<Vector3>()
         do  
-            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Seq.toList )
+            lowerContour <- contour |> ResizeArray
             axisAligned(lowerContour)
-            minimum <- Base.MathSupport.computeMinimum(lowerContour |> Seq.toList )
-
-            upperContour <- shift(lowerContour, height)
-            maximum <- Base.MathSupport.computeMaximum(upperContour |> Seq.toList)
+            lowerContour <- shiftVector(lowerContour, origin)
+            upperContour <- shiftUp(lowerContour, height)
+            
+            minimum <- Base.MathSupport.computeMinimumXYZ(lowerContour |> Seq.toList )
+            maximum <- Base.MathSupport.computeMaximumXYZ(upperContour |> Seq.toList)
 
         new (name, contour, height, colorBottom, colorTop, colorSide) = Corpus (name, Vector3.Zero, contour, height, colorBottom , colorTop , colorSide)
         new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
         new (name, origin, contour, height, color) = Corpus (name, origin, contour, height, color, color, color)
 
-        member this.Contour=contour 
         member this.ColorBottom=colorBottom
         member this.ColorTop=colorTop
         member this.ColorSide=colorSide
@@ -762,9 +762,6 @@ module GeometricModel =
         
         override this.Minimum with get() = minimum
         override this.Maximum with get() = maximum
-
-        override this.Origin  
-            with get() = minimum
 
         // Einfache Lösung über den umschließenden Quader
         // Besser wäre center zu berechnen als Schwerpunkt des Polygons
@@ -779,16 +776,16 @@ module GeometricModel =
         member   this.Width  = this.Maximum.Z - this.Minimum.Z
         member   this.Length = this.Maximum.X - this.Minimum.X
 
-        override this.ToString() =
-            "Corpus " + name
+        override this.ToString() = "Corpus " + name
 
         override this.TopologyType = PrimitiveTopologyType.Patch
 
         override this.Topology = PrimitiveTopology.PatchListWith3ControlPoints
-        
-        override this.resize newSize  = 
-            () 
 
+        override this.resize(size) =
+            resize(lowerContour, size)
+            resize(upperContour, size)
+        
         override this.CreateVertexData(visibility:Visibility) =
             CorpusPatch.CreateMeshData(this.Center, lowerContour.ToArray(), upperContour.ToArray(), height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
 

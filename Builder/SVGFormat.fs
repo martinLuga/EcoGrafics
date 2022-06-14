@@ -121,14 +121,14 @@ module SVGFormat =
                             if named <> null then                            
                                 let pathElement = node :?>SVGPathElement 
                                 let points = this.parseSegments(pathElement)
-                                part <- this.createPart (points[0], points, partName, height, mat, texture, visibility, shaders)
+                                part <- this.createPart (points, partName, height, mat, texture, visibility, shaders)
                                 parts.Add(part) 
                     else  
                         if node.ClassName = element || element = "*" then
                             let partName = node.ClassName + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
-                            let points = this.createPoints (values.Value)
-                            part <- this.createPart (points[0], points, partName, height, mat, texture, visibility, shaders)
+                            let points = this.parsePath (values.Value)
+                            part <- this.createPart (points, partName, height, mat, texture, visibility, shaders)
                             parts.Add(part) 
 
         // ----------------------------------------------------------------------------------------------------
@@ -170,11 +170,13 @@ module SVGFormat =
                         if node.ClassName = element || element = "*" then
                             let objectName = node.ClassName + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
-                            let points = this.createPoints (values.Value)
+                            let points = this.parsePath (values.Value)
                             let object = this.createObject (position + points[0], points, objectName, height, mat, texture, visibility, shaders)
-                            objects.Add(object) 
-            ()
+                            objects.Add(object)              
 
+        // ----------------------------------------------------------------------------------------------------
+        // Das Element enthält ein Move- und mehrere LineRel Segmente
+        // ----------------------------------------------------------------------------------------------------
         member this.parseSegments(element:SVGPathElement):List<Vector3> = 
             let mutable points = new List<Vector3>()
             let pathSegList = element.PathSegList |> Seq.toList
@@ -203,13 +205,15 @@ module SVGFormat =
                 DefaultMaterials.[matNr]
             else 
                 material
-
-        member this.createPoints(values: string):List<Vector3> =
+        
+        // ----------------------------------------------------------------------------------------------------
+        // Das Element enthält einen Polygonzug
+        // ----------------------------------------------------------------------------------------------------
+        member this.parsePath(values: string):List<Vector3> =
             let mutable points = new List<Vector3>()
             input <- noLetters(values).Trim()
             if input.Length > 0 then
-                let vals = input.Split(' ')               
-
+                let vals = input.Split(' ')
                 for i in 0..2 .. vals.Length - 2 do
                     let point =
                         Vector3(
@@ -217,36 +221,32 @@ module SVGFormat =
                             0.0f,
                             Convert.ToSingle(vals.[i + 1].Trim(), CultureInfo.InvariantCulture)
                         )
-
                     points.Add(point)
             points
 
-        member this.createPart(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
-
-            if points.Count > 0 then
-
-                if normalized then
-                    axisAligned (points)
-
-                this.Resize(points)
-
+        // ----------------------------------------------------------------------------------------------------
+        //  Wenn die Konturen in ein Part eingefügt werden
+        // ----------------------------------------------------------------------------------------------------
+        member this.createPart(points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
+                resize(points, size)
+                let o = computeMinimumXYZ(points|> Seq.toList)
                 shape <-
                     new Corpus(
                         name = partName,
-                        origin = origin,
+                        origin = o,
                         contour = points.ToArray(),
                         height = height,
                         colorBottom = Color.White,
                         colorTop = Color.White,
                         colorSide = Color.White
                     )
+                new Part(partName, shape, material, texture, visibility, shaders)  
 
-                new Part(partName, shape, material, texture, visibility, shaders) 
-            else 
-                null
-                
+        // ----------------------------------------------------------------------------------------------------
+        //  Wenn die Konturen in ein Objekt eingefügt werden
+        // ----------------------------------------------------------------------------------------------------   
         member this.createObject(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
-            let part = this.createPart (Vector3.Zero, points, partName, height, material, texture, visibility, shaders)
+            let part = this.createPart (points, partName, height, material, texture, visibility, shaders)
             let objekt = 
                 new BaseObject(
                     name=partName,
@@ -269,16 +269,3 @@ module SVGFormat =
                 objects |> Seq.toList
             else
                 [objects.Item(elementNumber)] 
-
-        member this.adjustXYZ(points: List<Vector3>)=
-           let min = computeMinimum(points|> Seq.toList) 
-           for i = 0 to points.Count - 1 do
-               let mutable resized = points.Item(i)
-               resized  <- points.Item(i) - min
-               points.Item(i) <- resized
-
-        member this.Resize(points: List<Vector3>) =
-            for i = 0 to points.Count - 1 do
-                let mutable resized = points.Item(i)
-                resized  <- points.Item(i) * size
-                points.Item(i) <- resized

@@ -245,11 +245,13 @@ module WindowControl =
             min
             max
 
-    let formatPart (name, size, min, max, diameter, material, texture, visibility) =
+    let formatPart (name, size, origin, center, min, max, diameter, material, texture, visibility) =
         sprintf
-            " Shape.......: %s \n     Size....: %s \n     Min.....: %s \n     Max.....: %s \n     Diameter: %s\n     Material: %s \n     Texture.: %s \n     Visiblty: %s\n"
+            " Shape.......: %s \n     Size....: %s \n     Origin..: %s \n     Center..: %s \n     Min.....: %s \n     Max.....: %s \n     Diameter: %s\n     Material: %s \n     Texture.: %s \n     Visiblty: %s\n"
             name
             size
+            origin
+            center
             min
             max
             diameter
@@ -278,15 +280,16 @@ module WindowControl =
                     yield 
                         formatPart (
                             part.Shape.ToString(),
-                            part.Shape.Size.ToString(),
+                            formatVector3 (part.Shape.Size),
+                            formatVector3 (part.Shape.Origin),
+                            formatVector3 (part.Shape.Center),
                             formatVector3 (part.Shape.Minimum),
                             formatVector3 (part.Shape.Maximum),
                             (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum)).ToString(),
                             part.Material.ToString(),
                             part.Texture.ToString(),
                             part.Visibility.ToString()
-                    )
-                }
+                        )                }
         object, parts
 
     // ---------------------------------------------------------------------------------------------------- 
