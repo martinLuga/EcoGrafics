@@ -5,11 +5,13 @@
 //  Created by Martin Luga on 10.09.18.
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
-
+open System.IO
 open Base.LoggingSupport
 open Base.MaterialsAndTextures
 open Base.ModelSupport
 open Base.ObjectBase
+open Base.Configuration
+open Base.StringSupport
 open Geometry.GeometricModel
 open log4net
 open SharpDX
@@ -82,6 +84,35 @@ module ScenarioSupport =
 
     let startActiveScenario() =      
         execActiveScenario() 
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Configuration
+    // ----------------------------------------------------------------------------------------------------
+    let mutable configuration = new Base.Configuration.Configuration()
+    let info = new DirectoryInfo(__SOURCE_DIRECTORY__)
+    let mutable PROJECT_MAP_DIR = (info.Parent).FullName + "\\"
+    let mutable APP_NAME = "XXXApp"  
+    let WB_DIR() = PROJECT_MAP_DIR + APP_NAME  
+    let PROJECT_CONFIG_DIR() = WB_DIR() + "\\" + "config"
+    let PROJECT_CONFIG_FILE() = PROJECT_CONFIG_DIR() + "\\" + "Project.config"
+
+    let storeConfiguration() =
+        let mutable xml = serializeXml(configuration)
+        xml <- PrettyXml(xml)
+        File.WriteAllText(PROJECT_CONFIG_FILE(), xml)
+
+    let readConfiguration() =
+        configuration <- Configurator.Instance.FromFile(PROJECT_CONFIG_FILE())
+        if configuration <> null then
+            let xml = File.ReadAllText(configuration.FilePath)
+            configuration <-  deserializeXml(xml)
+
+        else
+            configuration <- new Base.Configuration.Configuration()
+            configuration.ProjectName <- APP_NAME
+            configuration.FilePath <- PROJECT_CONFIG_FILE()
+            configuration.Counter <- 0
+            configuration.Precompile <- true 
 
 // ----------------------------------------------------------------------------------------------------  
 //  Tesselated objects test
@@ -332,3 +363,4 @@ module TestScenariosCommon =
                 ),
             position = origin
         )
+   

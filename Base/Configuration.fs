@@ -27,6 +27,8 @@ module Configuration =
         let mutable filePath = ""
         [<field : DataMember>]
         let mutable counter = 0
+        [<field : DataMember>]
+        let mutable precompile = true
 
         member this.FilePath
          with get() = filePath
@@ -39,6 +41,10 @@ module Configuration =
         member this.Counter
          with get() = counter
             and set(value) = counter <- value
+
+        member this.Precompile
+         with get() = precompile
+            and set(value) = precompile <- value
 
     [<AllowNullLiteral>] 
     type Configurator() =

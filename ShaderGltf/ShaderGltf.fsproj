@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework> 
 
@@ -17,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-    <PackageReference Include="VGltf" Version="0.2.13" />
+    <PackageReference Include="VGltf" Version="0.2.19" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.4" />
+    <PackageReference Update="FSharp.Core" Version="6.0.5" />
   </ItemGroup>
 </Project>
