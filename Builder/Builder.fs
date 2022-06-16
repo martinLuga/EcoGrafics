@@ -67,19 +67,8 @@ module SvgBuilder =
     let logInfo = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
-    //  Polygon für eine vorgegebene Menge an Punkten erzeugen
+    //  Polygon für ein SVG-File erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let CreateParts (name, element:string, fileName, height:float32, material:Material, texture:Texture, sizeFactor, normalized, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-        logInfo ("Creating polygons from Svg-File:" + fileName  )
-        let builder = 
-            if element = "*" then
-                new SvgBuilder(fileName, name)  
-            else
-                let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
-                new SvgBuilder(fileName, name, elem)
-        builder.CreateParts(height, material, texture, sizeFactor, visibility, augmentation, quality, normalized, shaders)  
-        builder.Parts
-
     let CreateObjects (name, element:string, fileName, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating polygons from Svg-File:" + fileName  )
         let builder = 

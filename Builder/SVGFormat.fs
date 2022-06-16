@@ -84,54 +84,6 @@ module SVGFormat =
         let mutable document:SVGDocument = null
         let mutable size = Vector3.One
         let mutable normalized = false
-        
-        // ----------------------------------------------------------------------------------------------------
-        //  Erzeugen von Konturen für eine Menge von Punkten als Parts
-        // ----------------------------------------------------------------------------------------------------
-        member this.CreateParts
-            (
-                height: float32,
-                material: Material,
-                texture: Texture,
-                sizeFactor: Vector3,
-                visibility: Visibility,
-                augment: Augmentation,
-                quality: Quality,
-                _normalized: bool,
-                shaders: ShaderConfiguration
-            ) =
-            normalized <- _normalized
-            size <- sizeFactor
-            document <- new SVGDocument(fileName)
-            let svgElement = document.RootElement
-
-            for node in svgElement.Children do
-                if node.LocalName = "path" then
-
-                    let mat = this.getMaterial(element, material)
-                    partNr <- partNr + 1
-                            
-                    if node.ClassName = "" then
-                        let named = node.Attributes.GetNamedItem("name")
-                        let name = node.Attributes.GetNamedItem("name").Value
-                        if name = element || element = "*" then
-                            let partName = name + partNr.ToString()
-                            if named <> null then                            
-                                let pathElement = node :?>SVGPathElement 
-                                let points = this.parseSegments(pathElement)
-                                resize(points, size)
-                                let origin = computeMinimumXYZ(points|> Seq.toList)
-                                part <- this.createPart (origin, points, partName, height, mat, texture, visibility, shaders)
-                                parts.Add(part) 
-                    else  
-                        if node.ClassName = element || element = "*" then
-                            let partName = node.ClassName + partNr.ToString()
-                            let values = node.Attributes.GetNamedItem("d")
-                            let points = this.parsePath (values.Value)
-                            resize(points, size)
-                            let origin = computeMinimumXYZ(points|> Seq.toList)
-                            part <- this.createPart (origin, points, partName, height, mat, texture, visibility, shaders)
-                            parts.Add(part) 
 
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen von Konturen für eine Menge von Punkten als Objekte
@@ -159,32 +111,33 @@ module SVGFormat =
 
                 | "path" -> 
 
-                    let mat = this.getMaterial(element, material)
-                    
+                    let mat = this.getMaterial(element, material)                    
+                    let mutable objectName = ""
+                    let mutable points = new List<Vector3>()
+
+                    // <path d="M1633.1 472.8l2.2-2.4 4.6-3.6-0.1 3.2-0.1 4.1-2.7-0.2-1.1 2.2-2.8-3.3z" id="BN" name="Brunei Darussalam">
                     if node.ClassName = "" then
                         let named = node.Attributes.GetNamedItem("name")
                         name <- named.Value
-                        if name <> lastName then partNr <- 0 else partNr <- partNr + 1
                         if name = element || element = "*" then
-                            let objectName = name + partNr.ToString()
+                            if name <> lastName then partNr <- 0 else partNr <- partNr + 1
+                            objectName <- name + partNr.ToString()
                             if named <> null then                            
                                 let pathElement = node :?>SVGPathElement 
-                                let points = this.parseSegments(pathElement)
-                                resize(points, size)
-                                let origin = computeMinimumXYZ(points|> Seq.toList)
-                                let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                                objects.Add(object) 
-                    else  
+                                points <- this.parseSegments(pathElement)
+                    else 
+                        // <path class="Canada" d="M 680.3 187.6 677.9 187.7 672.1 185.8 668.6 182.8 670.5 182.3 676.4 183.9 680.6 186.5 680.3 187.6 Z">
                         if node.ClassName = element || element = "*" then
                             name <- node.ClassName
                             if name <> lastName then partNr <- 0 else partNr <- partNr + 1
-                            let objectName = name + partNr.ToString()
+                            objectName <- name + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
-                            let points = this.parsePath (values.Value)
-                            resize(points, size)
-                            let origin = computeMinimumXYZ(points|> Seq.toList)
-                            let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                            objects.Add(object) 
+                            points <- this.parsePath (values.Value)                    
+                    if objectName <> "" then
+                        resize(points, size)
+                        let origin = computeMinimumXYZ(points|> Seq.toList)
+                        let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
+                        objects.Add(object) 
                             
                     lastName <- name
                 
@@ -287,7 +240,7 @@ module SVGFormat =
             points
 
         // ----------------------------------------------------------------------------------------------------
-        //  Wenn die Konturen in ein Part eingefügt werden
+        //   Wenn für die Kontur ein Part erstellt wird
         // ----------------------------------------------------------------------------------------------------
         member this.createPart(origin, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
                 shape <-
@@ -303,7 +256,7 @@ module SVGFormat =
                 new Part(partName, shape, material, texture, visibility, shaders)  
 
         // ----------------------------------------------------------------------------------------------------
-        //  Wenn die Konturen in ein Objekt eingefügt werden
+        //  Für die Kontur wird ein Objekt und ein Part erstellt 
         // ----------------------------------------------------------------------------------------------------   
         member this.createObject(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
             let part = this.createPart (Vector3.Zero, points, partName, height, material, texture, visibility, shaders)
@@ -317,12 +270,6 @@ module SVGFormat =
                     position = origin
                 ) 
             objekt  
-
-        member this.Parts =
-            if elementNumber < 0 then
-                parts |> Seq.toList
-            else
-                [parts.Item(elementNumber)] 
 
         member this.Objects =
             if elementNumber < 0 then
