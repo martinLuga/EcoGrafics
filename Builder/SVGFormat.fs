@@ -33,10 +33,8 @@ open Aspose.Svg.Paths
 open Aspose.Svg.Dom.Traversal.Filters
 
 // ----------------------------------------------------------------------------------------------------
-// ----------------------------------------------------------------------------------------------------
-// Simple Format
-// bestehend aus Vertex und Index-Liste
-// ----------------------------------------------------------------------------------------------------
+// SVGFormat
+//  bestehend aus Vertex und Index-Liste
 // ----------------------------------------------------------------------------------------------------
 module SVGFormat =
     let logger = LogManager.GetLogger("Builder.Polygon")
@@ -153,16 +151,20 @@ module SVGFormat =
             size <- sizeFactor
             document <- new SVGDocument(fileName)
             let svgElement = document.RootElement
+            let mutable name = ""
+            let mutable lastName = ""
 
             for node in svgElement.Children do
-                if node.LocalName = "path" then
+                match node.LocalName with
+
+                | "path" -> 
 
                     let mat = this.getMaterial(element, material)
-                    partNr <- partNr + 1
-                            
+                    
                     if node.ClassName = "" then
                         let named = node.Attributes.GetNamedItem("name")
-                        let name = node.Attributes.GetNamedItem("name").Value
+                        name <- named.Value
+                        if name <> lastName then partNr <- 0 else partNr <- partNr + 1
                         if name = element || element = "*" then
                             let objectName = name + partNr.ToString()
                             if named <> null then                            
@@ -174,26 +176,78 @@ module SVGFormat =
                                 objects.Add(object) 
                     else  
                         if node.ClassName = element || element = "*" then
-                            let objectName = node.ClassName + partNr.ToString()
+                            name <- node.ClassName
+                            if name <> lastName then partNr <- 0 else partNr <- partNr + 1
+                            let objectName = name + partNr.ToString()
                             let values = node.Attributes.GetNamedItem("d")
                             let points = this.parsePath (values.Value)
                             resize(points, size)
                             let origin = computeMinimumXYZ(points|> Seq.toList)
                             let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                            objects.Add(object)              
+                            objects.Add(object) 
+                            
+                    lastName <- name
+                
+                | "g" -> 
+                    for node in node.Children do
+                        match node.LocalName with
+
+                        | "path" -> 
+                            let mat = this.getMaterial(element, material)
+                            
+                            if node.ClassName = "" then
+                                let named = node.Attributes.GetNamedItem("id")
+                                if named <> null then 
+                                    name <- named.Value
+                                    if name <> lastName then partNr <- 0 else partNr <- partNr + 1
+                                    if name = element || element = "*" then 
+                                        let objectName = name                          
+                                        let pathElement = node :?>SVGPathElement 
+                                        let points = this.parseSegments(pathElement)
+                                        resize(points, size)
+                                        let origin = computeMinimumXYZ(points|> Seq.toList)
+                                        let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
+                                        objects.Add(object) 
+                            else  
+                                if node.ClassName = element || element = "*" then
+                                    name <- node.ClassName
+                                    if name <> lastName then partNr <- 0 else partNr <- partNr + 1
+                                    let objectName = name + partNr.ToString()
+                                    let values = node.Attributes.GetNamedItem("d")
+                                    let points = this.parsePath (values.Value)
+                                    resize(points, size)
+                                    let origin = computeMinimumXYZ(points|> Seq.toList)
+                                    let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
+                                    objects.Add(object) 
+                                    
+                            lastName <- name
+                        | _ -> ()
+
+                | _ -> ()
 
         // ----------------------------------------------------------------------------------------------------
         // Das Element enthält ein Move- und mehrere LineRel Segmente
         // ----------------------------------------------------------------------------------------------------
         member this.parseSegments(element:SVGPathElement):List<Vector3> = 
             let mutable points = new List<Vector3>()
+            let mutable lastPoint = Vector3.Zero
             let pathSegList = element.PathSegList |> Seq.toList
-            let move = pathSegList.Head :?> SVGPathSegMovetoAbs
-            let rels = pathSegList.Tail 
 
-            let mutable lastPoint = Vector3(move.X, 0.0f, move.Y)
+            let first = pathSegList.Head 
+            match first.PathSegType with
+            | SVGPathSeg.PATHSEG_MOVETO_ABS -> 
+                let move = first :?> SVGPathSegMovetoAbs 
+                lastPoint <- Vector3(move.X, 0.0f, move.Y)
+            
+            | SVGPathSeg.PATHSEG_MOVETO_REL -> 
+                let move = first :?> SVGPathSegMovetoRel
+                lastPoint <- Vector3(move.X, 0.0f, move.Y)
+
+            | _ -> ()
+
             points.Add(lastPoint)
 
+            let rels = pathSegList.Tail
             for relSeg in rels do
                 match relSeg.PathSegType with
                 | SVGPathSeg.PATHSEG_LINETO_REL -> 

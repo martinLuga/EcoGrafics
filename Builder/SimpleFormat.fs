@@ -22,7 +22,7 @@ open Base.VertexDefs
 
 open Geometry.GeometricModel
 
-open Base.MaterialsAndTextures
+open BuilderSupport
 
 // ----------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -167,18 +167,17 @@ module SimpleFormat =
                     visibility,
                     shaders
                 )
+                
+            parts.Add(part)
 
             match augmentation with
             | Augmentation.Hilite ->
-                let hp = this.createHilitePart(part) 
-                parts.Add(part)
+                let hp =  createHilitePart(part) 
                 parts.Add(hp)                
             | Augmentation.ShowCenter ->
-                let hp = this.createCenterPart(part) 
+                let hp =  createCenterPart(part) 
                 parts.Add(hp)
-                parts.Add(part)
-            | _ ->
-                parts.Add(part)
+            | _ -> ()
 
         member this.Parts =
             parts 
@@ -190,32 +189,6 @@ module SimpleFormat =
             |> Seq.concat
             |> Seq.toList 
             
-        member this.createHilitePart(part) =
-            let mutable box = BoundingBox()
-            box.Minimum <- part.Shape.Minimum 
-            box.Maximum <- part.Shape.Maximum 
-            new Part(
-                name + "-hilite",
-                shape = Quader.NewFromMinMax(name + "-hilite", part.Shape.Minimum, part.Shape.Maximum , Color.White),
-                material = MAT_LT_BLUE,
-                visibility = Visibility.Transparent
-            )
-
-        member this.createCenterPart(part: Part) =
-            let radius = (Vector3.Distance(part.Shape.Maximum, part.Shape.Minimum))/2.0f
-            let mutable box = BoundingBox()
-            box.Minimum <- part.Shape.Minimum 
-            box.Maximum <- part.Shape.Maximum 
-            let center = box.Center
-            let center = part.Center
-
-            new Part(
-                name + "-center",
-                shape = new Kugel(name + "-center", center, 0.1f, Color.Red),
-                material = MAT_RED,
-                visibility = Visibility.Opaque
-            )
-
         member this.adjustXYZ()=
            let min = computeMinimum(vertices|> Seq.toList) 
            vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
@@ -233,7 +206,7 @@ module SimpleFormat =
             standardHeight / actualHeight 
 
         member this.Resize() =
-            let aFactor = this.ComputeFactor()
+            let aFactor = this.ComputeFactor() * size
             for i = 0 to vertices.Count - 1 do
                 let mutable resizedVertex = vertices.Item(i)
                 resizedVertex.Position <- vertices.Item(i).Position * aFactor

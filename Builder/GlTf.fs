@@ -24,6 +24,8 @@ open GltfBase.VGltfReader
 open GltfBase.Gltf2Reader
 open GltfBase.BaseObject
 
+open BuilderSupport
+
 // ----------------------------------------------------------------------------------------------------
 // Support für das Einlesen von glb-Files in der EcoGrafics Technologie
 // ----------------------------------------------------------------------------------------------------
@@ -71,13 +73,13 @@ module GlTf =
 
             match _augment with
             | Augmentation.Hilite ->
-                let hp = this.createHilitePart() 
+                let hp = createHilitePartFrom(objectName, parts)  
                 parts.Add(hp)
                 logDebug ("Augmentation Hilte " + hp.Shape.Name )
             | Augmentation.ShowCenter ->
-                  let hp = this.createCenterPart(part) 
-                  parts.Add(hp)
-                  parts.Add(part)
+                let hp = createCenterPartFrom(objectName, parts)  
+                parts.Add(hp)
+                parts.Add(part)
             | None -> ()
             | _ -> raise (System.Exception("Augmentation not supported"))
 
@@ -138,23 +140,3 @@ module GlTf =
             actualSize <- max actualSize actualDepth 
             let standardHeight = 1.0f
             standardHeight / actualSize 
-
-        member this.createHilitePart() =
-            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
-            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
-            new Part(
-                objectName + "-hilite",
-                shape = Quader.NewFromMinMax(objectName + "-hilite", minimum, maximum , Color.White),
-                material = MAT_LT_BLUE, 
-                visibility = Visibility.Transparent
-            )
-
-        member this.createCenterPart(part: Part) =
-            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
-            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
-            new Part(
-                objectName + "-center",
-                shape = new Kugel(objectName + "-center", minimum, 0.1f, Color.Red),
-                material = MAT_RED,
-                visibility = Visibility.Opaque
-            )

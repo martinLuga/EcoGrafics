@@ -737,11 +737,17 @@ module GeometricModel =
         let mutable maximum = Vector3.Zero 
         let mutable lowerContour = new List<Vector3>()
         let mutable upperContour = new List<Vector3>()
+        let mutable rawLowerContour = new List<Vector3>()
+        let mutable rawUpperContour = new List<Vector3>()
         do  
             lowerContour <- contour |> ResizeArray
+            rawLowerContour <- contour |> ResizeArray
             axisAligned(lowerContour)
+            axisAligned(rawLowerContour)
+
             lowerContour <- shiftVector(lowerContour, origin)
             upperContour <- shiftUp(lowerContour, height)
+            rawUpperContour <- shiftUp(rawLowerContour, height)
             
             minimum <- Base.MathSupport.computeMinimumXYZ(lowerContour |> Seq.toList )
             maximum <- Base.MathSupport.computeMaximumXYZ(upperContour |> Seq.toList)
@@ -759,6 +765,12 @@ module GeometricModel =
 
         member this.LowerContour
             with get() = lowerContour
+
+        member this.RawUpperContour
+            with get() = rawUpperContour  
+
+        member this.RawLowerContour
+            with get() = rawLowerContour
         
         override this.Minimum with get() = minimum
         override this.Maximum with get() = maximum
@@ -776,7 +788,7 @@ module GeometricModel =
         member   this.Width  = this.Maximum.Z - this.Minimum.Z
         member   this.Length = this.Maximum.X - this.Minimum.X
 
-        override this.ToString() = "Corpus " + name
+        override this.ToString() = "Corpus " + name + " l= " + this.Length.ToString()  + " b= " + this.Width.ToString() + " h= " + height.ToString()
 
         override this.TopologyType = PrimitiveTopologyType.Patch
 

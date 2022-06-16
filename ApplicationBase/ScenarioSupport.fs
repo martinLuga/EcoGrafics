@@ -173,6 +173,8 @@ module TestScenariosCommon =
     let mutable WORLDORIGIN = Vector3.Zero
     let GROUND_LEVEL = WORLDORIGIN.Y
     let WORLD_HALF_LENGTH = 50.0f
+    let WITH_AXES = true
+    let WITHOUT_AXES = false
     
     let downDirection  = Vector3.UnitY * -1.0f
     let backDirection  = Vector3.UnitZ *  1.0f

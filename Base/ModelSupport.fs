@@ -144,6 +144,7 @@ module ModelSupport =
     // ----------------------------------------------------------------------------------------------------
     //  Material - Parameter zur Beschreibung der Lichtsituation
     // ----------------------------------------------------------------------------------------------------
+    let mutable materialIndex = new Dictionary<string, int>()
     [<AllowNullLiteral>]
     type Material
         (
@@ -163,12 +164,28 @@ module ModelSupport =
         let mutable specular = specular
         let mutable emissive = emissive
         let mutable name = name
+        let mutable idx = 0
         let mutable hasTexture = hasTexture
+
+        static let mutable mat_count = 0 
+
+        do  
+            if not (materialIndex.ContainsKey(name)) then 
+                materialIndex.Add(name, mat_count)
+                idx <- mat_count
+                mat_count <- mat_count + 1
+            else 
+                idx <- materialIndex.Item(name)
+
+        static member MAT_COUNT
+            with get() = mat_count
+
         member this.DiffuseAlbedo = diffuseAlbedo
         member this.FresnelR0 = fresnelR0
         member this.Roughness = roughness
         member this.SpecularPower = specularPower
         member this.MatTransform:Matrix = Matrix.Identity
+        member this.IDX = idx
 
         new() = Material("", Vector4.Zero, Vector3.Zero, 0.0f)
         new(name: string) = Material(name, Vector4.Zero, Vector3.Zero, 0.0f)
@@ -620,9 +637,12 @@ module ModelSupport =
                 visibility <- value
                 this.Parts |> List.iter(fun p -> p.Visibility <- visibility)
 
-        member this.Center =                 
-            let alleZentren = this.Parts |> Seq.map (fun p -> p.Center) |> Seq.toList
-            computeSchwerpunkt(alleZentren)
+        member this.Center =   
+            if this.Parts.Length = 1 then
+                this.Parts.Head.Center 
+            else
+                let alleZentren = this.Parts |> Seq.map (fun p -> p.Center) |> Seq.toList
+                computeSchwerpunkt(alleZentren)
 
         member this.Minimum =
             MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 

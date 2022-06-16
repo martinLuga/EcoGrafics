@@ -23,6 +23,7 @@ open Base.ObjectBase
 open Base.ShaderSupport
 open Base.GameTimer
 open Base.GeometryUtils
+open Base.MaterialsAndTextures
 
 open DirectX.D3DUtilities
 open DirectX.Assets
@@ -95,9 +96,7 @@ module GraficController =
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
         let mutable worldMatrix = Matrix.Identity
-        let mutable matNr = 0
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
-        let mutable materialIndices = new Dictionary<string, int>()
 
         let currentVertexShader(part:Part)  = 
             match part.Shaders.VertexShaderDesc with
@@ -286,26 +285,21 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Material
         // ----------------------------------------------------------------------------------------------------
-        member this.ClearMaterials() = 
-           matNr <- 0
-           materialIndices.Clear()
+        member this.ClearMaterials() =
            materials.Clear()
 
-        member this.addMaterialCPU(material:Material) =
-            if not (materialIndices.ContainsKey(material.Name)) then
-                materials.Add(matNr, material)    
-                materialIndices.Add(material.Name, matNr)
-                matNr <- matNr + 1
+        member this.addMaterial(material:Material) =
+            if not (materials.ContainsKey(material.IDX)) then
+                materials.Add(material.IDX, material)  
 
-        member this.getMaterial(name) =
-            let mutable tempMatNr = 0
-            let success = materialIndices.TryGetValue(name, &tempMatNr)
+        member this.getMaterial(idx) =
+            let success = materials.ContainsKey (idx )
             if success then 
-                materials.Item(tempMatNr) 
+                materials.Item(idx) 
             else null
 
-        member this.getMaterialConstants(name:string, hasTexture:bool) = 
-            let material = this.getMaterial(name)
+        member this.getMaterialConstants(idx, hasTexture:bool) = 
+            let material = this.getMaterial(idx)
             if material = null then
                 raise (ObjectNotFoundException("Invalid Materialname ")) 
             let mutable newMaterial = 
@@ -318,8 +312,7 @@ module GraficController =
                     HasTexture = RawBool(hasTexture), 
                     UVTransform = Matrix.Identity
                 )
-            let matIdx = materialIndices.Item(material.Name)
-            matIdx, ref newMaterial
+            material.IDX, ref newMaterial
 
         // ----------------------------------------------------------------------------------------------------
         // Objects im Controller verwalten
@@ -329,7 +322,7 @@ module GraficController =
                 raise (ObjectDuplicateException(displayable.Name))
             else
                 objects.Add(displayable.Name, displayable)
-                logDebug("Install Object " + displayable.Name + " at Position " + displayable.Position.ToString())
+                logDebug("Add Object " + displayable.Name + " Pos " + formatVector3(displayable.Position))
 
         member this.AddObjects(objects:BaseObject list) =
             for object in objects do                   
@@ -366,7 +359,14 @@ module GraficController =
             this.SetIdle()
             myGpu.ResetTextures()
             myGpu.StartInstall()
-            myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList), this.AnzahlParts(objects.Values |>Seq.toList))
+
+            this.InstallMaterials(DefaultMaterials)
+
+            for object in objects.Values do  
+                for part in object.Display.Parts do                  
+                    this.addMaterial(part.Material)
+
+            myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList), Material.MAT_COUNT) 
 
             for object in objects.Values do  
                 for part in object.Display.Parts do                  
@@ -379,24 +379,23 @@ module GraficController =
         member this.InstallObjects(objects:BaseObject list) =
             this.AddObjects(objects)
             this.Prepare()
+
+        member this.InstallMaterials(materials:Material list) =
+            for material in materials do
+                this.addMaterial(material)
         
         member this.InstallPart(part: Part) =
-
-            // Vertex Data
             if  myGpu.hasMesh(part.Shape.Name)  then
                 ()
             else
                 let meshData = part.Shape.CreateVertexData(part.Visibility)
                 myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology)
             
-            // Material Data
-            if this.getMaterial(part.Material.Name) = null then
-                this.addMaterialCPU(part.Material)
-                logDebug("Install Material " + part.Material.Name)     
-            
-            // Texture Data
             if part.Texture <> null && (not part.Texture.isEmpty)  then
                 myGpu.InstallTexture(part.Texture.Name, part.Texture.Path, part.Texture.IsCube, part.Texture.Data, part.Texture.MimeType)  
+
+        member this.addTexture(texture:Texture)=
+            myGpu.InstallTexture(texture.Name, texture.Path, texture.IsCube, texture.Data, texture.MimeType)  
 
         // ---------------------------------------------------------------------------------------------------- 
         // Alle Meshes erneut schreiben
@@ -408,7 +407,7 @@ module GraficController =
                 for part in object.Display.Parts do 
                     let meshData = part.Shape.CreateVertexData(part.Visibility)
                     myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology) 
-                    logDebug("Refresh Mesh for " + part.Shape.Name)
+                    logInfo("Refresh Mesh for " + part.Shape.Name)
             myGpu.FinalizeMeshCache() 
             myGpu.ExecuteInstall()
 
@@ -521,8 +520,7 @@ module GraficController =
                     HasTexture = RawBool(hasTexture), 
                     UVTransform = Matrix.Identity
                 )
-            let matIdx = materialIndices.Item(material.Name) 
-            myGpu.UpdateMaterial(matIdx, ref newMaterial)
+            myGpu.UpdateMaterial(material.IDX, ref newMaterial)
         
         // Update 
         // Objekt-Eigenschaften
@@ -577,8 +575,7 @@ module GraficController =
 
         member this.drawPerPart(idx, part:Part) =  
             logDebug("Draw part " + idx.ToString() + " " + part.Shape.Name)
-            let matIdx = materialIndices.Item(part.Material.Name)
-
+ 
             if part.Shape.Animated then
                 part.Shape.Update(timer)
                 let mesh = part.Shape.CreateVertexData(part.Visibility)
@@ -600,7 +597,7 @@ module GraficController =
                 part.TextureIsCube()
             )
 
-            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, matIdx, part.TextureName(), part.TextureIsCube())
+            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, part.Material.IDX, part.TextureName(), part.TextureIsCube())
 
         override this.ToString() =
             "GraficController-" + graficWindow.ToString()

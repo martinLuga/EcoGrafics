@@ -22,7 +22,7 @@ open Base.VertexDefs
 
 open Geometry.GeometricModel
 
-open Base.MaterialsAndTextures
+open BuilderSupport
 
 // ----------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -66,6 +66,7 @@ module PolygonFormat =
         let mutable name = name
         let mutable fileName = fileName
         let mutable kontur = new List<Vector3>()
+        let mutable parts : List<Part> = new List<Part>()
         let mutable part : Part = null
         let mutable shape : Shape = null 
         let mutable size = Vector3.One 
@@ -73,7 +74,7 @@ module PolygonFormat =
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Kontur für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
-        member this. Build(origin:Vector3, height:float32, material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        member this. Build(origin:Vector3, height:float32, material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
             reader <- new StreamReader(fileName) 
         
             // Anz points
@@ -124,5 +125,17 @@ module PolygonFormat =
                     shaders
                 )
 
+            match augmentation with
+            | Augmentation.Hilite ->
+                let hp =  createHilitePart(part) 
+                parts.Add(part)
+                parts.Add(hp)                
+            | Augmentation.ShowCenter ->
+                let hp =  createCenterPart(part) 
+                parts.Add(hp)
+                parts.Add(part)
+            | _ ->
+                parts.Add(part)
+
         member this.Parts =
-            [part] 
+            parts |> Seq.toList

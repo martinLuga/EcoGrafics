@@ -29,7 +29,11 @@ open Base.MaterialsAndTextures
 
 open Geometry.GeometricModel
 
+open BuilderSupport
+
 open WavefrontFormat
+
+
 
 // ----------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -252,26 +256,6 @@ module Wavefront =
             let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
             createVertex position normal color4 uv  
 
-        member this.createHilitePart() =
-            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
-            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
-            new Part(
-                name + "-hilite",
-                shape = Quader.NewFromMinMax(name + "-hilite", minimum, maximum , Color.White),
-                material = MAT_LT_BLUE, 
-                visibility = Visibility.Transparent
-            )
-
-        member this.createCenterPart(part: Part) =
-            let minimum = Base.MathSupport.computeMinimum (Seq.map (fun (p:Part) -> p.Shape.Minimum) parts |>  Seq.toList) 
-            let maximum = Base.MathSupport.computeMaximum (Seq.map (fun (p:Part) -> p.Shape.Maximum) parts |>  Seq.toList) 
-            new Part(
-                name + "-center",
-                shape = new Kugel(name + "-center", minimum, 0.1f, Color.Red),
-                material = MAT_RED,
-                visibility = Visibility.Opaque
-            )
-
         member this.LogVertices() =
             logFile("Vertices of "+  fileName + " ---------------------------------------------------------")
             logFile("Test-Run at "+  DateTime.Now.ToString() + " ---------------------------------------------------------")
@@ -311,11 +295,11 @@ module Wavefront =
 
             match augmentation with
             | Augmentation.Hilite ->
-                let hp = this.createHilitePart() 
+                let hp =  createHilitePartFrom(name, parts) 
                 parts.Add(hp)
                 logDebug ("Augmentation Hilte " + hp.Shape.Name )
             | Augmentation.ShowCenter ->
-                let cp = this.createCenterPart(part) 
+                let cp =  createCenterPartFrom(name, parts)
                 parts.Add(cp)
             | _ -> 
                 ()

@@ -55,35 +55,15 @@ module MaterialsAndTextures =
                 emissive=color.ToColor4()
             )
 
-    let MAT(name) =  
-            new Material( 
-                name=name,
-                ambient=Color4(1.2f),
-                diffuse=Color4.White,
-                specular=Color4.White,
-                specularPower=30.0f,
-                emissive=Color4(0.01f)
-            )
+    let MAT_EARTH   = MATERIAL("EARTH", Color.DarkSlateGray)
+    let MAT_FRONT   = MATERIAL("FRONT", Color.DarkSlateGray)
+    let MAT_NONE    = MATERIAL("NONE",  Color.Transparent)
 
-    let MAT_EARTH = MAT("EARTH")
-
-    let MAT_WATER = 
-        new Material( 
-            name="WATER",
-            diffuseAlbedo = new Vector4(1.0f),
-            fresnelR0 = new Vector3(0.2f),
-            roughness = 0.0f
-        )
- 
-
-    let MAT_FRONT = MATERIAL("FRONT", Color.DarkSlateGray)
-    let MAT_NONE = MATERIAL("NONE", Color.Transparent)
-
-    let MAT_BLUE    = MATERIAL("BLUE", Color.Blue)
-    let MAT_BEIGE   = MATERIAL("BEIGE",Color.Beige)
+    let MAT_BLUE    = MATERIAL("BLUE",  Color.Blue)
+    let MAT_BEIGE   = MATERIAL("BEIGE", Color.Beige)
     let MAT_BROWN   = MATERIAL("BROWN", Color.Brown) 
     let MAT_BLACK   = MATERIAL("BLACK", Color.Black)
-    let MAT_CYAN    = MATERIAL("CYAN", Color.Cyan)
+    let MAT_CYAN    = MATERIAL("CYAN",  Color.Cyan)
     let MAT_DGROD   = MATERIAL("DARKGOLDENROD", Color.DarkGoldenrod)
     let MAT_DSGRAY  = MATERIAL("DARKSLATEGRAY", Color.DarkSlateGray) 
     let MAT_GREEN   = MATERIAL("GREEN", Color.DarkGreen)
@@ -97,11 +77,12 @@ module MaterialsAndTextures =
     let MAT_YELLOW  = MATERIAL("YELLOW", Color.Yellow)
     
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
-    let MAT_ANT     = MAT("ANT")
+    let MAT_ANT     = MATERIAL("ANT",    Color.Black)
     let MAT_ANTGRD  = MATERIAL("ANTGRD", Color.Transparent) 
-    let MAT_HILL    = MATERIAL("HILL", Color.Transparent)
-    let MAT_PRED    = MATERIAL("PRED", Color.Black)
+    let MAT_HILL    = MATERIAL("HILL",  Color.Transparent)
+    let MAT_PRED    = MATERIAL("PRED",  Color.Black)
     let MAT_GROUND  = MATERIAL("GROUND", Color.DarkSlateGray)
+    let MAT_WATER   = MATERIAL("WATER", Color.Transparent)
 
     let MATERIAL_LIMIT (name, color: Color) =
         new Material(
@@ -188,3 +169,23 @@ module MaterialsAndTextures =
           MAT_RED
           MAT_WHITE
           MAT_YELLOW ] 
+
+    let DefaultTextures =
+        [ TEXT_ANT
+          TEXT_ANTHILL
+          TEXT_EARTH
+          TEXT_EARTH_HR
+          TEXT_EMPTY
+          TEXT_FOOD
+          TEXT_GRASS
+          TEXT_GROUND
+          TEXT_HILL
+          TEXT_KUGEL
+          TEXT_PRED
+          TEXT_QUADER
+          TEXT_SKY
+          TEXT_SPHERE
+          TEXT_WALL
+          TEXT_WATER
+          TEXT_WOOD 
+          TEXT_EMPTY ]
