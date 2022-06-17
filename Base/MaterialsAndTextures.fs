@@ -74,6 +74,7 @@ module MaterialsAndTextures =
     let MAT_RED     = MATERIAL("RED", Color.Red)
     let MAT_SILVER  = MATERIAL("MAT_SILVER", Color.Silver) 
     let MAT_WHITE   = MATERIAL("WHITE", Color.White)
+    let MAT_AWHITE  = MATERIAL("AWHITE", Color.AntiqueWhite)
     let MAT_YELLOW  = MATERIAL("YELLOW", Color.Yellow)
     
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
@@ -127,9 +128,9 @@ module MaterialsAndTextures =
     // TEXTUR
     // ----------------------------------------------------------------------------------------------------
     let TEXTURE(name:string, texturName:string, isCube:bool) =
-        let textureName = (texturName.Split('.')).[0]
+        let textureFileName = (texturName.Split('.')).[0]
         new Texture (
-            name=textureName,
+            name=name,
             fileName=texturName,
             pathName="",
             isCube=isCube
@@ -152,6 +153,8 @@ module MaterialsAndTextures =
     let TEXT_WALL = TEXTURE("WALL", "texture_140.jpg", false)
     let TEXT_WATER = TEXTURE("WATER", "water_texture.jpg", false)
     let TEXT_WOOD = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
+    let TEXT_BUMPER = TEXTURE("BUMBER", "Bumper-100.jpg", false)
+    let TEXT_FLPG = TEXTURE("FLIPPERGROUND", "texture_140.jpg", false)
 
     let DefaultMaterials  =
         [ MAT_BLACK

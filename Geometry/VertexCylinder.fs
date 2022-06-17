@@ -39,38 +39,6 @@ module VertexCylinder =
         |> ResizeArray<Vertex>
 
     // ----------------------------------------------------------------------------------------------------
-    // Helper
-    // ----------------------------------------------------------------------------------------------------
-    let swap (left : 'a byref) (right : 'a byref) =
-      let temp = left
-      left <- right
-      right <- temp
- 
-    // Helper computes a point on a unit circle, aligned to the x/z plane and centered on the origin.
-    let CreateCircleVector (i,tessellation:int) =
-        let angle  = float32 i * IIpi  / float32 tessellation 
-        let dx =  sin angle 
-        let dz =  cos angle  
-        new Vector3(dx, 0.0f, dz) 
-
-    let reverseWinding (vertices: List<Vertex> byref) (indices: List<int> byref) =
-        assert((indices.Count % 3) = 0) 
-
-        for i in 0 .. 3 .. indices.Count - 3 do
-            let mutable i1 = indices.Item(i)
-            let mutable i2 = indices.Item(i + 2)
-            indices.Item(i) <- i2
-            indices.Item(i + 2) <- i1
-
-        let mutable newVertices = List<Vertex>()
-
-        for vert in vertices do 
-            newVertices.Add( 
-                Vertex(vert.Position,vert.Normal,vert.Color,new Vector2(1.0f - vert.Texture.X, vert.Texture.Y) )                 
-            )
-        vertices <- newVertices
-
-    // ----------------------------------------------------------------------------------------------------
     // Cylinder Cap  
     // ----------------------------------------------------------------------------------------------------
     let CreateCylinderCap (origin:Vector3, tessellation:int, height:float32, radius:float32, color:Color, isTop:bool, isTransparent:bool) =

@@ -839,6 +839,26 @@ module GeometricModel =
             Line2D.CreateMeshData(von, bis, color, visibility)
 
     // ----------------------------------------------------------------------------------------------------
+    // Kreis
+    // ----------------------------------------------------------------------------------------------------
+    type Kreis(name: string, origin, radius: float32, color: Color) =
+        inherit Geometry(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        let mutable radius = radius 
+
+        member this.Radius  
+            with get() = radius
+
+        override this.Center = Vector3(origin.X + radius, origin.Y, origin.Z + radius) 
+
+        override this.resize newSize  = 
+            ()
+
+        override this.ToString() = "Kreis:" + this.Name + " r " + radius.ToString() 
+                    
+        override this.CreateVertexData(visibility: Visibility) =
+            Circle2D.CreateMeshData(origin,  color, radius, Shape.Raster, visibility)
+
+    // ----------------------------------------------------------------------------------------------------
     // Quadrat mit achsenparallelen Seiten
     // ----------------------------------------------------------------------------------------------------
     type Quadrat(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color) =
