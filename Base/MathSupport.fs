@@ -276,6 +276,16 @@ module MathSupport =
             else 
                 Array.create resultDim 0|> ignore
         (result, resultIndex)
+         
+    let transpose(matrix: int[,]) =
+        let dim1 = matrix.GetUpperBound(0) + 1
+        let dim2 = matrix.GetUpperBound(1) + 1
+        let result: int[,] = Array2D.create dim2 dim1 0 
+        for i in 0 .. dim2-1 do 
+              for j in 0 .. dim1-1 do 
+                let element = matrix.[j,i]
+                result.[i,j] <- element 
+        result
 
     module Dict =
       open System.Collections.Generic

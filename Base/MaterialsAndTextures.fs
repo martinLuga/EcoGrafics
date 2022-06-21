@@ -78,7 +78,7 @@ module MaterialsAndTextures =
     let MAT_YELLOW  = MATERIAL("YELLOW", Color.Yellow)
     
     let MAT_ANTHILL = MATERIAL("ANTHILL", Color.Maroon)
-    let MAT_ANT     = MATERIAL("ANT",    Color.Black)
+    let MAT_ANT     = MATERIAL("ANT",    Color.Transparent)
     let MAT_ANTGRD  = MATERIAL("ANTGRD", Color.Transparent) 
     let MAT_HILL    = MATERIAL("HILL",  Color.Transparent)
     let MAT_PRED    = MATERIAL("PRED",  Color.Black)
@@ -137,7 +137,7 @@ module MaterialsAndTextures =
         ) 
 
     let TEXT_ANT = TEXTURE("ANT", "Ant_color.jpg", false)
-    let TEXT_ANTHILL = TEXTURE("ANTHILL", "texture_140.jpg", false)
+    let TEXT_ANTHILL = TEXTURE("ANTHILL", "grass.jpg", false)
     let TEXT_EARTH = TEXTURE("EARTH", "8081_earthmap2k.jpg", false)
     let TEXT_EARTH_HR = TEXTURE("EARTHHR", "8081_earthmap10k.jpg", false)
     let TEXT_EMPTY = TEXTURE("", "", false)
@@ -155,6 +155,7 @@ module MaterialsAndTextures =
     let TEXT_WOOD = TEXTURE("WOOD", "wooden-textured-background.jpg", false)
     let TEXT_BUMPER = TEXTURE("BUMBER", "Bumper-100.jpg", false)
     let TEXT_FLPG = TEXTURE("FLIPPERGROUND", "texture_140.jpg", false)
+    let TEXT_BITCN = TEXTURE("BITCOIN", "bitcoin-g66b7a0261_1280.png", false)
 
     let DefaultMaterials  =
         [ MAT_BLACK

@@ -326,11 +326,10 @@ module GraficController =
         member this.AddObjects(objects:BaseObject list) =
             for object in objects do                   
                 this.AddObject(object)
-
-        member this.RefreshObject(object:BaseObject) =
-            this.Reset()
-            this.AddObject(object)
-            this.Prepare()
+        
+        abstract member RefreshObject:BaseObject->Unit
+        default this.RefreshObject(object:BaseObject) =
+            ()
 
         member this.GetObject(name) =
             objects.Item(name)

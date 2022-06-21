@@ -43,6 +43,6 @@ module GraficWindow =
 
         override this.OnSizeChanged(e: EventArgs) = base.Invalidate()
 
-        override this.ToString() = "MyWindow-" + this.Name
+        override this.ToString() = "Window:" + this.Name
 
         member this.Close() = ()

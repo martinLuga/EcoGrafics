@@ -7,8 +7,6 @@
 
 open System
 
-open log4net
-
 open SharpDX
 
 // ----------------------------------------------------------------------------------------------------
@@ -16,8 +14,6 @@ open SharpDX
 //  Formatierte  Anzeige von Vector , Matrix etc
 // ----------------------------------------------------------------------------------------------------
 module PrintSupport =
-
-    let logger = LogManager.GetLogger("Utility")
 
     let mutable matrix: float32 [,] = Array2D.create 6 7 0.0f
 
@@ -78,15 +74,14 @@ module PrintSupport =
 
         line
 
-    let dindex (index: seq<int []>) =
+    let dindex (index: seq<int[]>) =
         let mutable line = ""
         let gewEnum = index.GetEnumerator()
-
         while gewEnum.MoveNext() = true do
             let index = gewEnum.Current
             line <- line + sprintf "(%i,%i) " index.[0] index.[1]
 
-        logger.Debug(line)
+        line
 
     // ----------------------------------------------------------------------------------------------------
     //  Pretty print

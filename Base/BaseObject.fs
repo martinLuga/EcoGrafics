@@ -64,6 +64,10 @@ module ObjectBase =
         abstract member OnUpdateBody:Unit -> Unit
         default this.OnUpdateBody () = ()
 
+        // Grafic has changed: notify Body
+        abstract member OnUpdateGrafic:Unit -> Unit
+        default this.OnUpdateGrafic () = ()
+
         // Simulation step
         abstract member Step:GameTimer -> Unit
         default this.Step (timer:GameTimer) = ()
