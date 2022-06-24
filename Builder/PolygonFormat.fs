@@ -109,7 +109,7 @@ module PolygonFormat =
                     height = height,
                     colorBottom = Color.White,
                     colorTop = Color.White,
-                    colorSide = Color.White
+                    colorSide = Color.Black
                 )
 
             // ----------------------------------------------------------------------------------------------------

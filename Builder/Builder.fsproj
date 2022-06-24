@@ -11,14 +11,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BuilderSupport.fs" />
-    <Compile Include="SVGFormat.fs" />
     <Compile Include="PolygonFormat.fs" />
     <Compile Include="GlbFormat.fs" />
-    <Compile Include="WavefrontFormat.fs" />
     <Compile Include="SimpleFormat.fs" />
+    <Compile Include="SVGFormat.fs" />
+    <Compile Include="WavefrontFormat.fs" />
+    <Compile Include="Svg.fs" />
     <Compile Include="GlTf.fs" />
     <Compile Include="Glb.fs" />
     <Compile Include="Wavefront.fs" />
+    <Compile Include="Segment.fs" />
     <Compile Include="Builder.fs" />
     <Compile Include="ModelExtension.fs" />
   </ItemGroup>

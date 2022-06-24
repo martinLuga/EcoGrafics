@@ -6,8 +6,7 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System
-open System.Globalization
+open SharpDX
 
 open log4net
 
@@ -18,7 +17,8 @@ open Base.ShaderSupport
 open Wavefront
 open SimpleFormat
 open PolygonFormat
-open SVGFormat
+open Segment
+open Svg
 open Glb
 open GlTf
 
@@ -69,16 +69,35 @@ module SvgBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Polygon für ein SVG-File erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let CreateObjects (name, element:string, fileName, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let Build (fileName, name, element, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating polygons from Svg-File:" + fileName  )
-        let builder = 
-            if element = "*" then
-                new SvgBuilder(fileName, name)  
-            else
-                let elem = Convert.ToInt32(element.Trim(), CultureInfo.InvariantCulture)
-                new SvgBuilder(fileName, name, elem)
-        builder.CreateObjects(height, material, texture, position, sizeFactor, visibility, augmentation, quality, shaders)  
+        
+        let mutable klass = ""
+        let mutable elem = ""
+        
+        klass <- if name = "*" then null else name
+
+        elem <- if element = "*" then null else element
+
+        let builder = new SvgBuilder(fileName) 
+
+        builder.Build(klass, elem, height, material, texture, position, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Objects
+
+module SegmentBuilder = 
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für Zahlen aus Segmenten
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Segment")
+    let logInfo = Info(logger)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Polygon für ein SVG-File erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (zahl, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        let builder = new SegmentBuilder(Color.Green)  
+        builder.Build(zahl, position, height, material, texture,  sizeFactor, visibility, augmentation, quality, shaders) 
+        builder.Object
 
 module GlbBuilder = 
     // ----------------------------------------------------------------------------------------------------

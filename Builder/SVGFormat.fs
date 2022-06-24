@@ -7,7 +7,6 @@
 //
 
 open System
-open System.IO
 open System.Globalization
 open System.Collections.Generic
 
@@ -15,20 +14,13 @@ open log4net
 
 open SharpDX
 
-open Base.ShaderSupport
 open Base.LoggingSupport
 open Base.ModelSupport
 open Base.StringSupport
-open Base.MathSupport
-open Base.ObjectBase
-open Base.GeometryUtils
-
-open Geometry.GeometricModel
-
-open Base.MaterialsAndTextures
 
 open Aspose.Svg
 open Aspose.Svg.Dom
+open Aspose.Svg.DataTypes
 open Aspose.Svg.Paths
 open Aspose.Svg.Dom.Traversal.Filters
 
@@ -37,13 +29,11 @@ open Aspose.Svg.Dom.Traversal.Filters
 //  bestehend aus Vertex und Index-Liste
 // ----------------------------------------------------------------------------------------------------
 module SVGFormat =
-    let logger = LogManager.GetLogger("Builder.Polygon")
+
+    let logger = LogManager.GetLogger("SvgFormat")
     let logDebug = Debug(logger)
 
-    let mutable vCount = 0
-    let mutable tCount = 0 
-    let mutable reader:StreamReader= null
-    let mutable input = ""
+    exception ParseException of string
 
     let MATERIAL_COLOR(color:Color) = 
         new Material( 
@@ -55,178 +45,51 @@ module SVGFormat =
             emissive=color.ToColor4()
         )
 
-    let advanceLines() =
-        while (input <> null && not (input.StartsWith("{", StringComparison.Ordinal))) do
-            input <- reader.ReadLine()  
-
     type RectFilter () =
         inherit NodeFilter()
         override this.AcceptNode(node:Node) =
             if node.NodeName.Equals("class") then NodeFilter.FILTER_ACCEPT else NodeFilter.FILTER_REJECT
 
     // ----------------------------------------------------------------------------------------------------
-    // SVGBuilder
+    // Path
     // ----------------------------------------------------------------------------------------------------
-    // 1. Points aus *.svg einlesen
-    // 2. Kontur erstellen 
-    // 3. Ein Part erstellen
+    // 1. Mit id, name
+    //      <path d="M1633.1 472.8l2.2-2.4 4.6-3.6-0.1 3.2-0.1 4.1-2.7-0.2-1.1 2.2-2.8-3.3z" id="BN" name="Brunei Darussalam">
+    //
+    // 2. mit Class
+    //       <path class="Canada" d="M 680.3 187.6 677.9 187.7 672.1 185.8 668.6 182.8 670.5 182.3 676.4 183.9 680.6 186.5 680.3 187.6 Z">
     // ----------------------------------------------------------------------------------------------------    
-    type SvgBuilder(fileName:String, element:string, ?number:int) =
-        let mutable element = element
-        let mutable elementNumber = defaultArg number -1
-        let mutable fileName = fileName
-        let mutable part : Part = null
-        let mutable partNr = 0
-        let mutable matNr = 0
-        let mutable parts : List<Part> = new List<Part>()
-        let mutable objects : List<BaseObject> = new List<BaseObject>()
-        let mutable shape : Shape = null 
-        let mutable document:SVGDocument = null
-        let mutable size = Vector3.One
-        let mutable normalized = false
+    type Path(node:Element) =
+        let mutable node = node
+        let mutable name = ""
+        let mutable points = new List<Vector3>()
 
-        // ----------------------------------------------------------------------------------------------------
-        //  Erzeugen von Konturen für eine Menge von Punkten als Objekte
-        // ----------------------------------------------------------------------------------------------------
-        member this.CreateObjects
-            (
-                height: float32,
-                material: Material,
-                texture: Texture,
-                position: Vector3,
-                sizeFactor: Vector3,
-                visibility: Visibility,
-                augment: Augmentation,
-                quality: Quality,
-                shaders: ShaderConfiguration
-            ) =
-            size <- sizeFactor
-            document <- new SVGDocument(fileName)
-            let svgElement = document.RootElement
-            let mutable name = ""
-            let mutable lastName = ""
-
-            for node in svgElement.Children do
-                match node.LocalName with
-
-                | "path" -> 
-
-                    let mat = this.getMaterial(element, material)                    
-                    let mutable objectName = ""
-                    let mutable points = new List<Vector3>()
-
-                    // <path d="M1633.1 472.8l2.2-2.4 4.6-3.6-0.1 3.2-0.1 4.1-2.7-0.2-1.1 2.2-2.8-3.3z" id="BN" name="Brunei Darussalam">
-                    if node.ClassName = "" then
-                        let named = node.Attributes.GetNamedItem("name")
-                        name <- named.Value
-                        if name = element || element = "*" then
-                            if name <> lastName then partNr <- 0 else partNr <- partNr + 1
-                            objectName <- name + partNr.ToString()
-                            if named <> null then                            
-                                let pathElement = node :?>SVGPathElement 
-                                points <- this.parseSegments(pathElement)
-                    else 
-                        // <path class="Canada" d="M 680.3 187.6 677.9 187.7 672.1 185.8 668.6 182.8 670.5 182.3 676.4 183.9 680.6 186.5 680.3 187.6 Z">
-                        if node.ClassName = element || element = "*" then
-                            name <- node.ClassName
-                            if name <> lastName then partNr <- 0 else partNr <- partNr + 1
-                            objectName <- name + partNr.ToString()
-                            let values = node.Attributes.GetNamedItem("d")
-                            points <- this.parsePath (values.Value)                    
-                    if objectName <> "" then
-                        resize(points, size)
-                        let origin = computeMinimumXYZ(points|> Seq.toList)
-                        let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                        objects.Add(object) 
-                            
-                    lastName <- name
-                
-                | "g" -> 
-                    for node in node.Children do
-                        match node.LocalName with
-
-                        | "path" -> 
-                            let mat = this.getMaterial(element, material)
-                            
-                            if node.ClassName = "" then
-                                let named = node.Attributes.GetNamedItem("id")
-                                if named <> null then 
-                                    name <- named.Value
-                                    if name <> lastName then partNr <- 0 else partNr <- partNr + 1
-                                    if name = element || element = "*" then 
-                                        let objectName = name                          
-                                        let pathElement = node :?>SVGPathElement 
-                                        let points = this.parseSegments(pathElement)
-                                        resize(points, size)
-                                        let origin = computeMinimumXYZ(points|> Seq.toList)
-                                        let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                                        objects.Add(object) 
-                            else  
-                                if node.ClassName = element || element = "*" then
-                                    name <- node.ClassName
-                                    if name <> lastName then partNr <- 0 else partNr <- partNr + 1
-                                    let objectName = name + partNr.ToString()
-                                    let values = node.Attributes.GetNamedItem("d")
-                                    let points = this.parsePath (values.Value)
-                                    resize(points, size)
-                                    let origin = computeMinimumXYZ(points|> Seq.toList)
-                                    let object = this.createObject (position + origin, points, objectName, height, mat, texture, visibility, shaders)
-                                    objects.Add(object) 
-                                    
-                            lastName <- name
-                        | _ -> ()
-
-                | _ -> ()
-
-        // ----------------------------------------------------------------------------------------------------
-        // Das Element enthält ein Move- und mehrere LineRel Segmente
-        // ----------------------------------------------------------------------------------------------------
-        member this.parseSegments(element:SVGPathElement):List<Vector3> = 
-            let mutable points = new List<Vector3>()
-            let mutable lastPoint = Vector3.Zero
-            let pathSegList = element.PathSegList |> Seq.toList
-
-            let first = pathSegList.Head 
-            match first.PathSegType with
-            | SVGPathSeg.PATHSEG_MOVETO_ABS -> 
-                let move = first :?> SVGPathSegMovetoAbs 
-                lastPoint <- Vector3(move.X, 0.0f, move.Y)
-            
-            | SVGPathSeg.PATHSEG_MOVETO_REL -> 
-                let move = first :?> SVGPathSegMovetoRel
-                lastPoint <- Vector3(move.X, 0.0f, move.Y)
-
-            | _ -> ()
-
-            points.Add(lastPoint)
-
-            let rels = pathSegList.Tail
-            for relSeg in rels do
-                match relSeg.PathSegType with
-                | SVGPathSeg.PATHSEG_LINETO_REL -> 
-                    let rel = relSeg :?> SVGPathSegLinetoRel
-                    let nextPoint = lastPoint + Vector3(rel.X , 0.0f, rel.Y)
-                    points.Add(nextPoint)
-                    lastPoint <- nextPoint   
-                | _ -> ()
-            points
-
-        member this.getMaterial(element, material) =
-            if element = "*" then
-                matNr <- 
-                    if matNr < DefaultMaterials.Length - 1 then 
-                        matNr + 1
-                    else 0
-                DefaultMaterials.[matNr]
-            else 
-                material
+        member this.Name 
+            with get() = name
         
-        // ----------------------------------------------------------------------------------------------------
-        // Das Element enthält einen Polygonzug
-        // ----------------------------------------------------------------------------------------------------
+        member this.ForClass() = 
+            name <- node.ClassName
+            let values = node.Attributes.GetNamedItem("d")
+            points <- this.parsePath (values.Value)  
+            name, points
+
+        member this.ForName() =        
+            let named = node.Attributes.GetNamedItem("name")
+            let name = named.NodeValue
+            let pathElement = node :?>SVGPathElement 
+            points <- this.parseSegments(pathElement)
+            name, points
+
+        member this.ForId() =        
+            let named = node.Attributes.GetNamedItem("id")
+            let name = named.NodeValue
+            let pathElement = node :?>SVGPathElement 
+            points <- this.parseSegments(pathElement)
+            name, points
+
         member this.parsePath(values: string):List<Vector3> =
             let mutable points = new List<Vector3>()
-            input <- noLetters(values).Trim()
+            let input = noLetters(values).Trim()
             if input.Length > 0 then
                 let vals = input.Split(' ')
                 for i in 0..2 .. vals.Length - 2 do
@@ -239,40 +102,109 @@ module SVGFormat =
                     points.Add(point)
             points
 
-        // ----------------------------------------------------------------------------------------------------
-        //   Wenn für die Kontur ein Part erstellt wird
-        // ----------------------------------------------------------------------------------------------------
-        member this.createPart(origin, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
-                shape <-
-                    new Corpus(
-                        name = partName,
-                        origin = origin,
-                        contour = points.ToArray(),
-                        height = height,
-                        colorBottom = Color.White,
-                        colorTop = Color.White,
-                        colorSide = Color.White
+        member this.parseSegments(element:SVGPathElement):List<Vector3> = 
+            let mutable points = new List<Vector3>()
+            let mutable lastPoint = Vector3.Zero
+            let mutable firstPoint = Vector3.Zero
+            let pathSegList = element.PathSegList |> Seq.toList
+
+            let first = pathSegList.Head 
+
+            match first.PathSegType with
+            | SVGPathSeg.PATHSEG_MOVETO_ABS -> 
+                let move = first :?> SVGPathSegMovetoAbs 
+                lastPoint <- Vector3(move.X, 0.0f, move.Y)
+            
+            | _ -> 
+                let message = "Unerwarteter Path Typ " + first.PathSegType.ToString() 
+                raise (ParseException(message))
+
+            points.Add(lastPoint)
+            firstPoint <- lastPoint
+
+            let rels = pathSegList.Tail
+            for relSeg in rels do
+                match relSeg.PathSegType with
+                | SVGPathSeg.PATHSEG_LINETO_REL -> 
+                    let rel = relSeg :?> SVGPathSegLinetoRel
+                    let nextPoint = lastPoint + Vector3(rel.X , 0.0f, rel.Y)
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint 
+                | SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL ->  
+                    let rel = relSeg :?> SVGPathSegCurvetoCubicRel
+                    let nextPoint = lastPoint + Vector3(rel.X , 0.0f, rel.Y)
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint                 
+                | SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL ->                 
+                    let rel = relSeg :?> SVGPathSegLinetoHorizontalRel
+                    let nextPoint = lastPoint + Vector3(rel.X , 0.0f, lastPoint.Y)
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint                 
+                | SVGPathSeg.PATHSEG_CLOSEPATH ->                 
+                    let rel = relSeg :?> SVGPathSegClosePath
+                    let nextPoint = firstPoint
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint  
+                | SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL -> 
+                    let rel = relSeg :?> SVGPathSegLinetoVerticalRel
+                    let nextPoint = lastPoint + Vector3(lastPoint.X , 0.0f, rel.Y)
+                    points.Add(nextPoint)
+                    lastPoint <- nextPoint                  
+                | SVGPathSeg.PATHSEG_MOVETO_REL -> 
+                    let rel = relSeg :?> SVGPathSegMovetoRel
+                    lastPoint <- Vector3(rel.X , 0.0f, rel.Y) 
+                | _ ->  
+                    let message = "Unerwarteter Path Typ " + relSeg.PathSegType.ToString() 
+                    raise (ParseException(message))
+            points
+
+        member this.Evaluate() =
+            if node.ClassName <> null  && node.ClassName <> "" then
+                this.ForClass()
+            else 
+                if  node.Attributes.GetNamedItem("name") <> null then
+                    this.ForName()
+                else    
+                    if node.Attributes.GetNamedItem("id") <> null then
+                        this.ForId()
+                    else 
+                        null, null            
+                
+    type Polygon(node:Element) =
+        let mutable points = new List<Vector3>()
+
+        member this.ForId() =        
+            let named = node.Attributes.GetNamedItem("id")
+            let name = named.Value
+            let pathElement = node :?>SVGPolygonElement 
+            points <- this.parsePolygon(pathElement)
+            name, points
+            
+        member this.parsePolygon(element: SVGPolygonElement)  =  
+            this.parsePoints(element.Points)
+
+        member this.parsePoints(pointList: SVGPointList) =
+            let mutable points = new List<Vector3>()
+            let first = pointList.Item(uint64 0)
+            let firstPoint =  
+                Vector3(
+                    first.X,
+                    0.0f,
+                    first.Y
+                )
+            for p in pointList do
+                let point = 
+                    Vector3(
+                        p.X,
+                        0.0f,
+                        p.Y
                     )
-                new Part(partName, shape, material, texture, visibility, shaders)  
+                points.Add(point)
+            points.Add(firstPoint)
+            points
 
-        // ----------------------------------------------------------------------------------------------------
-        //  Für die Kontur wird ein Objekt und ein Part erstellt 
-        // ----------------------------------------------------------------------------------------------------   
-        member this.createObject(origin:Vector3, points: List<Vector3> , partName, height, material, texture, visibility, shaders) =
-            let part = this.createPart (Vector3.Zero, points, partName, height, material, texture, visibility, shaders)
-            let objekt = 
-                new BaseObject(
-                    name=partName,
-                    display = 
-                        new Display(
-                            parts = [part]
-                        ), 
-                    position = origin
-                ) 
-            objekt  
-
-        member this.Objects =
-            if elementNumber < 0 then
-                objects |> Seq.toList
-            else
-                [objects.Item(elementNumber)] 
+        member this.Evaluate() =  
+            if node.Attributes.GetNamedItem("id") <> null then
+                this.ForId()
+            else 
+                null, null   

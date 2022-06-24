@@ -84,6 +84,7 @@ module MaterialsAndTextures =
     let MAT_PRED    = MATERIAL("PRED",  Color.Black)
     let MAT_GROUND  = MATERIAL("GROUND", Color.DarkSlateGray)
     let MAT_WATER   = MATERIAL("WATER", Color.Transparent)
+    let MAT_TRANSP  = MATERIAL("TRANSPARENT", Color.Transparent)
 
     let MATERIAL_LIMIT (name, color: Color) =
         new Material(
