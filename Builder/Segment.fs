@@ -46,84 +46,72 @@ module Segment =
     // ----------------------------------------------------------------------------------------------------
     // SegmentBuilder
     // ----------------------------------------------------------------------------------------------------
-    type SegmentBuilder(color:Color) =
-        let mutable svgBuilder = new SvgBuilder("model2d\\7-segment_cdeg.svg") 
-        let mutable zahlObjekt:BaseObject = null
+    type SegmentBuilder(_segment:BaseObject, color:Color) = 
 
-        member this.Build 
-            (
-                zahl:string,
-                position: Vector3,
-                height: float32,
-                material: Material,
-                texture: Texture,
-                sizeFactor: Vector3,
-                visibility: Visibility,
-                augmentation: Augmentation,
-                quality: Quality,
-                shaders: ShaderConfiguration
-            ) =
+        let mutable segment = _segment
 
-            let zahlAnzeige = 
-                svgBuilder.Build( 
-                    "cdeg",
-                    "0",
-                    height,
-                    material,
-                    texture, 
-                    position,
-                    sizeFactor,
-                    visibility,
-                    augmentation,
-                    quality,
-                    shaders
-                ) 
-                
-            zahlObjekt <- svgBuilder.Objects.[0]
+        let mutable objekte = new List<BaseObject>()
+
+        let mutable delta = Vector3(20.0f, 0.0f, 0.0f)
+
+        member this.Build (input:string, position) =
+            
+            if input.Length = 1 then
+                this.BuildOne(input, position)
+            else 
+                this.BuildAll(input, position)
+
+        member this.BuildOne(zahl, position) = 
+
+            let objekt = new BaseObject(zahl, position)
+
             let segmentsToBeHilited = this.Segment(zahl)
 
-            let parts = zahlObjekt.Display.Parts
+            let parts = segment.Display.Parts
 
             let PartWithName(name:string) =
                 parts |> List.find (fun part -> part.Name = name)
 
-            for part in parts do 
-                part.Material <- MAT_TRANSP
+            let newParts = 
+                segmentsToBeHilited 
+                |> List.map(fun s -> PartWithName(s)) 
 
-            for segment in segmentsToBeHilited do 
-                let p =  PartWithName(segment)
-                p.Material <- MAT_GREEN 
+            objekt.Display.Parts <- newParts
 
-            //for part in zahlObjekt.Display.Parts do
-            //    match part.Name with
-            //    | "a" -> part.Material <- MAT_GREEN     // oben
-            //    | "b" -> part.Material <- MAT_ORANGE    // rechts oben
-            //    | "c" -> part.Material <- MAT_BLUE      // rechts unten
-            //    | "d" -> part.Material <- MAT_DGROD     // unten
-            //    | "e" -> part.Material <- MAT_DSGRAY    // unten links
-            //    | "f" -> part.Material <- MAT_CYAN      // oben links
-            //    | "g" -> part.Material <- MAT_YELLOW    // mitte              
-            //    | _ ->  part.Material  <- MAT_BLACK
+            objekte.Add(objekt)
 
-            zahlObjekt.Name <- zahl
+        member this.BuildAll(zahlen:string, position) = 
+            let ueberAlleZahlen = zahlen.GetEnumerator()
+            let mutable pos = position
+            while ueberAlleZahlen.MoveNext() do
+                let zahl = ueberAlleZahlen.Current
+                this.BuildOne(zahl.ToString(), pos)
+                pos <- pos + delta
 
         member this.Segment(zahl):string list =
+            //    | "a"  // oben             
+            //    | "b"  // rechts oben
+            //    | "c"  // rechts unten
+            //    | "d"  // unten           
+            //    | "e"  // unten links
+            //    | "f"  // oben links
+            //    | "g"  // mitte    
             match zahl with
-            | "1" -> [ "b"; "c"                     ]      
-            | "2" -> [ "a"; "b"; "g" ; "e" ; "d"    ]
-            | "3" -> [ "a"; "b"; "c"                ]
-            | "4" -> [ "a"; "b"; "c"                ]
-            | "5" -> [ "a"; "b"; "c"                ]
-            | "6" -> [ "a"; "b"; "c"                ]
-            | "7" -> [ "a"; "b"; "c"                ]
-            | "8" -> [ "a"; "b"; "c"                ]
-            | "9" -> [ "a"; "b"; "c"                ]
-            | "0" -> [ "a"; "b"; "c"                ]
+            | "1" -> [      "b" ; "c"                           ]     // OK 
+            | "2" -> [ "a"; "b" ;       "d" ; "e"       ; "g"   ]     // OK
+            | "3" -> [ "a"; "b" ; "c" ; "d" ;             "g"   ]     // OK
+            | "4" -> [      "b" ; "c" ;             "f" ; "g"   ]     // OK
+            | "5" -> [ "a";       "c" ; "d" ;       "f" ; "g"   ]     // OK
+            | "6" -> [ "a";       "c" ; "d" ; "e" ; "f" ; "g"   ]     // OK 
+            | "7" -> [ "a"; "b" ; "c"                           ]     // 
+            | "8" -> [ "a"; "b" ; "c" ; "d" ; "e" ; "f" ; "g"   ]     // 
+            | "9" -> [ "a"; "b" ; "c" ; "d" ;       "f" ; "g"   ]     // 
+            | "0" -> [ "a"; "b" ; "c" ; "d" ; "e" ; "f"         ]     // 
             | _ ->                
                 let message = "Keine Zahl " + zahl 
                 raise (System.Exception(message))
 
-        member this.Object = 
-            zahlObjekt
+        member this.Objects = 
+            objekte |> Seq.toList
            
 
