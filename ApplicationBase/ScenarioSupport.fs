@@ -80,9 +80,6 @@ module ScenarioSupport =
     let startScenario(nr:int) =
         execScenario(nr)
 
-    let startNextScenario() =
-        execNextScenario()
-
     let startActiveScenario() =      
         execActiveScenario() 
 

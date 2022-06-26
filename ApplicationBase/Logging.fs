@@ -13,6 +13,7 @@ open Base.ObjectBase
 open Geometry.GeometricModel
 open log4net
 open SharpDX
+open BulletSharp
 open System.Collections.Generic 
 
 // ----------------------------------------------------------------------------------------------------
@@ -23,29 +24,43 @@ open System.Collections.Generic
 // ----------------------------------------------------------------------------------------------------
 module Logging = 
 
-    let logObject(displayable:BaseObject, logger, message) =
-        logger (
-            message + "\n" +
-            "   BaseObject"    +  "\n" +
-            "   Name      "  + displayable.Name + "\n" +
-            "   World     "  + formatMatrix(displayable.World) + "\n" +
-            "   Position  "  + formatVector3(displayable.Position) + "\n" +
-            "   Scale     "  + formatVector3(displayable.Scale) + "\n" +
-            "   Rotation  "  + formatMatrix(displayable.Rotation) + "\n"
-            )
+    let logObject(displayable:BaseObject, logger, message, selected) =
+        if displayable.Name = selected then
+            logger (
+                message + "\n" +
+                "   BaseObject"    +  "\n" +
+                "   Name      "  + displayable.Name + "\n" +
+                "   Position  "  + formatVector3(displayable.Position) + "\n" +
+                "   Center    "  + formatVector3(displayable.Center) + "\n" +
+                "   CenToOrig "  + formatVector3(displayable.CenterOrigin) + "\n" +
+                "   Scale     "  + formatVector3(displayable.Scale) + "\n" +
+                "   Rotation  "  + formatQuaternion(Quaternion.RotationMatrix(displayable.Rotation)) + "\n"
+                )
 
-    let logTransform (transform: Matrix, logger, message) =
-        let mutable scle = Vector3.One
-        let mutable rot = Quaternion.Identity
-        let mutable tran = Vector3.One
-        transform.Decompose(&scle, &rot, &tran) |> ignore
-        logger (
-            message + "\n" +
-            "   Transform   " + "\n" +
-            "   Scale       " + formatVector3(scle) + "\n" +
-            "   Translation " + formatVector3(tran) + "\n" +
-            "   Rotation    " + formatQuaternion(rot)  + "\n"
-            )
+    let logBody(body:RigidBody, logger, message, selected) =
+        if body.UserObject.ToString() = selected then
+            let wt = body.WorldTransform
+            let p = wt.Origin
+            logger (
+                message + "\n" +
+                "   RigidBody "  +  "\n" +
+                "   Name      "  + body.UserObject.ToString() + "\n" +
+                "   Position  "  + p.ToString()  + "\n" 
+                )
+
+    let logTransform (transform: Matrix, logger, objectName, selected) =
+        if objectName = selected then
+            let mutable scle = Vector3.One
+            let mutable rot = Quaternion.Identity
+            let mutable tran = Vector3.One
+            transform.Decompose(&scle, &rot, &tran) |> ignore
+            logger (
+                objectName + "\n" +
+                "   Transform   " + "\n" +
+                "   Scale       " + formatVector3(scle) + "\n" +
+                "   Translation " + formatVector3(tran) + "\n" +
+                "   Rotation    " + formatQuaternion(rot)  + "\n"
+                )
 
     let logPart(part:Part, logger, message) =
         logger (
