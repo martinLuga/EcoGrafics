@@ -40,7 +40,7 @@ module ObjectBase =
         new (name, display, position, scale) = BaseObject(name, display, position, Matrix.Identity, scale)
 
         member this.LocalTransform() =
-            createLocalTransform (this.Position, this.Rotation, this.Scale, this.OriginCenter) 
+            createLocalTransform (this.Position, this.Rotation, this.Scale, this.CenterOrigin) 
         
         abstract member Copy:unit -> BaseObject  
         default this.Copy () = this
@@ -72,11 +72,13 @@ module ObjectBase =
         abstract member Step:GameTimer -> Unit
         default this.Step (timer:GameTimer) = ()
 
+        // Origin to Center
         member this.OriginCenter =
             if originCenter = UNDEF then
                 originCenter <- this.Center - this.Position 
             originCenter
 
+        // Center to Origin
         member this.CenterOrigin =
             - this.OriginCenter  
 

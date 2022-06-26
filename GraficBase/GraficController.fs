@@ -334,6 +334,9 @@ module GraficController =
         member this.GetObject(name) =
             objects.Item(name)
 
+        member this.RemoveObject(name) =
+            objects.Remove(name)
+
         member this.ClearObjects() = 
             objects.Clear() 
 
@@ -528,21 +531,14 @@ module GraficController =
             let mutable scleP = Vector3.One
             let mutable rotP  = Quaternion.Identity
             let mutable tranP = Vector3.One
-            let parentTransform = displayable.LocalTransform().Decompose(&scleP, &rotP, &tranP)
-            let mutable testRotation  = rotationVector(rotP.Axis, rotP.Angle)
-
+            displayable.LocalTransform().Decompose(&scleP, &rotP, &tranP) |> ignore
+            
             let mutable sclePt = Vector3.One
             let mutable rotPt  = Quaternion.Identity
             let mutable tranPt = Vector3.One
             part.Transform.Decompose(&sclePt, &rotPt, &tranPt) |> ignore
 
-            let _world          = displayable.World  * part.Transform 
-            if displayable.Name = "sphere1" then
-                logDebug("Name=      "    + displayable.Name)
-                //logDebug("World= "  + formatMatrix(displayable.World)+ "\n" )
-                logDebug("Pos=       "    + displayable.Position.ToString()) 
-                logDebug("DispRot  = "    + formatMatrix(displayable.Rotation)  )
-                logDebug("TransfRot= "    + formatMatrix(testRotation)+ "\n" )
+            let _world          = displayable.World * part.Transform 
 
             let _view           = Camera.Instance.View
             let _proj           = Camera.Instance.Proj

@@ -7,7 +7,7 @@
 //
 
 open Base.LoggingSupport
-open Base.MaterialsAndTextures
+open Base.ModelSupport
 open Base.PrintSupport
 open Base.ObjectBase
 open Geometry.GeometricModel
@@ -25,7 +25,8 @@ module Logging =
 
     let logObject(displayable:BaseObject, logger, message) =
         logger (
-            "BASEOBJECT"     + message + "\n" +
+            message + "\n" +
+            "   BaseObject"    +  "\n" +
             "   Name      "  + displayable.Name + "\n" +
             "   World     "  + formatMatrix(displayable.World) + "\n" +
             "   Position  "  + formatVector3(displayable.Position) + "\n" +
@@ -39,8 +40,20 @@ module Logging =
         let mutable tran = Vector3.One
         transform.Decompose(&scle, &rot, &tran) |> ignore
         logger (
-            "TRANSFORM   "    + message + "\n" +
-            "   Scale       " + formatVector3   (scle) + "\n" +
-            "   Translation " + formatVector3   (tran) + "\n" +
+            message + "\n" +
+            "   Transform   " + "\n" +
+            "   Scale       " + formatVector3(scle) + "\n" +
+            "   Translation " + formatVector3(tran) + "\n" +
             "   Rotation    " + formatQuaternion(rot)  + "\n"
+            )
+
+    let logPart(part:Part, logger, message) =
+        logger (
+            message + "\n" +
+            "   Part      "  + "\n" +
+            "   Name      "  + part.Name + "\n" +
+            "   Index     "  + part.Idx.ToString() + "\n" +
+            "   Transform "  + formatMatrix(part.Transform) + "\n" +
+            "   Center    "  + formatVector3(part.Center)  + "\n" +
+            "   Shape     "  + part.Shape.ToString() + "\n"
             )

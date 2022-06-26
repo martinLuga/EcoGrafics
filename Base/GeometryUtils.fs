@@ -117,20 +117,10 @@ module GeometryUtils =
         let oRotationQuat = Quaternion.RotationYawPitchRoll(rotHorizontal, rotVertical, 0.0f) 
         Matrix.RotationQuaternion(oRotationQuat) 
 
-    // Generate a rotation matrix for rotation around Y-axis
-    let rotationMatrixHor(rotHorizontal) = 
-        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, rotHorizontal)
-        Matrix.RotationQuaternion(oRotationQuat) 
-
     // Generate a rotation around Y-axis
-    let rotationHorizontal(rotHorizontal) = 
-        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, rotHorizontal)
+    let rotationHorizontal(angle) = 
+        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitY, angle)
         Matrix.RotationQuaternion(oRotationQuat)
-
-    // Generate a rotation matrix for rotation around X-axis
-    let rotationMatrixVert(angle) = 
-        let oRotationQuat = Quaternion.RotationAxis(Vector3.UnitX, angle)
-        Matrix.RotationQuaternion(oRotationQuat) 
 
     // Generate a rotation around X-axis
     let rotationVertical(angle) = 
@@ -246,22 +236,22 @@ module GeometryUtils =
         let tv = Vector3(trans)
         Matrix.Translation(tv)
 
-    // Es muss um den Mittelpunkt gedreht werden
+    // Drehen um den Mittelpunkt 
     //  1. Verschiebung des Centers auf den Origin = t2
-    //  2. Drehung = r
+    //  2. Drehung um Center mit r
     //  3. Wieder zurückschieben                   = t1
     
-    let createRotationMatrix (rot: Matrix, originCenter:Vector3) =        
-        let t1 = Matrix.Translation (originCenter)      
-        let t2 = Matrix.Translation (-originCenter) 
-        t2 * rot * t1
+    let createRotationMatrix (rot: Matrix, centerOrigin:Vector3) =        
+        let t1 = Matrix.Translation (centerOrigin)  // Center auf Origin      
+        let t2 = Matrix.Translation (-centerOrigin) // wieder zurück 
+        t1 * rot * t2
 
     let createScaleMatrix (scale: Vector3) = 
         Matrix.Scaling(scale) 
 
-    let createLocalTransform (trans: Vector3, rot: Matrix, scale:Vector3, originCenter:Vector3) =
+    let createLocalTransform (trans: Vector3, rot: Matrix, scale:Vector3, centerOrigin:Vector3) =
         let s = createScaleMatrix (scale) 
-        let oc = originCenter * scale               // muss auch skaliert werden
+        let oc = centerOrigin * scale               // muss auch skaliert werden
         let r = createRotationMatrix (rot, oc)
         let t = Matrix.Translation(trans) 
         s * r * t
