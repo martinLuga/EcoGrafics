@@ -27,6 +27,10 @@ module GeometricTypes =
         let {SV1 = sq1; SV2 = sq2; SV3 = sq3; SV4 = sq4 } = sq
         [sq1; sq2; sq3; sq4]
 
+    let squareVerticesCounterClockwise (sq:SquareType) = 
+        let {SV1 = sq1; SV2 = sq2; SV3 = sq3; SV4 = sq4 } = sq
+        [sq1; sq4; sq3; sq2]
+
     // 6 Indexe (2 Dreiecke) im Uhrzeigersinn erzeugen
     let squareIndicesClockwise (si:SquareIndexType) = 
         let {SI1=si1; SI2=si2; SI3=si3; SI4=si4} = si

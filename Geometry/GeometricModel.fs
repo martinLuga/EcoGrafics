@@ -25,10 +25,11 @@ open Base.VertexDefs
 open Base.MathHelper
 open Base.Framework
 open Base.GeometryUtils
-
-open CorpusPatch
-
+ 
 open VertexWaves
+
+type GeoPolygon = GeoLibrary.Model.Polygon
+type GeoPoint = GeoLibrary.Model.Point
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
@@ -228,48 +229,56 @@ module GeometricModel =
     // ----------------------------------------------------------------------------------------------------
     //  Keil
     // ----------------------------------------------------------------------------------------------------
-    type Keil
+    type Keil   
         (
             name: string,
-            origin: Vector3,
-            laenge: float32,
-            hoehe: float32,
+            p1: Vector3,
+            p2: Vector3,
+            p3: Vector3,
             breite: float32,
             color: Color 
-        ) =
-        inherit Quader
-            (
-                name ,
-                origin ,
-                laenge ,
-                hoehe ,
-                breite ,
-                color ,
-                color ,
-                color ,
-                color ,
-                color ,
-                color 
-            )
-        let mutable laenge = laenge
-        let mutable hoehe = hoehe
-        let mutable breite = breite 
+        ) =        
+        inherit Geometry(name, p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
 
-        let mutable p1 = Vector3.Zero
+        let mutable p1 = p1
+        let mutable p2 = p2
+        let mutable p3 = p3 
+        let mutable breite = breite
 
-        new(name, origin, laenge, hoehe, breite) =
-            Keil(name, origin, laenge, hoehe, breite, Color.Black)
-        
-        new(name, laenge, hoehe, breite, color) =
-            Keil(name, Vector3.Zero, laenge, hoehe, breite, color)
+        member this.P1  
+            with get() = p1
 
-        new(name, laenge, hoehe, breite) =
-            Keil(name, Vector3.Zero, laenge, hoehe, breite, Color.Black)
+        member this.P2 
+            with get() = p2 
 
-        new(name, min: Vector3, max: Vector3, color) = Keil(name, (max.X - min.X), (max.Y - min.Y), (max.Z - min.Z), color)
+        member this.P3
+            with get() = p3 
+
+        member this.P4
+            with get() = Vector3(p1.X + breite , p1.Y, p1.Z)
+
+        member this.P5
+            with get() = Vector3(p2.X + breite , p2.Y, p3.Z)
+
+        member this.P6
+            with get() = Vector3(p3.X + breite , p2.Y, p3.Z)
+
+        override this.Center
+            with get() =   
+                let gp1 = GeoPoint(float p1.Y, float p1.Z)                
+                let gp2 = GeoPoint(float p2.Y, float p2.Z)                              
+                let gp3 = GeoPoint(float p3.Y, float p3.Z)
+
+                let poly = new GeoPolygon([gp1; gp2; gp3; gp1])
+
+                let cent = poly.CalculateCentroid()
+
+                Vector3(float32 cent.Latitude, p1.X + breite / 2.0f, float32 cent.Longitude)
+                
+        override this.ToString() = "Keil" 
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexPrisma.CreateMeshData(origin, laenge, hoehe, breite, color, color, color, color, color, color, visibility)  
+            VertexPrisma.CreateMeshData(p1, p2, p3, breite, color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     //  Box

@@ -27,34 +27,34 @@ module VertexPrisma =
     let normalLeft   = - Vector3.UnitX      // Left       
     let normalRight  =   Vector3.UnitX      // Right 
 
-    // Alle 6 Seiten bilden den Quader
-    // 1,2,3,4 sind die Front
-    // 5,6,7,8 sind Backside
-    let prisma (ursprung:Vector3) laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent = 
+    // 5 Seiten bilden das Prisma
+    // 1,2,3 sind die linke Seite
+    // 4,5,6 sind die rechte Seite
+    // 1,4,2,5 sind die vordere Seite
+    // 1,4,6,3 sind die hintere Seite
+    // 3,6,2,5 sind die untere Seite
+    let prisma (p1:Vector3, p2:Vector3, p3:Vector3, breite, color, isTransparent) = 
         
-        // Front im Gegenuhrzeigersinn
-        let p1 = new Vector3(ursprung.X,        ursprung.Y,         ursprung.Z)
-        let p4 = new Vector3(ursprung.X+laenge, ursprung.Y        , ursprung.Z)
+        // Linke Seite p1 , p2 , p3
+        // Rechte Seite 
+        let p4 = new Vector3(p1.X + breite, p1.Y, p1.Z)
+        let p5 = new Vector3(p2.X + breite, p2.Y, p2.Z)
+        let p6 = new Vector3(p3.X + breite, p3.Y, p3.Z)  
+        
+        let triangleLeft,  triangleIndexLeft   = triangle  p1 p3 p2 normalLeft      color 0     isTransparent
+        let triangleRight, triangleIndexRight  = triangle  p5 p6 p4 normalRight     color 3     isTransparent
+        
+        let squareFront,   squareIndexFront    = square p1 p2 p5 p4 normalTop       color 6     isTransparent
+        let squareBack,    squareIndexBack     = square p4 p6 p3 p3 normalBack      color 10    isTransparent
+        let squareBot,     squareIndexBot      = square p3 p6 p5 p2 normalBottom    color 14    isTransparent
 
-        // Back im Uhrzeigersinn
-        let p5 = new Vector3(ursprung.X+laenge, ursprung.Y,         ursprung.Z+breite)
-        let p6 = new Vector3(ursprung.X+laenge, ursprung.Y+hoehe,   ursprung.Z+breite)
-        let p7 = new Vector3(ursprung.X,        ursprung.Y+hoehe,   ursprung.Z+breite)
-        let p8 = new Vector3(ursprung.X,        ursprung.Y      ,   ursprung.Z+breite)
-
-        let triangleRight, triangleIndexRight  = triangle  p4 p6 p5 normalRight colorRight 0 isTransparent
-        let squareBack,    squareIndexBack     = square p5 p6 p7 p8 normalBack colorBack 3 isTransparent
-        let triangleLeft,  triangleIndexLeft   = triangle  p8  p7 p1 normalLeft colorLeft 7 isTransparent
-        let squareTop,     squareIndexTop      = square p1 p7 p6 p4 normalTop colorTop 10 isTransparent
-        let squareBot,     squareIndexBot      = square p1 p4 p5 p8 normalBottom colorBottom 14 isTransparent
-
-        let Prisma        = {PRIGHT  = triangleRight ;         PBACK = squareBack;        PLEFT = triangleLeft;       PTOP  = squareTop;        PBOTTOM  = squareBot }
-        let PrismaIndex   = {IPRIGHT = triangleIndexRight ;    IPBACK = squareIndexBack ; IPLEFT = triangleIndexLeft; IPTOP = squareIndexTop;   IPBOTTOM = squareIndexBot }
+        let Prisma        = {PRIGHT  = triangleRight ;         PBACK = squareBack;        PLEFT = triangleLeft;       PTOP = squareFront;        PBOTTOM  = squareBot }
+        let PrismaIndex   = {IPRIGHT = triangleIndexRight;    IPBACK = squareIndexBack ; IPLEFT = triangleIndexLeft; IPTOP = squareIndexFront;   IPBOTTOM = squareIndexBot }
         (Prisma, PrismaIndex)   
 
-    let prismaVerticesAndIndices (ursprung:Vector3) laenge hoehe breite (colorFront:Color) (colorRight:Color) (colorBack:Color) (colorLeft:Color) (colorTop:Color) (colorBottom:Color) isTransparent =
+    let prismaVerticesAndIndices (p1:Vector3, p2:Vector3, p3:Vector3, breite, color:Color, isTransparent) =
         
-        let (Prisma, PrismaIndex) = prisma ursprung laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent
+        let (Prisma, PrismaIndex) = prisma (p1, p2, p3, breite, color, isTransparent)
       
         let (right, back, left, top, bottom) = deconstructPrisma Prisma        
         let vertexList  =
@@ -82,13 +82,10 @@ module VertexPrisma =
         let indices  = indexList |> Array.ofSeq 
         
         vertices, indices 
-
-    let prismaVerticesUni (ursprung:Vector3) seite hoehe breite (color:Color) isTransparent =
-        prismaVerticesAndIndices ursprung seite hoehe breite color color color color color color isTransparent
-    
-    let CreateMeshData(ursprung:Vector3,laenge:float32, hoehe:float32, breite:float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorTop:Color, colorBottom:Color, visibility:Visibility) =
+   
+    let CreateMeshData(p1:Vector3, p2:Vector3, p3:Vector3, breite:float32, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
         new MeshData<Vertex>(   
-            prismaVerticesAndIndices ursprung laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent
+            prismaVerticesAndIndices (p1,p2,p3,breite, color, isTransparent)
         )  
 

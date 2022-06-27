@@ -349,3 +349,6 @@ module Framework =
         let ms = new MemoryStream(buffer, offset, count)
         ms.Position <- 0L
         ms 
+
+    let raiseException(message)=
+        raise (System.Exception(message))

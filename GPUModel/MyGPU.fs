@@ -325,16 +325,17 @@ module MyGPU =
         // Texture
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) = 
-            this.HasCube <- isCube
-            bitmapManager.IsCube <- isCube
-            if data.Length > 0 then
-                bitmapManager.InitFromByteArray(mimeType, data) 
-            else 
-                bitmapManager.InitFromFileSystem(textureFilename)
-            
-            bitmapManager.CreateTexture()
+            if not (textures.ContainsKey(textureName)) && not (textureName = "") then
+                this.HasCube <- isCube
+                bitmapManager.IsCube <- isCube
+                if data.Length > 0 then
+                    bitmapManager.InitFromByteArray(mimeType, data) 
+                else 
+                    bitmapManager.InitFromFileSystem(textureFilename)
+                    
+                bitmapManager.CreateTexture()
 
-            this.AddTexture(textureName, bitmapManager.Resource, this.HasCube, bitmapManager.FromArray)
+                this.AddTexture(textureName, bitmapManager.Resource, this.HasCube, bitmapManager.FromArray)
 
         member this.AddTexture(textureName:string,  resource:Resource, isCube:bool, fromArray:bool) =
             if not (textures.ContainsKey(textureName)) && not (textureName = "") then
