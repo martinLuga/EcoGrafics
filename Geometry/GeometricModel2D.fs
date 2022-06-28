@@ -30,7 +30,9 @@ open VertexWaves
 
 type GeoPolygon = GeoLibrary.Model.Polygon
 type GeoPoint = GeoLibrary.Model.Point
+type GeoMultiPoint = GeoLibrary.Model.MultiPoint
 type GeoLine = GeoLibrary.Model.LineString
+type Geo = GeoLibrary.Model.Geometry
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische 2D Objekte
@@ -55,28 +57,62 @@ module GeometricModel2D =
 
         abstract member Points: Vector3 []
 
+        member this.AsGeo() =
+            let gplist = this.Points |> Seq.map (fun p -> GeoPoint(float p.X, float p.Z))
+            new GeoPolygon(gplist)
+
+        member this.AsGeoPoints() =
+            let gplist = this.Points |> Seq.map (fun p -> GeoPoint(float p.X, float p.Z))
+            new GeoMultiPoint(gplist)
+
+        member this.Union(other:Geometry2D) =
+            let geo1 =  this.AsGeoPoints()
+            let geo2 =  other.AsGeoPoints()
+            geo1.Union(geo2) :?> GeoMultiPoint
+
+        member this.Intersection(other:Geometry2D) =
+            let geo1 =  this.AsGeoPoints()
+            let geo2 =  other.AsGeoPoints()
+            geo1.Intersection(geo2) :?> GeoMultiPoint
+
         default this.Points = points 
 
     // ----------------------------------------------------------------------------------------------------
     // Polygon (Kontur)
     // ----------------------------------------------------------------------------------------------------
-    type Polygon(name: string, points, color: Color) =
-        inherit Geometry2D(name, points, color)
+    type Polygon(name: string, points) =
+        inherit Geometry2D(name, points, Color.White)
 
         override this.Center =
-            let gplist =
-                points
-                |> Seq.map (fun p -> GeoPoint(float p.X, float p.Z))
-                |> Seq.rev
-
-            let poly = new GeoPolygon(gplist)
-
+            let poly = this.AsGeo()  
             let cent = poly.CalculateCentroid()
-
             Vector3(float32 cent.Longitude, 0.0f, float32 cent.Latitude)
 
         override this.CreateVertexData(visibility: Visibility) =
-            PolygonPatch.CreateMeshData(this.Center, points, color, this.Topology, this.TopologyType, visibility) 
+            PolygonPatch.CreateMeshData(this.Center, points, this.Color, this.Topology, this.TopologyType, visibility) 
+
+        member this.Union(other:Geometry2D) =
+            let g = base.Union(other)  
+            Polygon.FromGeo(g)
+
+        member this.Intersection(other:Geometry2D) =
+            let g = base.Intersection(other)  
+            Polygon.FromGeo(g)
+
+        static member FromGeo(plist:GeoMultiPoint) = 
+            let points = new List<Vector3>()
+            let ls = plist.Geometries 
+            for i in 0.. ls.Count - 1 do
+                let gp = ls.Item(i) :?>GeoPoint
+                let point = Vector3(float32 gp.Latitude, 0.0f, float32 gp.Longitude)
+                points.Add(point)
+
+            // Polygon schliessen
+            let f = ls.Item(0) :?>GeoPoint
+            let first = Vector3(float32 (f.Latitude), 0.0f, float32 f.Longitude)
+            points.Add(first)
+
+            new Polygon("RESULT", points.ToArray())
             
     // ----------------------------------------------------------------------------------------------------
     // Kreis
@@ -89,6 +125,14 @@ module GeometricModel2D =
 
         member this.Radius  
             with get() = radius
+
+        member this.Union(other:Geometry2D) =
+            let g = base.Union(other) 
+            Polygon.FromGeo(g)
+
+        member this.Intersection(other:Geometry2D) =
+            let g = base.Intersection(other)  
+            Polygon.FromGeo(g)
 
         override this.Center = origin
 
@@ -112,8 +156,11 @@ module GeometricModel2D =
         let p3 = new Vector3(p1.X + laenge, 0.0f,   p1.Z + hoehe)
         let p4 = new Vector3(p1.X ,         0.0f,   p1.Z + hoehe)
 
-        override this.Center = 
-        
+        member this.Union(other:Geometry2D) =
+            let g = base.Union(other) 
+            Polygon.FromGeo(g)
+
+        override this.Center =         
             Vector3(
                 origin.X + laenge / 2.0f,
                 0.0f,
