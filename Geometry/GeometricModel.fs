@@ -25,11 +25,10 @@ open Base.VertexDefs
 open Base.MathHelper
 open Base.Framework
 open Base.GeometryUtils
- 
+
 open VertexWaves
 
-type GeoPolygon = GeoLibrary.Model.Polygon
-type GeoPoint = GeoLibrary.Model.Point
+open GeometricModel2D
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
@@ -225,11 +224,11 @@ module GeometricModel =
         override this.CreateVertexData(visibility:Visibility) =
             VertexCube.CreateMeshData(origin, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
 
-
     // ----------------------------------------------------------------------------------------------------
-    //  Keil
+    // Prisma
+    //  YZ-Achsenparallel
     // ----------------------------------------------------------------------------------------------------
-    type Keil   
+    type Prisma   
         (
             name: string,
             p1: Vector3,
@@ -281,7 +280,8 @@ module GeometricModel =
             VertexPrisma.CreateMeshData(p1, p2, p3, breite, color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
-    //  Box
+    // Box
+    //  Benutzt für Sky
     // ----------------------------------------------------------------------------------------------------
     type Box (name: string, width:float32,  height:float32,  depth:float32,  color, numSubdivisions:int) =
         inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
@@ -446,9 +446,10 @@ module GeometricModel =
         let mutable normal=Vector3.Zero
         let mutable center=Vector3.Zero                                     
         let mutable seitenlaenge = 0.0f 
+        let mutable planeBase = "XZ"
 
         // Konstruktoren zum Anlegen in einer Ebene
-        static member InXYPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
+        static member InXYPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =            
             let p2 = origin + (Vector3.Right * seitenlaenge)
             let p3 = origin + (Vector3.Right * seitenlaenge) + (Vector3.Up * seitenlaenge)
             let p4 = origin + (Vector3.Up * seitenlaenge)
@@ -456,6 +457,7 @@ module GeometricModel =
             q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(origin.X + seitenlaenge / 2.0f, origin.Y + seitenlaenge / 2.0f , origin.Z))
             q.setNormal(normal)
+            q.setPlaneBase("XY")
             q
 
         static member InYZPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
@@ -466,6 +468,7 @@ module GeometricModel =
             q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(origin.X, origin.Y  + seitenlaenge / 2.0f , origin.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
+            q.setPlaneBase("YZ")
             q
         
         static member InXZPlane (name:string, origin:Vector3, seitenlaenge:float32, normal:Vector3, color:Color) =
@@ -476,6 +479,7 @@ module GeometricModel =
             q.setSeitenlaenge(seitenlaenge)
             q.setCenter(Vector3(origin.X + seitenlaenge / 2.0f, origin.Y , origin.Z + seitenlaenge / 2.0f))
             q.setNormal(normal)
+            q.setPlaneBase("XZ")
             q
 
         static member InPlanePosition (name:string, origin:Vector3, seitenlaenge:float32, planePosition:PlanePosition, color:Color) =
@@ -491,14 +495,17 @@ module GeometricModel =
         // Dummy-Konstruktor        
         new() = Fläche("Fläche", Vector3.Zero, Vector3.Zero, Vector3.Zero, Vector3.Zero, Color.Black, 1.0f)
 
-        member this.setCenter(aCenter)=
+        member this.setCenter(aCenter) =
             center <- aCenter
 
-        member this.setNormal(aNormal)=
+        member this.setNormal(aNormal) =
             normal <- aNormal
 
-        member this.setSeitenlaenge(laenge)=
+        member this.setSeitenlaenge(laenge) =
             seitenlaenge <- laenge
+
+        member this.setPlaneBase(_planeBase:string) =
+            planeBase <- _planeBase
             
         override this.Center  
             with get() = center
@@ -521,6 +528,20 @@ module GeometricModel =
 
         member this.Color
             with get() = color
+
+        // Errechnete Länge
+        // Nur sinnvoll wenn paraallele Seiten
+        member this.LaengeAufSeite =
+            (p1-p4).Length()
+
+        member this.LaengeRechts =
+            (p2-p3).Length()
+
+        member this.YAtZ(z:float32) =
+           //let x1 = (this.LaengeAufSeite * abs(z)) / abs(p2.Z)
+           //let y = Sqrtf((x1 * x1) - (z * z))
+           let y = abs((z * p2.Y)/p2.Z)
+           y
 
         override this.resize newSize  = 
             seitenlaenge <- seitenlaenge * newSize .X
@@ -762,8 +783,12 @@ module GeometricModel =
             maximum <- Base.MathSupport.computeMaximumXYZ(upperContour |> Seq.toList)
 
         new (name, contour, height, colorBottom, colorTop, colorSide) = Corpus (name, Vector3.Zero, contour, height, colorBottom , colorTop , colorSide)
-        new (name, contour, height, color) = Corpus (name, contour, height, color, color, color)
+        new (name, polygon:Polygon, height, colorBottom, colorTop, colorSide) = Corpus (name, Vector3.Zero, polygon.Points, height, colorBottom , colorTop , colorSide)
+
+        new (name, contour: Vector3[], height, color) = Corpus (name, contour, height, color, color, color)
         new (name, origin, contour, height, color) = Corpus (name, origin, contour, height, color, color, color)
+
+
 
         member this.ColorBottom=colorBottom
         member this.ColorTop=colorTop
@@ -811,72 +836,64 @@ module GeometricModel =
             CorpusPatch.CreateMeshData(this.Center, lowerContour.ToArray(), upperContour.ToArray(), height, colorBottom, colorTop, colorSide, this.Topology, this.TopologyType, visibility)            
 
     // ----------------------------------------------------------------------------------------------------
-    // Linie
+    // TopologyType=Patch
+    // Beispiel: WavefrontShape
     // ----------------------------------------------------------------------------------------------------
-    type Linie(name:string, von:Vector3, bis:Vector3, color:Color) =
-        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
-        let mutable von = von
-        let mutable bis = bis 
-
-        member this.Von  
-            with get() = von
-
-        member this.Bis  
-            with get() = bis
-
-        member this.Length =  Vector3.Abs(bis - von)
+    [<AllowNullLiteral>]
+    type PatchShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
+        inherit FileBased(name, origin, vertices , indices, size, quality)     
         
-        member this.ColorFront=color 
+        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) =
+            new PatchShape(name , origin , List<Vertex>(), List<int>(), size, quality)
 
-        override this.Boundaries(objectPosition) = 
-            this.Minimum <- objectPosition + von   
-            this.Maximum <- objectPosition + bis
-            (this.Minimum, this.Maximum)
+        override this.ToString() = "PatchShape:" + this.Name 
 
-        override this.Center = computeCenter bis von 
+    // ----------------------------------------------------------------------------------------------------
+    // TopologyType=Triangle
+    // Beispiel: SimpleShape
+    // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>]
+    type TriangularShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
+        inherit FileBased(name, origin, vertices, indices, size, quality)  
+        
+        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) = 
+            new TriangularShape(name , origin , List<Vertex>(), List<int>(), size, quality)
 
-        override this.resize newSize  = 
-            ()
+        override this.ToString() = "TriangularShape: " + this.Name 
 
-        override this.ToString() = "Linie:" + this.Name + " von " + von.ToString() + " nach " + bis.ToString()
-                    
+    // ----------------------------------------------------------------------------------------------------
+    // Generisch: Aus Vertexen bestehend
+    // Benutzt in DebugDraw von Physics
+    // ----------------------------------------------------------------------------------------------------
+    type Generic(name:string, color:Color) =
+        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), Vector3.One, Quality.Original)
+    
+        override this.ToString() = "Generic:" + this.Name  
+                
         override this.TopologyType = PrimitiveTopologyType.Line
 
         override this.Topology = PrimitiveTopology.LineList
 
-        override this.CreateVertexData(visibility: Visibility) =
-            Line2D.CreateMeshData(von, bis, color, visibility)
-
-    // ----------------------------------------------------------------------------------------------------
-    // Kreis
-    // ----------------------------------------------------------------------------------------------------
-    type Kreis(name: string, origin, radius: float32, color: Color) =
-        inherit Geometry(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
-        let mutable radius = radius 
-
-        member this.Radius  
-            with get() = radius
-
-        override this.Center = Vector3(origin.X + radius, origin.Y, origin.Z + radius) 
-
-        override this.resize newSize  = 
-            ()
-
-        override this.ToString() = "Kreis:" + this.Name + " r " + radius.ToString() 
-                    
-        override this.CreateVertexData(visibility: Visibility) =
-            Circle2D.CreateMeshData(origin,  color, radius, Shape.Raster, visibility)
+        override this.CreateVertexData(visibility: Visibility) =            
+            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
+            this.MeshData
 
     // ----------------------------------------------------------------------------------------------------
     // Quadrat mit achsenparallelen Seiten
     // ----------------------------------------------------------------------------------------------------
-    type Quadrat(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color) =
-        inherit Geometry(name,  p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+    type Quadrat(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color, tessFactor:float32) =
+        inherit Geometry(name, p1, color, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3
         let mutable p4=p4
         let mutable seitenlaenge=Vector3.Distance(p1, p2)
+
+        new(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color) = 
+            Quadrat(name , p1  , p2 , p3 , p4 , color , DEFAULT_TESSELATION)
+
+        new(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3) =
+            Quadrat(name , p1  , p2 , p3 , p4 , Color.White , DEFAULT_TESSELATION)
 
         static member InXYPlane (name:string, origin:Vector3, seitenlaenge:float32, color:Color) =
             let p2 = origin + (Vector3.Right * seitenlaenge)
@@ -954,44 +971,38 @@ module GeometricModel =
             Square2D.CreateMeshData(p1, p2, p3, p4, color, visibility, Quality.Original)
 
     // ----------------------------------------------------------------------------------------------------
-    // TopologyType=Patch
-    // Beispiel: WavefrontShape
+    // Linie
     // ----------------------------------------------------------------------------------------------------
-    [<AllowNullLiteral>]
-    type PatchShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
-        inherit FileBased(name, origin, vertices , indices, size, quality)     
+    type Linie(name:string, von:Vector3, bis:Vector3, color:Color) =
+        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        let mutable von = von
+        let mutable bis = bis 
+
+        member this.Von  
+            with get() = von
+
+        member this.Bis  
+            with get() = bis
+
+        member this.Length =  Vector3.Abs(bis - von)
         
-        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) =
-            new PatchShape(name , origin , List<Vertex>(), List<int>(), size, quality)
+        member this.ColorFront=color 
 
-        override this.ToString() = "PatchShape:" + this.Name 
+        override this.Boundaries(objectPosition) = 
+            this.Minimum <- objectPosition + von   
+            this.Maximum <- objectPosition + bis
+            (this.Minimum, this.Maximum)
 
-    // ----------------------------------------------------------------------------------------------------
-    // TopologyType=Triangle
-    // Beispiel: SimpleShape
-    // ----------------------------------------------------------------------------------------------------
-    [<AllowNullLiteral>]
-    type TriangularShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
-        inherit FileBased(name, origin, vertices, indices, size, quality)  
-        
-        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) = 
-            new TriangularShape(name , origin , List<Vertex>(), List<int>(), size, quality)
+        override this.Center = computeCenter bis von 
 
-        override this.ToString() = "TriangularShape: " + this.Name 
+        override this.resize newSize  = 
+            ()
 
-    // ----------------------------------------------------------------------------------------------------
-    // Generisch: Aus Vertexen bestehend
-    // Benutzt in DebugDraw von Physics
-    // ----------------------------------------------------------------------------------------------------
-    type Generic(name:string, color:Color) =
-        inherit FileBased(name , Vector3.Zero , List<Vertex>(), List<int>(), Vector3.One, Quality.Original)
-    
-        override this.ToString() = "Generic:" + this.Name  
-                
+        override this.ToString() = "Linie:" + this.Name + " von " + von.ToString() + " nach " + bis.ToString()
+                    
         override this.TopologyType = PrimitiveTopologyType.Line
 
         override this.Topology = PrimitiveTopology.LineList
 
-        override this.CreateVertexData(visibility: Visibility) =            
-            this.MeshData <- new MeshData<Vertex>(this.Vertices |> Seq.toArray, this.Indices|> Seq.toArray)  
-            this.MeshData
+        override this.CreateVertexData(visibility: Visibility) =
+            Line2D.CreateMeshData(von, bis, color, visibility)

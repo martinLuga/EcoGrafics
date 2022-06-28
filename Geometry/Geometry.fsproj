@@ -15,14 +15,15 @@
   <ItemGroup>
     <Compile Include="GeometricTypes.fs" />
     <Compile Include="VertexPrisma.fs" />
-    <Compile Include="Vertex2D.fs" />
     <Compile Include="VertexCube.fs" />
     <Compile Include="VertexBox.fs" />
     <Compile Include="VertexCylinder.fs" />
     <Compile Include="VertexPatch.fs" />
+    <Compile Include="Vertex2D.fs" />
     <Compile Include="VertexPyramid.fs" />
     <Compile Include="VertexSphere.fs" />
     <Compile Include="VertexWaves.fs" />
+    <Compile Include="GeometricModel2D.fs" />
     <Compile Include="GeometricModel.fs" />
   </ItemGroup>
   <ItemGroup>

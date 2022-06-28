@@ -13,6 +13,7 @@ open Base.ObjectBase
 open Base.Configuration
 open Base.StringSupport
 open Geometry.GeometricModel
+open Geometry.GeometricModel2D
 open log4net
 open SharpDX
 open System.Collections.Generic 
