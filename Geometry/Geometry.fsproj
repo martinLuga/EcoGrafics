@@ -13,6 +13,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="NTSConversions.fs" />
     <Compile Include="GeometricTypes.fs" />
     <Compile Include="VertexPrisma.fs" />
     <Compile Include="VertexCube.fs" />
@@ -27,7 +28,7 @@
     <Compile Include="GeometricModel.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GeoLibrary" Version="1.2.1" />
+    <PackageReference Include="NetTopologySuite" Version="2.5.0" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />

@@ -26,12 +26,12 @@ module Square2D =
     // ----------------------------------------------------------------------------------------------------
     // Quadrat als Verbindung von 4 Punkten in der XY-Ebene 
     // ---------------------------------------------------------------------------------------------------- 
-    let CreateMeshData(p1, p2, p3, p4,color:Color, visibility:Visibility, quality:Quality) =
+    let CreateVertexData(p1, p2, p3, p4, color:Color, visibility:Visibility, quality:Quality) =
         let isTransparent = TransparenceFromVisibility(visibility)
         let squareBot, squareIndexBot = square p1  p2  p3  p4  -Vector3.UnitY color 0 isTransparent
-        let squareList = squareVerticesClockwise squareBot 
-        let squareIndexList = squareIndicesClockwise squareIndexBot
-        new MeshData<Vertex>( squareList |> List.toArray, squareIndexList|> List.toArray)         
+        let squareList = squareVerticesClockwise squareBot |> List<Vertex> 
+        let squareIndexList = squareIndicesClockwise squareIndexBot  |> List<int> 
+        squareList, squareIndexList
 
 module Circle2D =
 
@@ -104,10 +104,9 @@ module Circle2D =
 
 module Line2D =
     // ----------------------------------------------------------------------------------------------------
-    // Linie In der XY-Ebene
+    // Linie in der Ebene
     // ----------------------------------------------------------------------------------------------------
-    let lineVertices (ursprung:Vector3, target:Vector3, color:Color, isTransparent) = 
-
+    let lineFromTo (ursprung:Vector3, target:Vector3, color:Color, isTransparent) = 
         let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
 
         let v1 = createVertex ursprung Vector3.UnitZ color4  (new Vector2(0.0f, 0.0f))   
@@ -115,11 +114,25 @@ module Line2D =
 
         let vert = seq{v1;v2} |> Seq.toArray
         let ind = seq{0;1} |> Seq.toArray
-        new MeshData<Vertex>(vert, ind)
+        vert, ind
+
+    let vertexeFromPoints (points:seq<Vector3>, color:Color, isTransparent) = 
+        let mutable idx = 0
+        let nextIdx() =
+            idx <- idx + 1
+            idx
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+        points 
+        |> Seq.map (fun p -> createVertex p Vector3.UnitZ color4 (new Vector2(0.0f, 0.0f)))
+        |> Seq.toArray ,
+        points 
+        |> Seq.map (fun p -> nextIdx())
+        |> Seq.toArray  
 
     let CreateMeshData(ursprung:Vector3, target:Vector3, color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        lineVertices (ursprung, target, color, isTransparent)
+        let vert, ind = lineFromTo (ursprung, target, color, isTransparent)
+        new MeshData<Vertex>(vert, ind)
 
 module PolygonPatch =
     
@@ -128,13 +141,14 @@ module PolygonPatch =
     // ----------------------------------------------------------------------------------------------------
     //  Erzeugen der Meshdaten für ein Polygon. 
     // ----------------------------------------------------------------------------------------------------
-    let polygonContext (center: Vector3, contour: Vector3[],  color , topology, topologyType, isTransparent) =  
+    let CreateVertexData (center: Vector3, contour: Vector3[], color, visibility ) = 
+        let isTransparent = TransparenceFromVisibility(visibility) 
         let polygon = polygonTriangleList center contour color isTransparent 
         let (verticesLower, indicesLower) = polygon
-        let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q) |> ResizeArray<Vertex> 
-        let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind) |> ResizeArray<int> 
-        MeshData.Create(verticesL, indicesL)    
+        let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q) |> List<Vertex> 
+        let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind) |> List<int> 
+        verticesL, indicesL
     
-    let CreateMeshData(center: Vector3, contour: Vector3[], color, topology, topologyType, visibility:Visibility) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        polygonContext (center, contour,  color , topology, topologyType, isTransparent)
+    let CreateMeshData(center: Vector3, contour: Vector3[], color, visibility:Visibility) =
+        let mutable (verticesL, indicesL) = CreateVertexData (center, contour,  color, visibility)
+        MeshData.Create(verticesL, indicesL)    

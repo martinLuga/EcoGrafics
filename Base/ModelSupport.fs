@@ -403,7 +403,7 @@ module ModelSupport =
     // ----------------------------------------------------------------------------------------------------
     [<AbstractClass>]
     [<AllowNullLiteral>]
-    type Geometry(name: string, origin: Vector3, color: Color, tessFactor: float32, raster: int, size: Vector3) =
+    type GeometryBased(name: string, origin: Vector3, color: Color, tessFactor: float32, raster: int, size: Vector3) =
         inherit Shape(name, origin, List<Vertex>(), List<int>(), color, Shape.Tesselation, Shape.Raster, size, Quality.Original)
         let mutable minimum = Vector3.Zero
         let mutable maximum = Vector3.Zero

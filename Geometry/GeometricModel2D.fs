@@ -8,18 +8,17 @@
 
 open System.Collections.Generic
 
-open SharpDX 
+open SharpDX
+open SharpDX.Direct3D 
+open SharpDX.Direct3D12
 
 open Base.ModelSupport 
 open Base.Framework 
+open Base.MeshObjects
+open Base.VertexDefs
+open Base.ObjectBase
 
-type GeoPolygon = GeoLibrary.Model.Polygon
-type GeoPoint = GeoLibrary.Model.Point
-type GeoMultiPoint = GeoLibrary.Model.MultiPoint
-type GeoLine = GeoLibrary.Model.LineString
-type Geo = GeoLibrary.Model.Geometry
-
-exception CreateException of string
+open NTSConversions
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische 2D Objekte
@@ -27,62 +26,25 @@ exception CreateException of string
 //  Kreis ...
 // ----------------------------------------------------------------------------------------------------
 module GeometricModel2D =
-    
-    let closePolygon(points:Vector3[]) =
-        [points.[0]]                    
-        |> Seq.append (points |> Seq.toList)                    
-        |> Seq.toArray
 
-    let invertFace(points:Vector3[]) = 
-        points
-        |> Array.rev
-    
-    let asVector3(gp: GeoPoint) =
-        Vector3(float32 gp.Latitude,0.0f, float32 gp.Longitude )
-
-    let AsPoint(p:Vector3) =
-        GeoPoint(float p.Z, float p.X)
-
-    let AsPointList(points: Vector3 []) =
-        points |> Seq.map (fun p -> AsPoint(p))
-
-    let AsMultiPoints(points:Vector3[]) =
-        let plist = AsPointList(points)
-        new GeoMultiPoint(plist)
-
-    let AsPolygon(points:Vector3[]) =
-        let plist = AsPointList(points)
-        new GeoPolygon(plist)
-
-    let FromMultiPoints(plist:GeoMultiPoint) =
-        let points = new List<Vector3>()
-        let ls = plist.Geometries 
-        for i in 0.. ls.Count - 1 do
-            let gp = ls.Item(i) :?>GeoPoint
-            let point = Vector3(float32 gp.Latitude, 0.0f, float32 gp.Longitude)
-            points.Add(point)
-        closePolygon(points.ToArray()) 
-
-    let calcCentroid(points:Vector3[]) =    
-        let poly = AsPolygon(points)        
-        if not poly.IsValid then
-            raise (CreateException("Cannot calc centroid. Invalid polygon"))
-        let cent = poly.CalculateCentroid()
-        asVector3(cent)
+    type Representation = | Point| Line| Surface
 
     // ----------------------------------------------------------------------------------------------------
     //   Basis für alle Flächentypen
     // ----------------------------------------------------------------------------------------------------
     [<AbstractClass>]
     [<AllowNullLiteral>]
-    type Geometry2D(name: string, points: Vector3 [], color: Color) =
-        inherit Geometry(name, points.[0], color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
-
+    type Geometry2D(name: string, points: Vector3 [], color: Color, representation:Representation) =
+        inherit GeometryBased(name, points.[0], color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        let mutable representation = representation
         let mutable points = points
 
-        new (name, geo:GeoMultiPoint) = new Geometry2D (name, FromMultiPoints(geo), Color.White)
+        new (name, geo:NTSMultiPoint, representation) = new Geometry2D (name, FromMultiPoints(geo), Color.White, representation)
+        new (name, geo:NTSMultiPoint, color) = new Geometry2D (name, FromMultiPoints(geo),color , Representation.Surface)
+        new (name, geo:NTSMultiPoint) = new Geometry2D (name, FromMultiPoints(geo), Color.White, Representation.Surface)
 
         abstract member Points: Vector3 []
+        default this.Points = points 
 
         override this.Center =
             try
@@ -94,7 +56,7 @@ module GeometricModel2D =
         member this.Union(other: Geometry2D) =
             let geo1 = AsMultiPoints(this.Points)
             let geo2 = AsMultiPoints(other.Points)
-            let union = geo1.Union(geo2) :?> GeoMultiPoint
+            let union = geo1.Union(geo2) :?> NTSMultiPoint
             if union = null then
                 raiseException("Union(" + this.Name + "+" + other.Name + ")" + "  without result")
             this.AsPolygon(
@@ -104,7 +66,7 @@ module GeometricModel2D =
         member this.Intersection(other: Geometry2D) =
             let geo1 = AsMultiPoints(this.Points)
             let geo2 = AsMultiPoints(other.Points)
-            let inter = geo1.Intersection(geo2) :?> GeoMultiPoint
+            let inter = geo1.Intersection(geo2) :?> NTSMultiPoint
             if inter = null then
                 raiseException("Intersection(" + this.Name + "+" + other.Name + ")" + "  without result")
             this.AsPolygon(            
@@ -114,7 +76,7 @@ module GeometricModel2D =
         member this.Difference(other: Geometry2D) =
             let geo1 = AsMultiPoints(this.Points)
             let geo2 = AsMultiPoints(other.Points)
-            let diff = geo1.Difference(geo2) :?> GeoMultiPoint
+            let diff = geo1.Difference(geo2) :?> NTSMultiPoint
             if diff = null then
                 raiseException("Difference(" + this.Name + "+" + other.Name + ")" + "  without result")
             this.AsPolygon(            
@@ -126,17 +88,71 @@ module GeometricModel2D =
             this.AsPolygon("Polygon(" + this.Name + ")",
                 geo1)
 
-        abstract member AsPolygon: string*GeoMultiPoint->Geometry2D
+        member this.AsBaseObject (name, position, material, texture) =
+            new BaseObject(
+                name = name,
+                display =
+                    new Display(
+                    parts =
+                        [ new Part(
+                              name = name,
+                              shape = this,
+                              material = material,
+                              texture = texture,
+                              visibility = Visibility.Opaque
+                          ) ]
+                    ),
+                position = position
+            )
 
-        default this.Points = points 
+        member this.Representation
+            with get() = representation
+            and set(value) = representation <- value
+
+        abstract member AsPolygon: string*NTSMultiPoint->Geometry2D
+
+        abstract member CreateSurfaceVertexData: Visibility->List<Vertex>*List<int>
+        default this.CreateSurfaceVertexData(visibility: Visibility) =
+            raiseException("Not implemented")
+
+        abstract member CreateLineVertexData: Visibility->List<Vertex>*List<int>
+        default this.CreateLineVertexData(visibility: Visibility) =
+            this.CreateSurfaceVertexData(visibility: Visibility)
+
+        abstract member CreatePointVertexData: Visibility->List<Vertex>*List<int>
+        default this.CreatePointVertexData(visibility: Visibility) =
+            this.CreateSurfaceVertexData(visibility: Visibility)
+
+        override this.CreateVertexData(visibility: Visibility) =
+            match this.Representation with
+            | Representation.Surface -> 
+                this.Topology <- PrimitiveTopology.TriangleList
+                this.TopologyType <- PrimitiveTopologyType.Triangle
+                let vertices, indices = this.CreateSurfaceVertexData(visibility)
+                MeshData.Create(vertices, indices )
+                
+            | Representation.Line -> 
+                this.Topology <- PrimitiveTopology.LineList
+                this.TopologyType <- PrimitiveTopologyType.Line
+                let vertices, indices = this.CreateLineVertexData(visibility)
+                MeshData.Create(vertices, indices )
+
+            | Representation.Point -> 
+                this.Topology <- PrimitiveTopology.PointList
+                this.TopologyType <- PrimitiveTopologyType.Point
+                let vertices, indices = this.CreatePointVertexData(visibility)
+                MeshData.Create(vertices, indices )           
 
     // ----------------------------------------------------------------------------------------------------
     // Polygon (Kontur)
     // ----------------------------------------------------------------------------------------------------
-    type Polygon(name: string, points) =
-        inherit Geometry2D(name, points, Color.White)
-
-        new (name, geo:GeoMultiPoint) = new Polygon (name, FromMultiPoints(geo))
+    type Polygon(name: string, points, representation) =
+        inherit Geometry2D(name, points, Color.White, representation)        
+        let mutable vertices = new List<Vertex>()
+        let mutable indices = new List<int>()
+ 
+        new (name, geo:NTSMultiPoint) = new Polygon (name, FromMultiPoints(geo), Representation.Surface)
+        new (name: string, points) = new Polygon (name, points, Representation.Surface)
 
         override this.Center =
             try
@@ -144,25 +160,50 @@ module GeometricModel2D =
             with :? CreateException as ex ->
                 raiseException("Center of " + this.Name + " invalid: " + ex.Data0)
 
+        override this.Vertices
+            with get() = 
+                let (_vertices , _indices) = PolygonPatch.CreateVertexData(this.Center, points, Color.White, Visibility.Opaque)
+                vertices <- _vertices
+                vertices
+
+        override this.Indices
+            with get() = 
+                let (_vertices , _indices) = PolygonPatch.CreateVertexData(this.Center, points, Color.White, Visibility.Opaque) 
+                indices <- _indices
+                indices
+
         override this.AsPolygon(name, plist) = 
             let points = FromMultiPoints(plist)
-            new Polygon(name, points)
+            new Polygon(name, points, this.Representation)
         
         override this.ToString() = "Polygon:" + this.Name 
 
-        override this.CreateVertexData(visibility: Visibility) =
-            PolygonPatch.CreateMeshData(this.Center, points, this.Color, this.Topology, this.TopologyType, visibility) 
+        override this.CreateSurfaceVertexData(visibility: Visibility) =
+            PolygonPatch.CreateVertexData(this.Center, points, this.Color, visibility)
+
+        override this.CreateLineVertexData(visibility: Visibility) =
+            PolygonPatch.CreateVertexData(this.Center, points, this.Color, visibility)
+
+        override this.CreatePointVertexData(visibility: Visibility) =
+            PolygonPatch.CreateVertexData(this.Center, points, this.Color, visibility)
             
     // ----------------------------------------------------------------------------------------------------
     // Kreis
     // ----------------------------------------------------------------------------------------------------
-    type Kreis(name: string, origin, radius: float32, color: Color) =
-        inherit Geometry2D(name, [|origin|], color)  
+    type Kreis(name: string, origin, radius: float32, color: Color, representation) =
+        inherit Geometry2D(name, [|origin|], color, representation)   
         let radius = radius 
         let origin = origin 
         let mutable points: Vector3 [] = [||]
+        let mutable vertices = new List<Vertex>()
+        let mutable indices = new List<int>()
         do
             points <- Circle2D.CreatePointData(origin, color, radius, Shape.Raster, Visibility.Opaque)|> Seq.toArray
+            let (_vertices , _indices) = PolygonPatch.CreateVertexData(origin, points, color, Visibility.Opaque) 
+            vertices <- _vertices
+            indices <- _indices
+        
+        new (name, origin, radius, color) = new Kreis (name, origin, radius, color, Representation.Surface)
 
         member this.Radius  
             with get() = radius
@@ -170,25 +211,34 @@ module GeometricModel2D =
         override this.Points =
             points
 
+        override this.Vertices
+            with get() = vertices
+
+        override this.Indices
+            with get() = indices
+
         override this.AsPolygon(name, plist) = 
             let points = FromMultiPoints(plist)            
             new Polygon(name, invertFace(points))
 
         override this.ToString() = "Kreis:" + this.Name + " r " + radius.ToString() 
 
-        override this.CreateVertexData(visibility: Visibility) =
+        override this.CreateSurfaceVertexData(visibility: Visibility) =
             let points = invertFace(closePolygon(points))
-            PolygonPatch.CreateMeshData(this.Center, points, this.Color, this.Topology, this.TopologyType, visibility) 
+            PolygonPatch.CreateVertexData(this.Center, points, this.Color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
     // Rechteck
     // ----------------------------------------------------------------------------------------------------
-    type Rechteck(name: string, origin: Vector3, laenge: float32, hoehe: float32, color: Color) =
-        inherit Geometry2D(name, [|origin|], color)
+    type Rechteck(name: string, origin: Vector3, laenge: float32, hoehe: float32, color: Color, representation) =
+        inherit Geometry2D(name, [|origin|], color, representation)  
         let p1 = origin
         let p2 = new Vector3(p1.X + laenge, 0.0f,   p1.Z )
         let p3 = new Vector3(p1.X + laenge, 0.0f,   p1.Z + hoehe)
         let p4 = new Vector3(p1.X ,         0.0f,   p1.Z + hoehe)
+
+        new (name: string, origin: Vector3, laenge: float32, hoehe: float32, color:Color) = 
+            new Rechteck(name , origin , laenge , hoehe , color , Representation.Surface)
 
         override this.Center =         
             Vector3(
@@ -206,5 +256,5 @@ module GeometricModel2D =
         override this.Points 
             with get() = [| p1; p2; p3; p4 |]     
         
-        override this.CreateVertexData(visibility: Visibility) =
-            Square2D.CreateMeshData(p1, p4, p3, p2,  color, visibility, Quality.High)
+        override this.CreateSurfaceVertexData(visibility: Visibility) =
+            Square2D.CreateVertexData(p1, p4, p3, p2,  color, visibility, Quality.High)

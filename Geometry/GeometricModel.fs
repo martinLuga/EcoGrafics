@@ -27,7 +27,7 @@ open Base.Framework
 open Base.GeometryUtils
 
 open VertexWaves
-
+open NTSConversions
 open GeometricModel2D
 
 // ----------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ module GeometricModel =
     //  Kugel
     // ---------------------------------------------------------------------------------------------------- 
     type Kugel(name: string, origin, radius: float32, color: Color) =
-        inherit Geometry(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
+        inherit GeometryBased(name, origin, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
         let mutable radius = radius
 
         new() = Kugel("Sphere", Vector3.Zero, 1.0f, Color.Gray)
@@ -113,7 +113,7 @@ module GeometricModel =
             colorTop: Color,
             colorBottom: Color
         ) =
-        inherit Geometry(name, origin, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, origin, colorFront, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable laenge = laenge
         let mutable hoehe = hoehe
         let mutable breite = breite 
@@ -237,7 +237,7 @@ module GeometricModel =
             breite: float32,
             color: Color 
         ) =        
-        inherit Geometry(name, p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, p1, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
 
         let mutable p1 = p1
         let mutable p2 = p2
@@ -263,16 +263,7 @@ module GeometricModel =
             with get() = Vector3(p3.X + breite , p2.Y, p3.Z)
 
         override this.Center
-            with get() =   
-                let gp1 = GeoPoint(float p1.Y, float p1.Z)                
-                let gp2 = GeoPoint(float p2.Y, float p2.Z)                              
-                let gp3 = GeoPoint(float p3.Y, float p3.Z)
-
-                let poly = new GeoPolygon([gp1; gp2; gp3; gp1])
-
-                let cent = poly.CalculateCentroid()
-
-                Vector3(float32 cent.Latitude, p1.X + breite / 2.0f, float32 cent.Longitude)
+            with get() = calcCentroid([|p1; p2; p3; p1|]) 
                 
         override this.ToString() = "Keil" 
 
@@ -284,7 +275,7 @@ module GeometricModel =
     //  Benutzt für Sky
     // ----------------------------------------------------------------------------------------------------
     type Box (name: string, width:float32,  height:float32,  depth:float32,  color, numSubdivisions:int) =
-        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable laenge = width
         let mutable hoehe = height
         let mutable breite = depth 
@@ -315,7 +306,7 @@ module GeometricModel =
     //  Die Punkte werden um das Zentrum 0,0,0 berechnet
     // ----------------------------------------------------------------------------------------------------
     type Cylinder(name: string, origin:Vector3, radius: float32, hoehe: float32, colorCone: Color, colorCap: Color, withCap: bool) =
-        inherit Geometry(name, origin, colorCone, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, origin, colorCone, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable radius = radius
         let mutable hoehe = hoehe
         let mutable colorCone = colorCone
@@ -376,7 +367,7 @@ module GeometricModel =
     // Pyramid
     // ----------------------------------------------------------------------------------------------------
     type Pyramide(name: string, origin, seitenLaenge :float32, hoehe :float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorBasis:Color) =
-        inherit Geometry(name, origin, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, origin, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
 
         let mutable seitenLaenge=seitenLaenge  
         let mutable hoehe =hoehe 
@@ -438,7 +429,7 @@ module GeometricModel =
     //  Festgelegt durch 4 Eckpunkte
     // ----------------------------------------------------------------------------------------------------
     type Fläche(name: string, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3, color:Color, tessFactor:float32) =
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3
@@ -574,7 +565,7 @@ module GeometricModel =
     // Triangle
     // ----------------------------------------------------------------------------------------------------
     type TriPatch(name: string, p1: Vector3, p2: Vector3, p3: Vector3, color:Color, tessFactor:float32) = 
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3                                  
@@ -618,7 +609,7 @@ module GeometricModel =
     //  Fläche aus Quadraten
     // ----------------------------------------------------------------------------------------------------
     type QuadPlane(name: string, seitenLaenge:float32, patchLaenge:float32, color:Color, tessFactor:float32) =
-        inherit Geometry(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, Vector3.Zero, Color.White, tessFactor, DEFAULT_RASTER, Vector3.One)
         member this.SeitenLaenge=seitenLaenge
         member this.PatchLaenge=patchLaenge
 
@@ -711,7 +702,7 @@ module GeometricModel =
     //  Oktaeder
     // ----------------------------------------------------------------------------------------------------
     type Oktaeder(_name: string, _origin, _halfLength:float32, _color:Color) =
-        inherit Geometry(_name, _origin, _color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(_name, _origin, _color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable halfLength = _halfLength
         let mutable length = 2.0f * _halfLength
 
@@ -762,7 +753,7 @@ module GeometricModel =
     //  Corpus
     // ----------------------------------------------------------------------------------------------------
     type Corpus(name: string, origin, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
-        inherit Geometry(name, origin, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, origin, colorTop, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable minimum = Vector3.Zero 
         let mutable maximum = Vector3.Zero 
         let mutable lowerContour = new List<Vector3>()
@@ -882,7 +873,7 @@ module GeometricModel =
     // Quadrat mit achsenparallelen Seiten
     // ----------------------------------------------------------------------------------------------------
     type Quadrat(name:string, p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3, color:Color, tessFactor:float32) =
-        inherit Geometry(name, p1, color, tessFactor, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, p1, color, tessFactor, DEFAULT_RASTER, Vector3.One)
         let mutable p1=p1
         let mutable p2=p2
         let mutable p3=p3
@@ -968,13 +959,14 @@ module GeometricModel =
             PrimitiveTopology.PatchListWith4ControlPoints
 
         override this.CreateVertexData(visibility: Visibility) =
-            Square2D.CreateMeshData(p1, p2, p3, p4, color, visibility, Quality.Original)
+            let vertices, indices = Square2D.CreateVertexData(p1, p2, p3, p4, color, visibility, Quality.Original)
+            MeshData.Create(vertices, indices)           
 
     // ----------------------------------------------------------------------------------------------------
     // Linie
     // ----------------------------------------------------------------------------------------------------
     type Linie(name:string, von:Vector3, bis:Vector3, color:Color) =
-        inherit Geometry(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
+        inherit GeometryBased(name, Vector3.Zero, color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable von = von
         let mutable bis = bis 
 
