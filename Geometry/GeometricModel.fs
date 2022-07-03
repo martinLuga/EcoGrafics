@@ -959,8 +959,8 @@ module GeometricModel =
             PrimitiveTopology.PatchListWith4ControlPoints
 
         override this.CreateVertexData(visibility: Visibility) =
-            let vertices, indices = Square2D.CreateVertexData(p1, p2, p3, p4, color, visibility, Quality.Original)
-            MeshData.Create(vertices, indices)           
+            QuadPatch.CreateMeshData(p1, p2, p3, p4, color, visibility)
+                      
 
     // ----------------------------------------------------------------------------------------------------
     // Linie

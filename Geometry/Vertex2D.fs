@@ -14,25 +14,9 @@ open Base.VertexDefs
 open Base.MeshObjects
 open Base.ModelSupport
 
-open GeometricTypes
- 
-
 // ----------------------------------------------------------------------------------------------------
-// Vertexes erzeugen  
-// für 2D Elemente
+// Vertexes für Kreis 2D erzeugen  
 // ----------------------------------------------------------------------------------------------------
-module Square2D =
-
-    // ----------------------------------------------------------------------------------------------------
-    // Quadrat als Verbindung von 4 Punkten in der XY-Ebene 
-    // ---------------------------------------------------------------------------------------------------- 
-    let CreateVertexData(p1, p2, p3, p4, color:Color, visibility:Visibility, quality:Quality) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        let squareBot, squareIndexBot = square p1  p2  p3  p4  -Vector3.UnitY color 0 isTransparent
-        let squareList = squareVerticesClockwise squareBot |> List<Vertex> 
-        let squareIndexList = squareIndicesClockwise squareIndexBot  |> List<int> 
-        squareList, squareIndexList
-
 module Circle2D =
 
     let g_XMOneHalf  = Vector3( 0.5f,  0.5f,  0.5f)
@@ -44,68 +28,23 @@ module Circle2D =
     let g_XMIdentityR1 = Vector3( 0.0f, 1.0f, 0.0f)
 
     // ----------------------------------------------------------------------------------------------------
-    // Kreis in der XY-Ebene 
+    // Als Punkte
     // ---------------------------------------------------------------------------------------------------- 
-    let CreateCircularPlane (origin:Vector3, tessellation:int, radius:float32, color:Color, isTransparent:bool) =
-    
-        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
-        let mutable vertices = new List<Vertex>() 
+    let GetPoints (origin:Vector3, radius:float32, tessellation:int) =
         let mutable points = new List<Vector3>() 
-        let indices =  new List<int>()
-
-        let shift = Vector3(radius, 0.0f, radius)
-        let center = origin + shift
-
-        // Create cap indices.
-        for i = 0 to tessellation - 2 do 
- 
-            let mutable i1 = (i + 1) % tessellation 
-            let mutable i2 = (i + 2) % tessellation 
-
-            swap &i1 &i2  
-
-            let vbase = vertices.Count
-            indices.Add(vbase) 
-            indices.Add(vbase + i1) 
-            indices.Add(vbase + i2)  
-
-        let mutable normal = g_XMIdentityR1
-        let mutable textureScale = g_XMNegativeOneHalf
-        let mutable textureScale = g_XMPositiveOneHalf
-
-        // Create cap vertices.
-        for i = 0 to tessellation - 1 do 
- 
+        // Create circle points.
+        for i = 0 to tessellation - 1 do  
             let circleVector = CreateCircleVector(i, tessellation)
-            let position = center + Vector3.Add(Vector3.Multiply(circleVector, radius), Vector3.Multiply(g_XMIdentityR1, 0.0f))            
-            points.Add(position)
-
-            let cv3 = new Vector3(circleVector.X, circleVector.Z, 0.0f) 
-            let textureCoordinate = Vector3.Add(Vector3.Multiply(cv3, textureScale), g_XMOneHalf) 
-            let cv2 = Vector2(textureCoordinate.X, textureCoordinate.Y)
-            let vertex = createVertex position normal color4 cv2 
-            vertices.Add(vertex)
-
-        (points, vertices, indices)
-
-    let circleVertices (origin,  color, radius, tessellation, isTransparent) =
-        let mutable (points, verticesU, indicesU) = CreateCircularPlane(origin, tessellation, radius, color, isTransparent)
-        reverseWinding &verticesU  &indicesU 
-        MeshData.Create(verticesU, indicesU)
-
-    let CreateMeshData(origin:Vector3, color:Color, radius:float32, tessellation:int, visibility:Visibility) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        circleVertices (origin, color, radius, tessellation, isTransparent) 
-
-    let CreatePointData(origin:Vector3, color:Color, radius:float32, tessellation:int, visibility:Visibility) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        let mutable (points, verticesU, indicesU) = CreateCircularPlane(origin, tessellation, radius, color, isTransparent) 
+            let point = origin + Vector3.Add(Vector3.Multiply(circleVector, radius), Vector3.Multiply(g_XMIdentityR1, 0.0f))            
+            points.Add(point)
+        points.Reverse()
         points
 
+// ----------------------------------------------------------------------------------------------------
+// Linie in der Ebene
+// ----------------------------------------------------------------------------------------------------
 module Line2D =
-    // ----------------------------------------------------------------------------------------------------
-    // Linie in der Ebene
-    // ----------------------------------------------------------------------------------------------------
+
     let lineFromTo (ursprung:Vector3, target:Vector3, color:Color, isTransparent) = 
         let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
 
@@ -134,21 +73,92 @@ module Line2D =
         let vert, ind = lineFromTo (ursprung, target, color, isTransparent)
         new MeshData<Vertex>(vert, ind)
 
-module PolygonPatch =
+// ----------------------------------------------------------------------------------------------------
+//  Erzeugen der Meshdaten für ein Polygon. 
+// ----------------------------------------------------------------------------------------------------
+module Polygon2D =
     
-    open Generic
-    
+    let CreatePoints(contour: Vector3[] , color, transparency ) =
+        Generic.polygonPointList(contour, color, transparency)
+
+    let CreateLines (contour: Vector3[], color, transparency ) = 
+        Generic.polygonLineList(contour, color, transparency)
+
+    let CreateTriangles(center: Vector3, contour: Vector3[], color, transparency ) = 
+        Generic.polygonTriangleList center contour color transparency 
+
+// ----------------------------------------------------------------------------------------------------
+// Quadrat durch 4 Punkte  
+// ----------------------------------------------------------------------------------------------------  
+module Square2D =
+
+    open GeometricTypes
+
+    let CreatePoints(p1:Vector3, p2:Vector3, p3:Vector3, p4:Vector3) =
+        let mutable points = new List<Vector3>() 
+        points.Add(p1)
+        points.Add(p2)
+        points.Add(p3)
+        points.Add(p4)
+        points |>Seq.toArray
+
+    let CreateLines(p1, p2, p3, p4) =
+        let mutable lines = new List<Vector3*Vector3>() 
+        lines.Add(p1, p2)
+        lines.Add(p2, p3)
+        lines.Add(p3, p4)
+        lines.Add(p4, p1)
+        lines 
+
+    let CreateTriangles(p1, p2, p3, p4) =
+         square p1  p2  p3  p4  -Vector3.UnitY Color.White 0 false
+
+// ----------------------------------------------------------------------------------------------------
+// Zusammenführen  
+// ----------------------------------------------------------------------------------------------------  
+module Construction =
+
+    open GeometricTypes
+
     // ----------------------------------------------------------------------------------------------------
-    //  Erzeugen der Meshdaten für ein Polygon. 
-    // ----------------------------------------------------------------------------------------------------
-    let CreateVertexData (center: Vector3, contour: Vector3[], color, visibility ) = 
-        let isTransparent = TransparenceFromVisibility(visibility) 
-        let polygon = polygonTriangleList center contour color isTransparent 
-        let (verticesLower, indicesLower) = polygon
-        let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q) |> List<Vertex> 
-        let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind) |> List<int> 
-        verticesL, indicesL
-    
-    let CreateMeshData(center: Vector3, contour: Vector3[], color, visibility:Visibility) =
-        let mutable (verticesL, indicesL) = CreateVertexData (center, contour,  color, visibility)
-        MeshData.Create(verticesL, indicesL)    
+    // Typ list -> Vertices, Indices 
+    // Für das Erzeugen der Meshdata
+    // ----------------------------------------------------------------------------------------------------  
+    let FromTriangles (triangles: List<TriangleType> * List<TriangleIndexType>, upper:bool) =
+        let vertices = new List<Vertex>()
+        let indices = new List<int>()
+
+        for tri in (fst triangles) do
+            vertices.AddRange(deconstructTriangle (tri))
+
+        for ind in (snd triangles) do
+            if upper then 
+                indices.AddRange(triangleIndicesCounterClockwise (ind))
+            else 
+                indices.AddRange(triangleIndicesClockwise (ind))
+
+        vertices, indices 
+
+    let FromLines(lines: List<LineType> * List<LineIndexType>)=
+        let vertices = new List<Vertex>()
+        let indices = new List<int>()
+
+        for line in (fst lines) do
+            vertices.AddRange(deconstructLine (line))
+
+        for ind in (snd lines) do
+            indices.AddRange(lineIndices (ind))
+            
+        vertices, indices 
+
+    let FromPoints(points: List<PointType> * List<PointIndexType>)=
+        let vertices = new List<Vertex>()
+        let indices = new List<int>()
+
+        for point in (fst points) do
+            vertices.AddRange(deconstructPoint (point))
+
+        for ind in (snd points) do
+            indices.AddRange(pointIndices (ind)) 
+            
+        vertices, indices 

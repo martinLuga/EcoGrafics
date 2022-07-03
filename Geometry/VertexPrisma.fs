@@ -59,9 +59,9 @@ module VertexPrisma =
         let (right, back, left, top, bottom) = deconstructPrisma Prisma        
         let vertexList  =
             [
-                triangleVertices right;
+                deconstructTriangle right;
                 squareVerticesClockwise back;
-                triangleVertices left;
+                deconstructTriangle left;
                 squareVerticesClockwise top;
                 squareVerticesClockwise bottom 
             ]

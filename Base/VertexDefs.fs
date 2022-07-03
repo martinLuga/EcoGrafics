@@ -178,43 +178,6 @@ module VertexDefs =
         vertices
         |> List.filter(fun v -> inInterval(v, interval))
 
-    // Alle vertices in dem Intervall
-    let partition(vertices:Vertex list, dim:Dimensions, partFactor:int, logDebug) =
-        let bounds = computeBoundingBox (vertices)
-        let mutable result = new List<Vertex>()
-        let mutable x = bounds.Minimum.X
-        let mutable z = bounds.Minimum.Z
-        let deltax = (bounds.Maximum.X - bounds.Minimum.X) / (float32)partFactor
-        let deltaz = (bounds.Maximum.Z - bounds.Minimum.Z) / (float32)partFactor
-        logDebug ("Partitioning " + vertices.Length.ToString() + " elements in " + dim.ToString() + " dividing " + partFactor.ToString() + " times --- ")
-        logDebug ("Delta x --- "  + deltax.ToString())
-        logDebug ("Delta z --- "  + deltaz.ToString())
-        while x < bounds.Maximum.X do
-            logDebug ("Next x --- " + x.ToString())
-            z <- bounds.Minimum.Z
-            while z < bounds.Maximum.Z do
-                logDebug ("Next z --- " + z.ToString())
-                let interval = Interval(Dimensions.XZ, x, x + deltax, z, z + deltaz)
-                let selected = selectInterval(vertices |> Seq.toList, interval)   
-                if selected.Length > 0 then
-                    let mutable min = computeMinimumInY (selected)
-                    let mutable max = computeMaximumInY (selected)
-                    let mi1 = Vector3(x,min.Position.Y,z)
-                    let ma1 = Vector3(x,max.Position.Y,z)
-
-
-                    min.Position <- mi1
-                    max.Position <- ma1
-
-                    result.Add(min)
-                    result.Add(max)
-                    logDebug (">>>>" + printInterval(interval) + " yields")
-                    logDebug (" minimum " + min.ToString())
-                    logDebug (" maximum " + max.ToString())
-                z <- z + deltaz                
-            x <- x + deltax
-        result |> Seq.toList
-
     // ----------------------------------------------------------------------------------------------------
     // Helper
     // ----------------------------------------------------------------------------------------------------

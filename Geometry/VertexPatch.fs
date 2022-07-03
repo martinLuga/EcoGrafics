@@ -16,6 +16,34 @@ open Base.ModelSupport
 open GeometricTypes
 
 module Generic = 
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Vertices für einen Punkt
+    // ----------------------------------------------------------------------------------------------------
+    let pointVertices (p1,color:Color,idx, isTransparent) =     
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+        let text = defaultTriangleTexture 1.0f 
+        let texti = deconstructTriangleTexture text |> Array.ofSeq 
+        let normal = Vector3.Zero 
+        let v1 = createVertex p1 normal color4 texti.[0]    
+        let vert = {PV1 = v1}   
+        let ind =  {IPV1 = idx  }
+        (vert, ind)  
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Vertices für eine Line  
+    // ----------------------------------------------------------------------------------------------------
+    let lineVertices (p1, p2 ,color:Color,idx, isTransparent) =     
+        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+        let text = defaultTriangleTexture 1.0f 
+        let texti = deconstructTriangleTexture text |> Array.ofSeq 
+        let normal = (createNormal p1 p2 Vector3.UnitZ) 
+        let v1 = createVertex  p1 normal color4 texti.[0]  
+        let v2 = createVertex  p2 normal color4 texti.[1]    
+        let vert = {LV1 = v1; LV2 = v2}   
+        let ind =  {ILV1 = idx + 0; ILV2 = idx + 1}
+        (vert, ind)  
+
     // ----------------------------------------------------------------------------------------------------
     //  Quadratisches Patch durch 4 Controlpoints   
     // ----------------------------------------------------------------------------------------------------
@@ -97,6 +125,36 @@ module Generic =
 
         (triangleVertexList, triangleIndexList)  
 
+    // ----------------------------------------------------------------------------------------------------
+    //  Line Liste für eine unregelmäßige Fläche 
+    // ----------------------------------------------------------------------------------------------------        
+    let polygonLineList (point: Vector3 [], color: Color, isTransparent) =
+        let lineVertexList = new List<LineType>()
+        let lineIndexList = new List<LineIndexType>()
+
+        for i in 0 .. point.Length - 2 do
+            let line = lineVertices (point.[i], point.[i + 1], color, (i * 2), isTransparent)
+            let tVertexes, tIndexes = line
+            lineVertexList.Add(tVertexes)
+            lineIndexList.Add(tIndexes)
+
+        (lineVertexList, lineIndexList)  
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Point Liste für eine unregelmäßige Fläche 
+    // ----------------------------------------------------------------------------------------------------        
+    let polygonPointList (point: Vector3 [], color: Color, isTransparent) =
+        let pointVertexList = new List<PointType>()
+        let pointIndexList = new List<PointIndexType>()
+
+        for i in 0 .. point.Length - 2 do
+            let point = pointVertices (point.[i], color, (i), isTransparent)
+            let tVertexes, tIndexes = point
+            pointVertexList.Add(tVertexes)
+            pointIndexList.Add(tIndexes)
+
+        (pointVertexList, pointIndexList)  
+
 // ----------------------------------------------------------------------------------------------------
 //  Meshes für Patch-Topology erzeugen
 // ----------------------------------------------------------------------------------------------------
@@ -122,12 +180,13 @@ module QuadPatch =
         let quadIndexList = deconstructQuadIndex qIndexes
         let vertices = quadVertexList |> Array.ofSeq 
         let indices = quadIndexList |> Array.ofSeq 
-        let unten = new MeshData<Vertex>(vertices, indices) 
-        MeshData.Compose(oben, unten)
+        let unten = new MeshData<Vertex>(vertices, indices)         
+        oben, unten
     
     let CreateMeshData(p1, p2, p3, p4,color:Color, visibility:Visibility) =
         let isTransparent = TransparenceFromVisibility(visibility)
-        quadContext(p1, p2, p3, p4,color, isTransparent)
+        let oben, unten = quadContext(p1, p2, p3, p4,color, isTransparent)        
+        MeshData.Compose(oben, unten)
 
 module QuadPlanePatch =
 
@@ -174,7 +233,7 @@ module TriPatch =
     let triContext (p1, p2, p3, color:Color, isTransparent) = 
         let tv = triVertices p1 p2 p3  color 0 isTransparent 
         let tVertexes, tIndexes = tv   
-        let triVertexList = triangleVertices tVertexes
+        let triVertexList = deconstructTriangle tVertexes
         let triIndexList = triangleIndicesClockwise tIndexes
         let vertices = triVertexList |> Array.ofSeq 
         let indices = triIndexList |> Array.ofSeq 
@@ -221,7 +280,7 @@ module OctahedronPatch =
         addTriangleToVertexList p3 p4 p6 18     // Dreick hinten unten
         addTriangleToVertexList p4 p1 p6 21     // Dreick links unten
 
-        let vertices = triangleVertexList |> List.ofSeq |> List.collect (fun q -> triangleVertices q)  |> Array.ofSeq 
+        let vertices = triangleVertexList |> List.ofSeq |> List.collect (fun q -> deconstructTriangle q)  |> Array.ofSeq 
 
         let indices = triangleIndexList  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesClockwise ind)  |> Array.ofSeq 
 
@@ -261,21 +320,21 @@ module CorpusPatch =
         // Meshdata untere Fläche mit center und lowerContour 
         let lowerPolygon = polygonTriangleList lowerCenter lowerContour colorBasis isTransparent 
         let (verticesLower, indicesLower) = lowerPolygon
-        let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> triangleVertices q) |> ResizeArray<Vertex> 
+        let verticesL = verticesLower |> List.ofSeq |> List.collect (fun q -> deconstructTriangle q) |> ResizeArray<Vertex> 
         let indicesL = indicesLower  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind) |> ResizeArray<int> 
         let meshLower = MeshData.Create(verticesL, indicesL) 
 
         // Meshdata obere Fläche mit upperCenter und upperContour
         let upperPolygon = polygonTriangleList upperCenter upperContour colorTop isTransparent  
         let (verticesUpper, indicesUpper) = upperPolygon 
-        let verticesU = verticesUpper |> List.ofSeq |> List.collect (fun q -> triangleVertices q)  |> ResizeArray<Vertex> 
+        let verticesU = verticesUpper |> List.ofSeq |> List.collect (fun q -> deconstructTriangle q)  |> ResizeArray<Vertex> 
         let indicesU = indicesUpper  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesClockwise ind)  |> ResizeArray<int> 
         let meshUpper = MeshData.Create(verticesU, indicesU) 
 
         // Meshdata der Seite
         let border = stripeTriangleList lowerContour upperContour colorBorder isTransparent
         let (verticesBorder, indicesBorder) = border
-        let verticesB = verticesBorder |> List.ofSeq |> List.collect (fun q -> triangleVertices q)  |> ResizeArray<Vertex>  
+        let verticesB = verticesBorder |> List.ofSeq |> List.collect (fun q -> deconstructTriangle q)  |> ResizeArray<Vertex>  
         let indicesB = indicesBorder  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind)  |> ResizeArray<int>  
         let meshBorder = MeshData.Create(verticesB, indicesB) 
 

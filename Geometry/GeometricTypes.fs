@@ -16,6 +16,65 @@ open Base.VertexDefs
 module GeometricTypes = 
 
     // ----------------------------------------------------------------------------------------------------
+    //  Point: 1 Vertex      
+    // ----------------------------------------------------------------------------------------------------
+    type PointType = { PV1: Vertex }
+    type PointIndexType = { IPV1: int }
+    type PointTextureType = { TPV1: Vector2 }
+
+    // Typ in Vertex zerlegen
+    let deconstructPoint (pt) =
+        let { PV1 = pt1 } = pt
+        [ pt1 ]
+
+    let pointIndices (pi:PointIndexType) = 
+        let {IPV1=pi1} = pi
+        [pi1]
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Linie: 2 Vertex      
+    // ----------------------------------------------------------------------------------------------------
+    type LineType           = {LV1: Vertex ; LV2: Vertex }
+    type LineIndexType      = {ILV1: int ; ILV2: int }
+    type LineTextureType    = {TLV1: Vector2 ; TLV2: Vector2 }
+
+    // Linie in Vertexe zerlegen
+    let deconstructLine (ln:LineType) = 
+        let {LV1 = ln1; LV2 = ln2} = ln
+        [ln1; ln2]
+
+    let lineIndices (li:LineIndexType) = 
+        let {ILV1=li1; ILV2=li2} = li
+        [li1; li2]
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Dreieck: 3 Vertex      
+    // ----------------------------------------------------------------------------------------------------
+    type TriangleType           = {TV1: Vertex ; TV2: Vertex ; TV3: Vertex}
+    type TriangleIndexType      = {ITV1: int ; ITV2: int ; ITV3: int}
+    type TriangleTextureType    = {TUV1: Vector2 ; TUV2: Vector2 ; TUV3: Vector2}
+
+    let defaultTriangleTexture factor =         
+        {TUV1=new Vector2(0.0f, 0.0f); TUV2=new Vector2(factor, 0.0f); TUV3=new Vector2(factor, 1.0f)}
+    
+    // Dreieck in Vertexe zerlegen
+    let deconstructTriangle (tr:TriangleType) = 
+        let {TV1 = tr1; TV2 = tr2; TV3 = tr3} = tr
+        [tr1; tr2; tr3]
+
+    let triangleIndicesClockwise (ti:TriangleIndexType) = 
+        let {ITV1=ti1; ITV2=ti2; ITV3=ti3 } = ti
+        [ti1; ti2; ti3]
+
+    let triangleIndicesCounterClockwise (ti:TriangleIndexType) = 
+        let {ITV1=ti1; ITV2=ti2; ITV3=ti3 } = ti
+        [ti1; ti3; ti2]
+
+    let deconstructTriangleTexture (uvi:TriangleTextureType) = 
+        let {TUV1=uvi1; TUV2=uvi2; TUV3=uvi3} = uvi
+        [uvi1; uvi2; uvi3]
+
+    // ----------------------------------------------------------------------------------------------------
     //  Quadrat: 4 Vertex  
     // ----------------------------------------------------------------------------------------------------
     type SquareType         = {SV1: Vertex ; SV2: Vertex ; SV3: Vertex; SV4: Vertex}
@@ -40,33 +99,6 @@ module GeometricTypes =
     let squareIndicesCounterClockwise (si:SquareIndexType) = 
         let {SI1=si1; SI2=si2; SI3=si3; SI4=si4} = si
         [si1; si4; si2; si2; si4; si3]
-
-    // ----------------------------------------------------------------------------------------------------
-    //  Dreieck: 3 Vertex      
-    // ----------------------------------------------------------------------------------------------------
-    type TriangleType           = {TV1: Vertex ; TV2: Vertex ; TV3: Vertex}
-    type TriangleIndexType      = {ITV1: int ; ITV2: int ; ITV3: int}
-    type TriangleTextureType    = {TUV1: Vector2 ; TUV2: Vector2 ; TUV3: Vector2}
-
-    let defaultTriangleTexture factor =         
-        {TUV1=new Vector2(0.0f, 0.0f); TUV2=new Vector2(factor, 0.0f); TUV3=new Vector2(factor, 1.0f)}
-    
-    // Dreieck in Vertexe zerlegen
-    let triangleVertices (tr:TriangleType) = 
-        let {TV1 = tr1; TV2 = tr2; TV3 = tr3} = tr
-        [tr1; tr2; tr3]
-
-    let triangleIndicesClockwise (ti:TriangleIndexType) = 
-        let {ITV1=ti1; ITV2=ti2; ITV3=ti3 } = ti
-        [ti1; ti2; ti3]
-
-    let triangleIndicesCounterClockwise (ti:TriangleIndexType) = 
-        let {ITV1=ti1; ITV2=ti2; ITV3=ti3 } = ti
-        [ti1; ti3; ti2]
-
-    let deconstructTriangleTexture (uvi:TriangleTextureType) = 
-        let {TUV1=uvi1; TUV2=uvi2; TUV3=uvi3} = uvi
-        [uvi1; uvi2; uvi3]
 
     // Quadrat in Dreiecke zerlegen
     let deconstructSquare (square:SquareType) = 
@@ -111,10 +143,10 @@ module GeometricTypes =
     let deconstructPyramid (pyramid:PyramidType) = 
         let {BASE = basis; FRONT = front; RIGHT = right; BACK = back; LEFT = left} = pyramid
         let result = 
-            triangleVertices left            
-             |> List.append(triangleVertices back)
-             |> List.append(triangleVertices right)
-             |> List.append(triangleVertices front)  
+            deconstructTriangle left            
+             |> List.append(deconstructTriangle back)
+             |> List.append(deconstructTriangle right)
+             |> List.append(deconstructTriangle front)  
              |> List.append(squareVerticesClockwise basis)
         result
 
