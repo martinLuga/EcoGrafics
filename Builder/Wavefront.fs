@@ -27,7 +27,7 @@ open Base.StringConvert
 open Base.MathSupport
 open Base.MaterialsAndTextures
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 open BuilderSupport
 

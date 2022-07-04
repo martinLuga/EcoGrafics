@@ -10,7 +10,7 @@ open Base.LoggingSupport
 open Base.ModelSupport
 open Base.PrintSupport
 open Base.ObjectBase
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 open log4net
 open SharpDX
 open BulletSharp

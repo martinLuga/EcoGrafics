@@ -40,8 +40,8 @@ module NTSConversions =
         points
         |> Array.rev
     
-    let asVector3(gp: NTSPoint) =
-        Vector3(float32 gp.X, 0.0f, float32 gp.Y)
+    let asVector3(gp: NTSPoint, y:float32) =
+        Vector3(float32 gp.X, y, float32 gp.Y)
         
     let asVector3FromCoordinate(coordinate: NTSCoordinate) =
         Vector3(float32 coordinate.X, 0.0f, float32 coordinate.Y)
@@ -80,11 +80,11 @@ module NTSConversions =
         let ls = asVector3List(geometry.Coordinates)  |> Seq.rev |> Seq.toArray 
         closePolygon(ls) 
 
-    let calcCentroid(points:Vector3[]) = 
-        let pclos = closePolygon(points)    
-        let poly = AsNTSPolygon(pclos)        
+    let calcCentroid(points:Vector3[]) =  
+        let poly = AsNTSPolygon(points)        
         //if not poly.IsValid then
         //    raise (CreateException("Cannot calc centroid. Invalid polygon"))
-        let cent =  poly.Centroid 
-        asVector3(cent)
+        let mutable cent = poly.Centroid         
+        let Y =  points[0] .Y 
+        asVector3(cent, Y)
 

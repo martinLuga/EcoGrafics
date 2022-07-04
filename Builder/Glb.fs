@@ -12,7 +12,7 @@ open Base.ModelSupport
 open Base.ShaderSupport 
 open Base.VertexDefs
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 open VGltf
 open VGltf.Types

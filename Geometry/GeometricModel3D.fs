@@ -29,13 +29,14 @@ open Base.GeometryUtils
 open VertexWaves
 open NTSConversions
 open GeometricModel2D
+open GeometricTypes
 
 // ----------------------------------------------------------------------------------------------------
 // Geometrische Objekte
 // Kugel
 // Quader ...
 // ----------------------------------------------------------------------------------------------------
-module GeometricModel = 
+module GeometricModel3D = 
 
     let logger = LogManager.GetLogger("Geometric.Model") 
     let logDebug = Debug(logger)
@@ -750,6 +751,46 @@ module GeometricModel =
             OctahedronPatch.CreateMeshData(this.p1, this.p2, this.p3, this.p4, this.p5, this.p6, _color, visibility)  
 
     // ----------------------------------------------------------------------------------------------------
+    //  Tiefenkörper
+    // ----------------------------------------------------------------------------------------------------
+    type Tiefenkörper(name: string, polygon: Polygon, height:float32) =
+        inherit GeometryBased(name, polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f), Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
+        let mutable lowerPolygon = polygon
+        let mutable upperPolygon = polygon.Copy():?> Polygon
+        let mutable center = polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f)
+        do
+            upperPolygon.Shift(height)
+
+        override this.Center = center
+
+        override this.ToString() = "Tiefenkörper " + name  
+
+        override this.TopologyType = PrimitiveTopologyType.Patch
+
+        override this.Topology = PrimitiveTopology.PatchListWith3ControlPoints
+
+        override this.CreateVertexData(visibility:Visibility) =        
+            let isTransparent = TransparenceFromVisibility(visibility)
+            
+            let lp = lowerPolygon.CreateTriangles(isTransparent)
+            let verticesLp, indicesLp = Construction.FromTriangles(lp, false)
+            let mdLp = MeshData.Create(verticesLp, indicesLp)
+
+            let up = upperPolygon.CreateTriangles(isTransparent)            
+            let verticesUp, indicesUp = Construction.FromTriangles(up, true)
+            let mdUp = MeshData.Create(verticesUp, indicesUp)
+
+            let border = Generic.stripeTriangleList lowerPolygon.Points upperPolygon.Points Color.White isTransparent
+            let verticesBorder, indicesBorder = border
+            let verticesB = verticesBorder |> List.ofSeq |> List.collect (fun q   -> deconstructTriangle q)  |> ResizeArray<Vertex>  
+            let indicesB  = indicesBorder  |> List.ofSeq |> List.collect (fun ind -> triangleIndicesCounterClockwise ind)  |> ResizeArray<int>
+            let mdBorder = MeshData.Create(verticesB, indicesB)
+
+            // Zusammenfügen
+            let lowerAndUpper = MeshData.Compose(mdLp, mdUp)
+            MeshData.Compose(lowerAndUpper, mdBorder) 
+
+    // ----------------------------------------------------------------------------------------------------
     //  Corpus
     // ----------------------------------------------------------------------------------------------------
     type Corpus(name: string, origin, contour: Vector3[], height:float32, colorBottom:Color, colorTop:Color, colorSide:Color) =
@@ -767,8 +808,8 @@ module GeometricModel =
             axisAligned(rawLowerContour)
 
             lowerContour <- shiftVector(lowerContour, origin)
-            upperContour <- shiftUp(lowerContour, height)
-            rawUpperContour <- shiftUp(rawLowerContour, height)
+            upperContour <- shiftUp(lowerContour, height) |> ResizeArray
+            rawUpperContour <- shiftUp(rawLowerContour, height) |> ResizeArray
             
             minimum <- Base.MathSupport.computeMinimumXYZ(lowerContour |> Seq.toList )
             maximum <- Base.MathSupport.computeMaximumXYZ(upperContour |> Seq.toList)

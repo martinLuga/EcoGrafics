@@ -20,7 +20,7 @@ open Base.LoggingSupport
 open Base.ModelSupport
 open Base.VertexDefs
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 open BuilderSupport
 

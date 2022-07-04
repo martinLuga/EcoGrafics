@@ -15,6 +15,7 @@ open SharpDX.Direct3D12
 open Base.ModelSupport 
 open Base.Framework 
 open Base.MeshObjects
+open Base.GeometryUtils
 
 open GeometricTypes
 
@@ -38,25 +39,26 @@ module GeometricModel2D =
     type Geometry2D(name: string, points: Vector3 [], color: Color, representation:Representation) =
         inherit GeometryBased(name, points.[0], color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable representation = representation
-        let mutable points = points
 
         new (name, geo:NTSMultiPoint, representation) = new Geometry2D (name, FromNTSMultiPoints(geo), Color.White, representation)
         new (name, geo:NTSMultiPoint, color) = new Geometry2D (name, FromNTSMultiPoints(geo),color , Representation.Surface)
         new (name, geo:NTSMultiPoint) = new Geometry2D (name, FromNTSMultiPoints(geo), Color.White, Representation.Surface)
 
         abstract member Points: Vector3 []
-        default this.Points = points 
+
+        override this.Center =
+            try
+                 calcCentroid(this.Points) 
+
+            with :? CreateException as ex ->
+                raiseException("Center of " + this.Name + " invalid: " + ex.Data0)
+
+        abstract member Copy: Unit -> Geometry2D
+        default this.Copy() = this
         
         member this.Representation
             with get() = representation
             and set(value) = representation <- value
-
-        override this.Center =
-            try
-                let polygon = closePolygon(this.Points)
-                calcCentroid(polygon)
-            with :? CreateException as ex ->
-                raiseException("Center of " + this.Name + " invalid: " + ex.Data0)
 
         // ----------------------------------------------------------------------------------------------------
         // Meshdata
@@ -82,7 +84,7 @@ module GeometricModel2D =
                 this.Topology <- PrimitiveTopology.TriangleList
                 this.TopologyType <- PrimitiveTopologyType.Triangle
                 let triangles = this.CreateTriangles(isTransparent)
-                let vertices, indices = Construction.FromTriangles(triangles, true)
+                let vertices, indices = Construction.FromTriangles(triangles, false)  // TODO : Umgedreht vom Korpus
                 MeshData.Create(vertices, indices)
                 
             | Representation.Line -> 
@@ -105,25 +107,26 @@ module GeometricModel2D =
     type Polygon(name: string, points, representation) =
         inherit Geometry2D(name, points, Color.White, representation)  
         
-        let mutable points= points
+        let mutable points = closePolygon(points)
   
-        new (name: string, points:Vector3[]) = new Polygon (name, points, Representation.Surface)
+        new (name: string, points:Vector3[]) = new Polygon (name, closePolygon(points), Representation.Surface)
+        new () = new Polygon ("DUMMY", [||],  Representation.Surface)
 
-        override this.Center =
-            try
-                calcCentroid(this.Points)
-            with :? CreateException as ex ->
-                raiseException("Center of " + this.Name + " invalid: " + ex.Data0)
-       
+        member this.Shift(height) = 
+            points <- shiftUp(points, height) |> Seq.toArray
+ 
+        override this.Points = points
+
+        override this.Copy() =
+            new Polygon(this.Name + "Copy", points, representation)
+
         override this.ToString() = "Polygon:" + this.Name 
 
         override this.CreateTriangles(transparency) =
-            let points = closePolygon(this.Points)
             let triangles = Polygon2D.CreateTriangles(this.Center, points, Color.White, transparency) 
             triangles
 
         override this.CreateLines(transparency) =
-            let points = closePolygon(this.Points)
             let lines = Polygon2D.CreateLines(points, Color.White, transparency)
             lines
 
@@ -134,13 +137,13 @@ module GeometricModel2D =
     // ----------------------------------------------------------------------------------------------------
     // Kreis
     // ----------------------------------------------------------------------------------------------------
-    type Kreis(name: string, origin, radius: float32, representation:Representation) =
-        inherit Geometry2D(name, [|origin|], Color.White, representation)   
+    type Kreis(name: string, center, radius: float32, representation:Representation) =
+        inherit Geometry2D(name, [|center|], Color.White, representation)   
         let radius = radius 
-        let origin = origin 
+        let origin = center 
         let mutable points: Vector3 [] = [||] 
         do
-            points <- Circle2D.GetPoints(origin, radius, Shape.Raster).ToArray()
+            points <- closePolygon(Circle2D.GetPoints(origin, radius, Shape.Raster).ToArray())
         
         new (name, origin, radius) = new Kreis (name, origin, radius,  Representation.Surface)
 
@@ -150,23 +153,20 @@ module GeometricModel2D =
         override this.Points =
             points
 
+        override this.Center =
+            origin
+
         override this.ToString() = "Kreis:" + this.Name + " r " + radius.ToString() 
 
-        override this.CreateTriangles(transparency) =               
-            points <- Circle2D.GetPoints(this.Center, radius, Shape.Raster).ToArray()
-            let points = closePolygon(points) 
+        override this.CreateTriangles(transparency) =    
             let triangles = Polygon2D.CreateTriangles(this.Center, points, Color.White, transparency) 
             triangles
 
         override this.CreateLines(transparency) =
-            points <- Circle2D.GetPoints(this.Center, radius, Shape.Raster).ToArray()
-            let points =  closePolygon(points) 
             let lines = Polygon2D.CreateLines( points, Color.White, transparency)
             lines
 
         override this.CreatePoints(transparency) =
-            points <- Circle2D.GetPoints(this.Center, radius, Shape.Raster).ToArray()
-            let points =  closePolygon(points)  
             let result = Polygon2D.CreatePoints(points, Color.White, transparency)
             result
 

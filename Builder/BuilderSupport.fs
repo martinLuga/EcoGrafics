@@ -23,7 +23,7 @@ open Base.MathSupport
 open Base.ObjectBase
 open Base.GeometryUtils
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 open Base.MaterialsAndTextures
 

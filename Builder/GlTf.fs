@@ -17,7 +17,7 @@ open Base.ShaderSupport
 open Base.VertexDefs
 open Base.MaterialsAndTextures
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 open GltfBase.Deployment2
 open GltfBase.VGltfReader

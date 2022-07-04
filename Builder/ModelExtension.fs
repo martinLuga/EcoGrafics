@@ -8,7 +8,7 @@
 
 open SharpDX
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 open Base.ModelSupport 
 
 open Builder

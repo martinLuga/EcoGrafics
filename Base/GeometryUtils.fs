@@ -280,8 +280,8 @@ module GeometryUtils =
             resized  <- points.Item(i) * size
             points.Item(i) <- resized
 
-    let shiftUp(points: List<Vector3>, height:float32) = 
-        points |> Seq.map (fun vec -> Vector3.Add(vec, height * Vector3.Up )) |> ResizeArray 
+    let shiftUp(points: seq<Vector3>, height:float32) = 
+        points |> Seq.map (fun vec -> Vector3(vec.X, vec.Y + height, vec.Z )) 
 
     let shiftVector(points: List<Vector3>, amount:Vector3) = 
         points |> Seq.map (fun vec -> Vector3.Add(vec, amount)) |> ResizeArray 

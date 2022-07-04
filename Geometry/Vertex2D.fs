@@ -133,9 +133,9 @@ module Construction =
 
         for ind in (snd triangles) do
             if upper then 
-                indices.AddRange(triangleIndicesCounterClockwise (ind))
-            else 
                 indices.AddRange(triangleIndicesClockwise (ind))
+            else 
+                indices.AddRange(triangleIndicesCounterClockwise (ind))
 
         vertices, indices 
 
