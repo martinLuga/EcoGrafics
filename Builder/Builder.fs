@@ -95,7 +95,7 @@ module SegmentBuilder =
     let mutable segment = new BaseObject("", Vector3.Zero) 
 
     // ----------------------------------------------------------------------------------------------------
-    //  Polygon für ein SVG-File erzeugen
+    //  Zahlen in Segmentdarstellung erzeugen
     // ----------------------------------------------------------------------------------------------------
     let Build (zahl, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         if segment.Name = "" then
@@ -117,6 +117,27 @@ module SegmentBuilder =
         let builder = new SegmentBuilder(segment, Color.Green)  
         builder.Build(zahl, position) 
         builder.Objects
+
+    let Parts (zahl, position, height:float32, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        if segment.Name = "" then
+            let svg = SvgBuilder.Build( 
+                "model2d\\7-segment_cdeg.svg",
+                "cdeg",
+                "0",
+                Vector3.Zero,
+                height,
+                material,
+                texture, 
+                sizeFactor,
+                visibility,
+                augmentation,
+                quality,
+                shaders
+            )
+            segment <- svg.[0]
+        let builder = new SegmentBuilder(segment, Color.Green)  
+        builder.Build(zahl, position) 
+        builder.Parts
 
 module GlbBuilder = 
     // ----------------------------------------------------------------------------------------------------

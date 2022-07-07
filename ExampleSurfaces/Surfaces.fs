@@ -8,11 +8,14 @@
 
 open SharpDX 
  
-open Geometry.GeometricModel  
+open Geometry.GeometricModel3D  
  
 open Base.ModelSupport
 
+
 open Base.MaterialsAndTextures  
+
+open Base.ShaderSupport
 
 
 // ---------------------------------------------------------------------------------------------------- 
@@ -20,15 +23,6 @@ open Base.MaterialsAndTextures
 //  Example Surfaces
 // 
 // ----------------------------------------------------------------------------------------------------   
-
-// ---------------------------------------------------------------------------------------------------- 
-//  Würfel
-// ---------------------------------------------------------------------------------------------------- 
-// 
-//  TODO: Problem mit der Reihenfolge. 
-//  Transparenz muss am Ende in den Displayables stehen. Dies wird durch sort im GraficSystem erreicht
-//  Trotzdem gibt es Fehler, wenn ein anderes mit der gleichen Geometrie danach kommt
-// 
 
 module Surfaces =
 
@@ -70,15 +64,19 @@ module Surfaces =
     // ----------------------------------------------------------------------------------------------------
     // SURFACE
     // ----------------------------------------------------------------------------------------------------
-    
-    let PART_SHAPE(name, shape, material:Material, texture:Texture) = 
+    let PART_PLANE(name, ursprung:Vector3, length, height, color:Color, mat:Material, text:Texture) = 
+        let p1 = ursprung
+        let p2 = Vector3(ursprung.X + length, ursprung.Y,           ursprung.Z)
+        let p3 = Vector3(ursprung.X + length, ursprung.Y+height,    ursprung.Z)
+        let p4 = Vector3(ursprung.X         , ursprung.Y+height,    ursprung.Z)
         new Part(
-            name,
-            shape =shape,
-            material=material,
-            texture=texture
+            name= name,
+            shape = Fläche(name, p1, p2, p3, p4, color, 1.0f),
+            material=mat,
+            texture=text,
+            shaders  = ShaderConfiguration.CreateForTesselation()
         )
-    
+
     let PART_CUBE(name, ursprung, seite, color:Color, mat:Material, text:Texture) = 
         new Part(
             name,
@@ -149,7 +147,7 @@ module PyramidSurfaces =
     let PYRAMID_SHAPE(name) =
         new Pyramide( 
                 name = "PYRAMID" + name,
-                ursprung=Vector3.Zero,
+                origin =  Vector3.Zero,
                 seitenLaenge = 3.0f,
                 hoehe = 4.0f,
                 colorFront = Color.Red,
@@ -259,12 +257,12 @@ module GroundPlaneSurfaces =
             shape =
                 Fläche.InXYPlane(
                     name = "FRONT",
-                    p1 = Vector3.Zero,
+                    origin = Vector3.Zero,
                     seitenlaenge = 10.0f,
                     normal = Vector3.BackwardLH,
                     color = Color.Transparent
                 ),
-            material = MAT_DARKSLATEGRAY,
+            material = MAT_DSGRAY,
             visibility = Visibility.Transparent
         )
 
@@ -274,7 +272,7 @@ module GroundPlaneSurfaces =
             shape =
                   Fläche.InXZPlane(
                       name = "GROUND",
-                      p1 = origin,
+                      origin = origin,
                       seitenlaenge = extent,
                       normal = Vector3.Up,
                       color = Color.Transparent
@@ -289,7 +287,7 @@ module GroundPlaneSurfaces =
             shape =
                   Fläche.InYZPlane(
                       name = "RIGHT",
-                      p1 = Vector3.Zero,
+                      origin = Vector3.Zero,
                       seitenlaenge = 10.0f,
                       normal = Vector3.Right,
                       color = Color.Transparent
@@ -304,36 +302,36 @@ module TwoDObjectSurfaces =
     let PART_FRONT =
         new Part(
             name = "FRONT",
-            shape = Quadrat.InXYPlane(name = "FRONT", ursprung = Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
-            material = MAT_DARKGOLDENROD
+            shape = Quadrat.InXYPlane(name = "FRONT", origin =  Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
+            material = MAT_DGROD
         )
 
     let PART_LEFT =
         new Part(
             name = "LEFT",
-            shape = Quadrat.InYZPlane(name = "LEFT", ursprung = Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
-            material = MAT_DARKGOLDENROD
+            shape = Quadrat.InYZPlane(name = "LEFT", origin =  Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
+            material = MAT_DGROD
         )
 
     let PART_BOTTOM =
         new Part(
             name = "BOTTOM",
-            shape = Quadrat.InXZPlane(name = "BOTTOM", ursprung = Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
-            material = MAT_DARKGOLDENROD
+            shape = Quadrat.InXZPlane(name = "BOTTOM", origin =  Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
+            material = MAT_DGROD
         )
 
     let PART_RIGHT =
         new Part(
             name = "RIGHT",
-            shape = Quadrat.InYZPlane(name = "RIGHT", ursprung = Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
-            material = MAT_DARKGOLDENROD
+            shape = Quadrat.InYZPlane(name = "RIGHT", origin =  Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
+            material = MAT_DGROD
         )
 
     let PART_TOP =
         new Part(
             name = "TOP",
-            shape = Quadrat.InXZPlane(name = "TOP", ursprung = Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
-            material = MAT_DARKGOLDENROD
+            shape = Quadrat.InXZPlane(name = "TOP", origin =  Vector3.Zero, seitenlaenge = 5.0f, color = Color.White),
+            material = MAT_DGROD
         )
 
     let PART_LIMIT (name, height, width, color: Color) =

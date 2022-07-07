@@ -6,37 +6,19 @@
 //  Copyright © 2018 Martin Luga. All rights reserved.
 //
 
-open System
-open System.IO
-open System.Globalization
 open System.Collections.Generic
 
 open log4net
 
 open SharpDX
 
-open Base.ShaderSupport
 open Base.LoggingSupport
-open Base.ModelSupport
-open Base.StringSupport
-open Base.MathSupport
 open Base.ObjectBase
-open Base.GeometryUtils
-
-open Geometry.GeometricModel3D
-
-open Base.MaterialsAndTextures
-
-open Aspose.Svg
-open Aspose.Svg.Dom
-open Aspose.Svg.Paths
-open Aspose.Svg.Dom.Traversal.Filters
-
-open Svg
+open Base.ModelSupport
 
 // ----------------------------------------------------------------------------------------------------
-// SVGFormat
-//  bestehend aus Vertex und Index-Liste
+// Segment
+//   
 // ----------------------------------------------------------------------------------------------------
 module Segment =
 
@@ -47,48 +29,41 @@ module Segment =
     // SegmentBuilder
     // ----------------------------------------------------------------------------------------------------
     type SegmentBuilder(_segment:BaseObject, color:Color) = 
-
-        let mutable segment = _segment
-
+        let mutable segmentAnzeige = _segment
         let mutable objekte = new List<BaseObject>()
-
+        let mutable parts = _segment.Display.Parts
         let mutable delta = Vector3(20.0f, 0.0f, 0.0f)
 
-        member this.Build (input:string, position) =
-            
+        member this.Build (input:string, position) =            
             if input.Length = 1 then
-                this.BuildOne(input, position)
+                this.buildZahl(input, position)
             else 
                 this.BuildAll(input, position)
-
-        member this.BuildOne(zahl, position) = 
-
-            let objekt = new BaseObject(zahl, position)
-
-            let segmentsToBeHilited = this.Segment(zahl)
-
-            let parts = segment.Display.Parts
-
-            let PartWithName(name:string) =
-                parts |> List.find (fun part -> part.Name = name)
-
-            let newParts = 
-                segmentsToBeHilited 
-                |> List.map(fun s -> PartWithName(s)) 
-
-            objekt.Display.Parts <- newParts
-
-            objekte.Add(objekt)
 
         member this.BuildAll(zahlen:string, position) = 
             let ueberAlleZahlen = zahlen.GetEnumerator()
             let mutable pos = position
             while ueberAlleZahlen.MoveNext() do
                 let zahl = ueberAlleZahlen.Current
-                this.BuildOne(zahl.ToString(), pos)
+                this.buildZahl(zahl.ToString(), pos)
                 pos <- pos + delta
 
-        member this.Segment(zahl):string list =
+        member this.buildZahl(zahl:string, position) =
+            let objekt = new BaseObject(zahl, position)
+            let segmentsToBeHilited = this.Segmente(zahl)
+            let parts = segmentAnzeige.Display.Parts
+            let PartWithName (name: string) =
+                parts |> List.find (fun part -> part.Name = name)
+
+            let newParts =
+                segmentsToBeHilited
+                |> List.map (fun s -> PartWithName(s))
+
+            objekt.Display.Parts <- newParts
+
+            objekte.Add(objekt)
+
+        member this.Segmente(zahl) =
             //    | "a"  // oben             
             //    | "b"  // rechts oben
             //    | "c"  // rechts unten
@@ -113,5 +88,8 @@ module Segment =
 
         member this.Objects = 
             objekte |> Seq.toList
+
+        member this.Parts = 
+            parts |> Seq.toList
            
 

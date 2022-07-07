@@ -7,7 +7,6 @@
 //
 
 open System
-open System.IO
 open System.Globalization
 open System.Collections.Generic
 
@@ -18,19 +17,15 @@ open SharpDX
 open Base.ShaderSupport
 open Base.LoggingSupport
 open Base.ModelSupport
-open Base.StringSupport
 open Base.MathSupport
 open Base.ObjectBase
 open Base.GeometryUtils
+open Base.MaterialsAndTextures
 
 open Geometry.GeometricModel3D
 
-open Base.MaterialsAndTextures
-
 open Aspose.Svg
 open Aspose.Svg.Dom
-open Aspose.Svg.Paths
-open Aspose.Svg.Dom.Traversal.Filters
 
 open SVGFormat
 

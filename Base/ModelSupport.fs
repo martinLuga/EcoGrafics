@@ -129,7 +129,7 @@ module ModelSupport =
         member this.FileName = fileName
         member this.Path =
             if path <> "" then path
-            else "texture/" + this.FileName
+            else this.FileName
 
         member this.IsCube = isCube = true 
 
@@ -330,6 +330,9 @@ module ModelSupport =
 
         member this.CenterOrigin =
             this.Origin - this.Center  
+
+        member this.OriginCenter =
+            -this.CenterOrigin
 
         abstract member Update: GameTimer -> Unit
         default this.Update(gt: GameTimer) = raise (System.Exception("Nicht implementiert"))

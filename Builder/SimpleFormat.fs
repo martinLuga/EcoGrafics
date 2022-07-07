@@ -188,7 +188,10 @@ module SimpleFormat =
             |> Seq.map(fun p -> p.Shape.Vertices)   
             |> Seq.concat
             |> Seq.toList 
-            
+
+        // ----------------------------------------------------------------------------------------------------
+        // Normierung. Größe und Position.
+        // ----------------------------------------------------------------------------------------------------            
         member this.adjustXYZ()=
            let min = computeMinimum(vertices|> Seq.toList) 
            vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray

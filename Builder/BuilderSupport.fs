@@ -7,30 +7,15 @@
 //
 
 open System
-open System.IO
-open System.Globalization
 open System.Collections.Generic
-
-open log4net
 
 open SharpDX
 
-open Base.ShaderSupport
-open Base.LoggingSupport
+open Base.VertexDefs
 open Base.ModelSupport
-open Base.StringSupport
-open Base.MathSupport
-open Base.ObjectBase
-open Base.GeometryUtils
-
-open Geometry.GeometricModel3D
-
 open Base.MaterialsAndTextures
 
-open Aspose.Svg
-open Aspose.Svg.Dom
-open Aspose.Svg.Paths
-open Aspose.Svg.Dom.Traversal.Filters
+open Geometry.GeometricModel3D
 
 // ----------------------------------------------------------------------------------------------------
 // SVGFormat
@@ -84,3 +69,37 @@ module BuilderSupport =
             material = MAT_RED,
             visibility = Visibility.Opaque
         )
+
+    // ----------------------------------------------------------------------------------------------------
+    //Gemeinsam genutzte Builder Funktionen
+    // ----------------------------------------------------------------------------------------------------  
+    type ShapeBuilder(name:String, fileName:String) =
+        
+        let mutable vertices = new List<Vertex>()
+        let mutable size = Vector3.One
+
+        // ----------------------------------------------------------------------------------------------------
+        // Normierung. Größe und Position.
+        // ----------------------------------------------------------------------------------------------------            
+        member this.adjustXYZ()=
+           let min = computeMinimum(vertices|> Seq.toList) 
+           vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
+           ()
+
+        member this.ComputeFactor() =
+            let min = computeMinimum(vertices|> Seq.toList)
+            let max= computeMaximum(vertices|> Seq.toList)
+            let mutable box = BoundingBox()
+            box.Minimum <- min.Position 
+            box.Maximum <- max.Position  
+            
+            let actualHeight = box.Maximum.Y - box.Minimum
+            let standardHeight = 1.0f
+            standardHeight / actualHeight 
+
+        member this.Resize() =
+            let aFactor = this.ComputeFactor() * size
+            for i = 0 to vertices.Count - 1 do
+                let mutable resizedVertex = vertices.Item(i)
+                resizedVertex.Position <- vertices.Item(i).Position * aFactor
+                vertices.Item(i) <- resizedVertex

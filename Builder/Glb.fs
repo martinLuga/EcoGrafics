@@ -2,7 +2,7 @@
 //
 //  Wavefront.fs
 //
-//  Created by Martin Luga on 08.02.18.
+//  Created by Martin Luga on 08.02.22.
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
@@ -12,7 +12,7 @@ open Base.ModelSupport
 open Base.ShaderSupport 
 open Base.VertexDefs
 
-open Geometry.GeometricModel3D
+open Geometry.GeometricModel3D 
 
 open VGltf
 open VGltf.Types
@@ -26,7 +26,7 @@ open System.Collections.Generic
 open GlbFormat
 
 // ----------------------------------------------------------------------------------------------------
-// Support für das Einlesen von glb-Files
+// Support für das Einlesen von glb-Files (physically based rendering)
 // ----------------------------------------------------------------------------------------------------
  
 module Glb =

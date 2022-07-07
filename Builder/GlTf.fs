@@ -120,6 +120,9 @@ module GlTf =
             |> Seq.concat
             |> Seq.toList 
 
+        // ----------------------------------------------------------------------------------------------------
+        // Normierung. Größe und Position.
+        // ----------------------------------------------------------------------------------------------------
         member this.adjustXYZ()=
            let min = computeMinimum(this.Vertices|> Seq.toList) 
            for part in parts do 

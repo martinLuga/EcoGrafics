@@ -16,6 +16,7 @@ open Base.ModelSupport
 open Base.Framework 
 open Base.MeshObjects
 open Base.GeometryUtils
+open Base.MathSupport
 
 open GeometricTypes
 
@@ -119,6 +120,13 @@ module GeometricModel2D =
 
         override this.Copy() =
             new Polygon(this.Name + "Copy", points, representation)
+
+        member this.NormalizePosition() =             
+             let min = computeMinimumXYZ(points|> Seq.toList) 
+             for i = 0 to points.Length - 1 do
+                 let mutable resized = points.[i]
+                 resized  <- points.[i] - min
+                 points.[i] <- resized
 
         override this.ToString() = "Polygon:" + this.Name 
 

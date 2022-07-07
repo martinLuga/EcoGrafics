@@ -42,10 +42,15 @@ module VertexPrisma =
         let p6 = new Vector3(p3.X + breite, p3.Y, p3.Z)  
         
         let triangleLeft,  triangleIndexLeft   = triangle  p1 p3 p2 normalLeft      color 0     isTransparent
+
         let triangleRight, triangleIndexRight  = triangle  p5 p6 p4 normalRight     color 3     isTransparent
         
+        // Front im Uhrzeigersinn
         let squareFront,   squareIndexFront    = square p1 p2 p5 p4 normalTop       color 6     isTransparent
+
+        // Front im GegenUhrzeigersinn
         let squareBack,    squareIndexBack     = square p4 p6 p3 p3 normalBack      color 10    isTransparent
+
         let squareBot,     squareIndexBot      = square p3 p6 p5 p2 normalBottom    color 14    isTransparent
 
         let Prisma        = {PRIGHT  = triangleRight ;         PBACK = squareBack;        PLEFT = triangleLeft;       PTOP = squareFront;        PBOTTOM  = squareBot }
@@ -81,11 +86,5 @@ module VertexPrisma =
         let vertices = vertexList |> Array.ofSeq 
         let indices  = indexList |> Array.ofSeq 
         
-        vertices, indices 
-   
-    let CreateMeshData(p1:Vector3, p2:Vector3, p3:Vector3, breite:float32, color:Color, visibility:Visibility) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData<Vertex>(   
-            prismaVerticesAndIndices (p1,p2,p3,breite, color, isTransparent)
-        )  
+        vertices, indices
 

@@ -15,6 +15,11 @@ open ModelSupport
 // ----------------------------------------------------------------------------------------------------
 module MaterialsAndTextures =
 
+    let GRAFIC_ECO_PATH =
+        "C:/Users/Lugi2/source/Framework/EcoGrafics/ExampleSurfaces/bin/x64/Debug/net48/texture/" 
+        
+    let ECO_PATH = System.Reflection.Assembly.GetExecutingAssembly().GetName()
+
     let defaultObjectSize   = 0.5f
     let antDefaultEnergy    = 50.0f
     let antDefaultCapacity  = 100.0f
@@ -129,10 +134,10 @@ module MaterialsAndTextures =
     // TEXTUR
     // ----------------------------------------------------------------------------------------------------
     let TEXTURE(name:string, texturName:string, isCube:bool) =
-        let textureFileName = (texturName.Split('.')).[0]
+        let textureFileName = GRAFIC_ECO_PATH +  texturName 
         new Texture (
             name=name,
-            fileName=texturName,
+            fileName=textureFileName,
             pathName="",
             isCube=isCube
         ) 
@@ -157,6 +162,18 @@ module MaterialsAndTextures =
     let TEXT_BUMPER = TEXTURE("BUMBER", "Bumper-100.jpg", false)
     let TEXT_FLPG = TEXTURE("FLIPPERGROUND", "texture_140.jpg", false)
     let TEXT_BITCN = TEXTURE("BITCOIN", "bitcoin-g66b7a0261_1280.png", false)
+
+    let TEXT_NULL   = TEXTURE("NULL",   "//Digits//Null.jpg",  false)
+    let TEXT_ONE    = TEXTURE("ONE",    "//Digits//One.jpg",   false)
+    let TEXT_TWO    = TEXTURE("TWO",    "//Digits//Two.jpg",   false)
+    let TEXT_THREE  = TEXTURE("THREE",  "//Digits//Three.jpg", false)
+    let TEXT_FOUR   = TEXTURE("FOUR",   "//Digits//Four.jpg",  false)
+    let TEXT_FIFE   = TEXTURE("FIFE",   "//Digits//Fife.jpg",  false)
+    let TEXT_SIX    = TEXTURE("SIX",    "//Digits//Six.jpg",   false)
+    let TEXT_SEVEN  = TEXTURE("SEVEN",  "//Digits//Seven.jpg", false)
+    let TEXT_EIGHT  = TEXTURE("EIGHT",  "//Digits//Eight.jpg", false)
+    let TEXT_NINE   = TEXTURE("NINE",   "//Digits//Nine.jpg",  false)
+    let TEXT_POINT  = TEXTURE("POINT",  "//Digits//Point.jpg", false)
 
     let DefaultMaterials  =
         [ MAT_BLACK

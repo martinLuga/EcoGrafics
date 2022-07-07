@@ -266,10 +266,16 @@ module GeometricModel3D =
         override this.Center
             with get() = calcCentroid([|p1; p2; p3; p1|]) 
                 
-        override this.ToString() = "Keil" 
+        override this.ToString() = "Prisma" 
+
+        override this.TopologyType = PrimitiveTopologyType.Patch
+
+        override this.Topology = PrimitiveTopology.PatchListWith3ControlPoints
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexPrisma.CreateMeshData(p1, p2, p3, breite, color, visibility)  
+            let isTransparent = TransparenceFromVisibility(visibility)
+            let vertexData = VertexPrisma.prismaVerticesAndIndices (p1,p2,p3,breite, color, isTransparent)
+            new MeshData<Vertex>(vertexData)  
 
     // ----------------------------------------------------------------------------------------------------
     // Box
@@ -754,12 +760,20 @@ module GeometricModel3D =
     //  Tiefenkörper
     // ----------------------------------------------------------------------------------------------------
     type Tiefenkörper(name: string, polygon: Polygon, height:float32) =
-        inherit GeometryBased(name, polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f), Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
+        inherit GeometryBased(name, Vector3.Zero, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
         let mutable lowerPolygon = polygon
         let mutable upperPolygon = polygon.Copy():?> Polygon
         let mutable center = polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f)
-        do
+        do            
+            
+            lowerPolygon.NormalizePosition()
+            center <- polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f)
+            upperPolygon <- polygon.Copy():?> Polygon
             upperPolygon.Shift(height)
+
+        member this.UpperPolygon = upperPolygon
+
+        member this.LowerPolygon = lowerPolygon
 
         override this.Center = center
 

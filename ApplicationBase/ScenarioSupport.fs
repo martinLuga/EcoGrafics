@@ -35,15 +35,17 @@ module ScenarioSupport =
     let MOON_GRAVITY = new Vector3(0.0f, -1.62f, 0.0f)
     let STRONG_GRAVITY = new Vector3(0.0f, -15.00f, 0.0f)
 
+    let mutable idx = 0
     let mutable iActiveScenario  = -1
     let mutable iScenarioObjects = 2
 
-    let mutable scenarios:Dictionary<int,(unit->unit)> = new Dictionary<int,(unit->unit)>()
+    let mutable scenarios:SortedDictionary<int,(unit->unit)> = new SortedDictionary<int,(unit->unit)>()
     let mutable scenarioNames:Dictionary<string, int> = Dictionary<string, int>()
 
-    let AddScenario(idx, name,  scenario:(unit->unit)) =
+    let AddScenario(name,  scenario:(unit->unit)) =
         scenarios.Add(idx, scenario)  
         scenarioNames.Add(name, idx)  |> ignore
+        idx <- idx + 1
 
     let scenarioNamed(name) =
         let success  = scenarioNames.TryGetValue(name, &iActiveScenario)
@@ -62,10 +64,6 @@ module ScenarioSupport =
     let execScenarioNamed (name:string) =
         scenarioNamed(name)()        
     
-    let execScenario (nr:int) =
-        iActiveScenario <- nr
-        execActiveScenario()
-
     let execNextScenario () =
         iActiveScenario <- iActiveScenario + 1
         if iActiveScenario >= scenarios.Count then 
@@ -77,9 +75,6 @@ module ScenarioSupport =
         if iActiveScenario < 0 then 
             iActiveScenario <- scenarios.Count - 1
         scenarios.[iActiveScenario]()
-
-    let startScenario(nr:int) =
-        execScenario(nr)
 
     let startActiveScenario() =      
         execActiveScenario() 
