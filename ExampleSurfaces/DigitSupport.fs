@@ -59,6 +59,7 @@ module DigitSupport =
         | "7" -> TEXT_SEVEN 
         | "8" -> TEXT_EIGHT 
         | "9" -> TEXT_NINE
+        | "0" -> TEXT_NULL
         | "." -> TEXT_POINT 
         | _ ->                
             let message = "Keine Zahl " + zahl 
@@ -114,19 +115,18 @@ module DigitSupport =
                 |> List.iter(fun part -> part.Material <- MAT_SET)
 
     // ----------------------------------------------------------------------------------------------------
-    // Anzeige einer Ziffer bestehend aus einer Textur
+    // Anzeige einer Ziffer dargestellt durch eine Textur
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]  
-    type ZifferTexture(name: string, objekt:BaseObject, position:Vector3, rotation:Matrix, scale:Vector3 ) =  
-        inherit AnimatedObject (name, objekt.Display, position, rotation, scale)
+    type ZifferTexture(name: string, position:Vector3, laenge:float32, hoehe:float32, rotation:Matrix, scale:Vector3 ) =  
+        inherit AnimatedObject (name, new Display(), position, rotation, scale)
 
-        new (name, position) = ZifferTexture(name, new BaseObject(name), position, Matrix.Identity, Vector3.One)
-        new (name) = ZifferTexture(name, Vector3.Zero) 
+        new (name, position, laenge, hoehe) = ZifferTexture(name, position, laenge, hoehe, Matrix.Identity, Vector3.One)
 
         member this.Part =
             if this.Display.Parts.IsEmpty then
                 this.Display.AddPart(
-                    PART_PLANE("NUMBR", Vector3.Zero, 5.0f,  10.0f, Color.White, MAT_NONE, TEXT_EMPTY)
+                    PART_PLANE("NUMBR", Vector3.Zero, 0, laenge , hoehe, MAT_NONE, TEXT_EMPTY)
                 )
             this.Display.Parts.[0]
 
@@ -137,9 +137,46 @@ module DigitSupport =
             ()
 
         member this.ShowInitialized() =
-            this.Part.Material <- MAT_NONE
+            this.Part.Texture <- TEXT_EMPTY
 
         member this.Show(number:int) =
             let numString = number.ToString()
             this.Part.Texture <- getTexture(numString) 
+
+    // ----------------------------------------------------------------------------------------------------
+    // Anzeige mehrerer Ziffern dargestellt durch eine Textur
+    // ----------------------------------------------------------------------------------------------------
+    [<AllowNullLiteral>]  
+    type MultiZifferTexture(name:string, anz:int, position:Vector3, laenge:float32, hoehe:float32, rotation:Matrix, scale:Vector3 ) =  
+        inherit AnimatedObject (name, new Display(), position, rotation, scale)
+
+        new (name, anz, position, laenge, hoehe) = MultiZifferTexture(name, anz, position,  laenge , hoehe, Matrix.Identity, Vector3.One)
+
+        member this.Parts =
+            if this.Display.Parts.IsEmpty then
+                for i in 0..anz-1 do
+                    let partName = "NUMBR" + i.ToString()
+                    this.Display.AddPart(
+                        PART_PLANE(partName, Vector3.Zero, i, laenge, hoehe, MAT_NONE, TEXT_EMPTY)
+                    )
+            this.Display.Parts 
+
+        member this.InitFromXML(file:File) =
+            ()
+
+        member this.AsXML() =
+            ()
+
+        member this.ShowInitialized() =
+            for i in 0..anz-1 do
+                this.Digit(0, i)
+
+        member this.Show(number:int) =
+            this.ShowInitialized()
+            this.Digit(8, 0)         
+            this.Digit(4, 2)               
+
+        member this.Digit(number:int, slot:int) =
+            let numString = number.ToString()
+            this.Parts.[slot].Texture <- getTexture(numString) 
 

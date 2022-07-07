@@ -207,6 +207,10 @@ module GeometricTypes =
     // Die 4 Ecken des Quadrats, müssen in Reihenfolge im Uhrzeiger kommen
     // Indices zeigen auf Vertexe für 2 Dreiecke jeweils im Uhrzeigersinn
     // ----------------------------------------------------------------------------------------------------
+    let tex1 = new Vector2(0.0f, 0.0f)   
+    let tex2 = new Vector2(0.0f, 1.0f)   
+    let tex3 = new Vector2(1.0f, 1.0f)   
+    let tex4 = new Vector2(1.0f, 0.0f)   
     let square p1 p2 p3 p4 normal (color:Color) idx isTransparent =
         //  P4 (x,y,z +l) ------ P3 (x+l, y, z+l)
         //   |  \                |
@@ -219,10 +223,10 @@ module GeometricTypes =
         //   |                \  |
         //  P1 (x,y,z) --------- P2 (x+l, y, z)
         let mutable colr4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
-        let v1 = createVertex p1 normal colr4  (new Vector2(0.0f, 0.0f))  
-        let v2 = createVertex p2 normal colr4  (new Vector2(1.0f, 0.0f))  
-        let v3 = createVertex p3 normal colr4  (new Vector2(1.0f, 1.0f))  
-        let v4 = createVertex p4 normal colr4  (new Vector2(0.0f, 1.0f))  
+        let v1 = createVertex p1 normal colr4 tex2  
+        let v2 = createVertex p2 normal colr4 tex3 
+        let v3 = createVertex p3 normal colr4 tex4 
+        let v4 = createVertex p4 normal colr4 tex1 
         let vert = {SV1 = v1; SV2 = v2; SV3 = v3; SV4 = v4}
         let ind =  {SI1 = idx + 0; SI2 = idx + 1; SI3 = idx + 2; SI4 = idx + 3}
         (vert, ind) 

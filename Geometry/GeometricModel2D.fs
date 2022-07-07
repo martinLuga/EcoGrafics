@@ -30,7 +30,7 @@ open NTSConversions
 
 module GeometricModel2D =
 
-    type Representation = | Point| Line| Surface
+    type Representation = | Point| Line | Surface | Plane
 
     // ----------------------------------------------------------------------------------------------------
     //   Basis für alle Flächentypen
@@ -78,6 +78,10 @@ module GeometricModel2D =
         default this.CreatePoints(transparency) =
             raiseException("Not implemented")
 
+        abstract member CreateTriangls: bool->SquareType*SquareIndexType
+        default this.CreateTriangls(transparency) =
+            raiseException("Not implemented")
+
         override this.CreateVertexData(visibility: Visibility) =        
             let isTransparent = TransparenceFromVisibility(visibility)
             match this.Representation with
@@ -100,7 +104,15 @@ module GeometricModel2D =
                 this.TopologyType <- PrimitiveTopologyType.Point
                 let points = this.CreatePoints(isTransparent)
                 let vertices, indices = Construction.FromPoints(points)
-                MeshData.Create(vertices, indices )           
+                MeshData.Create(vertices, indices )  
+
+            | Representation.Plane -> 
+                this.Topology <- PrimitiveTopology.TriangleList
+                this.TopologyType <- PrimitiveTopologyType.Triangle
+                let squares, squareIndices = this.CreateTriangls(isTransparent)
+                let vertexList  =  squareVerticesClockwise squares |> ResizeArray
+                let indexList   =  squareIndicesClockwise squareIndices |> ResizeArray
+                MeshData.Create(vertexList, indexList )
 
     // ----------------------------------------------------------------------------------------------------
     // Polygon (Kontur)
@@ -181,18 +193,82 @@ module GeometricModel2D =
     // ----------------------------------------------------------------------------------------------------
     // Rechteck
     // ----------------------------------------------------------------------------------------------------
-    type Rechteck(name: string, origin: Vector3, laenge: float32, hoehe: float32, representation) =
-        inherit Geometry2D(name, [|origin|], Color.White, representation)  
-        let p1 = origin
-        let p2 = new Vector3(p1.X + laenge, 0.0f,   p1.Z )
-        let p3 = new Vector3(p1.X + laenge, 0.0f,   p1.Z + hoehe)
-        let p4 = new Vector3(p1.X ,         0.0f,   p1.Z + hoehe)
+    let normalFront  =   Vector3.UnitZ      // Front  
+    let normalBack   = - Vector3.UnitZ      // Back     
+    let normalTop    =   Vector3.UnitY      // Top       
+    let normalBottom = - Vector3.UnitY      // Bottom  
+    let normalLeft   = - Vector3.UnitX      // Left       
+    let normalRight  =   Vector3.UnitX      // Right 
 
-        new (name: string, origin: Vector3, laenge: float32, hoehe: float32, color:Color) = 
-            new Rechteck(name , origin , laenge , hoehe , Representation.Surface)
+    type Rechteck(name: string, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3, representation) =
+        inherit Geometry2D(name, [|p1|], Color.White, representation)  
+        let mutable p1=p1
+        let mutable p2=p2
+        let mutable p3=p3
+        let mutable p4=p4
+        let mutable normal=Vector3.Zero
+        let mutable center=Vector3.Zero                                     
+        let mutable laenge = 0.0f 
+        let mutable hoehe = 0.0f 
+        let mutable planeBase = "XZ"
+
+        // Konstruktoren zum Anlegen in einer Ebene
+        static member InXYPlane (name:string, origin:Vector3, back:bool, laenge:float32, hoehe:float32, representation) =          
+            let p2 = origin + (Vector3.Right * laenge)
+            let p3 = origin + (Vector3.Right * laenge) + (Vector3.Up * hoehe)
+            let p4 = origin + (Vector3.Up * hoehe)
+            let rechteck = new Rechteck(name, origin, p2, p3, p4, representation )
+            rechteck.Laenge <- laenge
+            rechteck.Hoehe <- hoehe
+            rechteck.setCenter(Vector3(origin.X + laenge / 2.0f, origin.Y + hoehe / 2.0f , origin.Z))
+            rechteck.Normal <- if back then normalBack else normalFront 
+            rechteck.Base <- "XY"  
+            rechteck
+
+        static member InYZPlane (name:string, origin:Vector3, back:bool, laenge:float32, hoehe:float32, representation ) =  
+            let p2 = origin + (Vector3.ForwardLH * laenge)
+            let p3 = origin + (Vector3.ForwardLH * laenge) + (Vector3.Up * hoehe)
+            let p4 = origin + (Vector3.Up * hoehe)
+            let rechteck = new Rechteck(name, origin, p2, p3, p4, representation )
+            rechteck.Laenge <- laenge
+            rechteck.setCenter(Vector3(origin.X, origin.Y  + laenge / 2.0f , origin.Z + hoehe / 2.0f))
+            rechteck.Normal <- if back then normalRight else normalLeft  
+            rechteck.Base <- "YZ" 
+            rechteck
+        
+        static member InXZPlane (name:string, origin:Vector3, back:bool, laenge:float32, hoehe:float32, representation ) =  
+            let p2 = origin + (Vector3.Right * laenge)
+            let p3 = origin + (Vector3.Right * laenge) + (Vector3.ForwardLH * hoehe)
+            let p4 = origin + (Vector3.ForwardLH * hoehe)
+            let rechteck = new Rechteck(name, origin, p2, p3, p4, representation )
+            rechteck.Laenge <- laenge
+            rechteck.Hoehe <- hoehe
+            rechteck.setCenter(Vector3(origin.X + laenge / 2.0f, origin.Y , origin.Z + hoehe / 2.0f))
+            rechteck.Normal <- if back then normalBottom else normalTop
+            rechteck.Base <- "XZ" 
+            rechteck
+
+        member this.Laenge
+            with get() = laenge
+            and set(value) = laenge <- value
+
+        member this.Hoehe
+            with get() = hoehe
+            and set(value) = hoehe <- value
+
+        member this.setCenter(aCenter) =
+            center <- aCenter
+
+        member this.Normal 
+            with get() = normal
+            and set(value) = normal <- value 
+
+        member this.Base 
+            with get() = planeBase
+            and set(value) = planeBase <- value
 
         override this.Center =         
-            Vector3(origin.X + laenge / 2.0f, 0.0f, origin.Z + hoehe / 2.0f)
+            Vector3(p1.X + laenge / 2.0f, 0.0f, p1.Z + hoehe / 2.0f)
 
         override this.ToString() = "Rechteck:" + this.Name + " l " + laenge.ToString() + " h " + hoehe.ToString() 
 
@@ -210,6 +286,10 @@ module GeometricModel2D =
 
         override this.CreatePoints(transparency) =
             let result = Polygon2D.CreatePoints(this.Points, Color.White, transparency)
+            result
+
+        override this.CreateTriangls(transparency) =
+            let result = Square2D.CreateTriangles( p1, p2, p3, p4, this.Normal, transparency)  
             result
 
     type Geometry2D with

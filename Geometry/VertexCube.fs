@@ -31,7 +31,7 @@ module VertexCube =
     // 5,6,7,8 sind Backside
     let cube (ursprung:Vector3) laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent = 
         
-        // Front im Gegenuhrzeigersinn
+        // Front im Uhrzeigersinn
         let p1 = new Vector3(ursprung.X,        ursprung.Y,         ursprung.Z)
         let p2 = new Vector3(ursprung.X,        ursprung.Y + hoehe, ursprung.Z)
         let p3 = new Vector3(ursprung.X+laenge, ursprung.Y + hoehe, ursprung.Z)
@@ -71,9 +71,3 @@ module VertexCube =
 
     let cubeVerticesUni (ursprung:Vector3) seite hoehe breite (color:Color) isTransparent =
         cubeVerticesAndIndices ursprung seite hoehe breite color color color color color color isTransparent
-    
-    let CreateMeshData(ursprung:Vector3,laenge:float32, hoehe:float32, breite:float32, colorFront:Color, colorRight:Color, colorBack:Color, colorLeft:Color, colorTop:Color, colorBottom:Color, visibility:Visibility) =
-        let isTransparent = TransparenceFromVisibility(visibility)
-        new MeshData<Vertex>(   
-            cubeVerticesAndIndices ursprung laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent
-        )  

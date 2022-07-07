@@ -8,11 +8,10 @@
 
 open SharpDX 
  
+open Geometry.GeometricModel2D  
 open Geometry.GeometricModel3D  
  
 open Base.ModelSupport
-
-
 open Base.MaterialsAndTextures  
 
 open Base.ShaderSupport
@@ -64,17 +63,13 @@ module Surfaces =
     // ----------------------------------------------------------------------------------------------------
     // SURFACE
     // ----------------------------------------------------------------------------------------------------
-    let PART_PLANE(name, ursprung:Vector3, length, height, color:Color, mat:Material, text:Texture) = 
-        let p1 = ursprung
-        let p2 = Vector3(ursprung.X + length, ursprung.Y,           ursprung.Z)
-        let p3 = Vector3(ursprung.X + length, ursprung.Y+height,    ursprung.Z)
-        let p4 = Vector3(ursprung.X         , ursprung.Y+height,    ursprung.Z)
+    let PART_PLANE(name, ursprung:Vector3, idx:int, length, height, mat:Material, text:Texture) = 
+        let origin = Vector3 (ursprung.X + float32 idx * (length + 0.5f), ursprung.Y, ursprung.Z)
         new Part(
             name= name,
-            shape = Fläche(name, p1, p2, p3, p4, color, 1.0f),
+            shape = Rechteck.InXYPlane(name, origin, false, length, height, Representation.Plane), 
             material=mat,
-            texture=text,
-            shaders  = ShaderConfiguration.CreateForTesselation()
+            texture=text
         )
 
     let PART_CUBE(name, ursprung, seite, color:Color, mat:Material, text:Texture) = 

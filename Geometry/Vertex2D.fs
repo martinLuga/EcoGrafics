@@ -110,8 +110,8 @@ module Square2D =
         lines.Add(p4, p1)
         lines 
 
-    let CreateTriangles(p1, p2, p3, p4) =
-         square p1  p2  p3  p4  -Vector3.UnitY Color.White 0 false
+    let CreateTriangles(p1, p2, p3, p4, normal, transparent) =
+         square p1  p2  p3  p4 normal Color.White 0 transparent
 
 // ----------------------------------------------------------------------------------------------------
 // Zusammenführen  

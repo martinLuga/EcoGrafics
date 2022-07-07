@@ -223,7 +223,9 @@ module GeometricModel3D =
             with get () = Vector3( this.Origin.X +  laenge,  this.Origin.Y + hoehe,  this.Origin.Z + breite)
 
         override this.CreateVertexData(visibility:Visibility) =
-            VertexCube.CreateMeshData(origin, laenge, hoehe, breite, colorFront, colorRight, colorBack, colorLeft, colorTop, colorBottom, visibility)  
+            let isTransparent = TransparenceFromVisibility(visibility)
+            let vertices, indices = VertexCube.cubeVerticesAndIndices origin laenge hoehe breite colorFront colorRight colorBack colorLeft colorTop colorBottom isTransparent 
+            new MeshData<Vertex>(vertices, indices)  
 
     // ----------------------------------------------------------------------------------------------------
     // Prisma
