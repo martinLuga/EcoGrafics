@@ -110,6 +110,9 @@ module ObjectBase =
         abstract member Moveable : bool
         default this.Moveable = false
 
+        abstract member Physical : bool
+        default this.Physical = false
+
         abstract member isCenter: unit -> bool
         default this.isCenter() =
             false

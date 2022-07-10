@@ -324,7 +324,7 @@ module TestScenariosCommon =
                                 color=Color.Black
                             ),
                             material=MAT_DSGRAY,
-                            texture=TEXT_WALL
+                            texture=TEXT_GROUND
                         )
                     ]
                 ),

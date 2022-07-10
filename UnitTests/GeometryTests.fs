@@ -15,7 +15,7 @@ open SharpDX
 open Base.LoggingSupport 
 open Base.QuaderSupport
 
-open Geometry.GeometricModel
+open Geometry.GeometricModel3D
 
 module GeometrySupport = 
 

@@ -22,7 +22,7 @@ open SharpDX.DXGI
 open Base.LoggingSupport
 open Base.ShaderSupport
 open Base.VertexDefs
-
+open Base.ModelSupport
 open DirectX.GraficUtils
 open DirectX.BitmapSupport
 
@@ -88,7 +88,6 @@ module MyGPU =
 
         // Resources     
         let mutable textures = new Dictionary<string, int>()
-        let mutable textureIdx = 0
         let mutable textureHeapWrapper:HeapWrapper = null
         let mutable textureHeapWrapperCube:HeapWrapper = null
         let mutable bitmapManager = BitmapManager(device)  
@@ -317,37 +316,31 @@ module MyGPU =
         member this.FinalizeMeshCache() =
             meshCache.createBuffers(directRecorder.CommandList)
 
-        member this.HasCube
-            with get() = hasCube
-            and set(value) = hasCube <- value
-
         // ----------------------------------------------------------------------------------------------------
         // Texture
         // ----------------------------------------------------------------------------------------------------
-        member this.InstallTexture(textureName:string, textureFilename:string, isCube:bool, data:byte[], mimeType:string) = 
-            if not (textures.ContainsKey(textureName)) && not (textureName = "") then
-                this.HasCube <- isCube
-                bitmapManager.IsCube <- isCube
-                if data.Length > 0 then
-                    bitmapManager.InitFromByteArray(mimeType, data) 
+        member this.InstallTexture(texture:Texture) = 
+
+            if texture.notEmpty && not (textures.ContainsKey(texture.Name)) then
+                bitmapManager.IsCube <- texture.IsCube
+                if texture.Data.Length > 0 then
+                    bitmapManager.InitFromByteArray(texture.MimeType, texture.Data) 
                 else 
-                    bitmapManager.InitFromFileSystem(textureFilename)
+                    bitmapManager.InitFromFileSystem(texture.Path)
                     
                 bitmapManager.CreateTexture()
 
-                this.AddTexture(textureName, bitmapManager.Resource, this.HasCube, bitmapManager.FromArray)
+                this.AddTexture(texture, bitmapManager )
 
-        member this.AddTexture(textureName:string,  resource:Resource, isCube:bool, fromArray:bool) =
-            if not (textures.ContainsKey(textureName)) && not (textureName = "") then
-                if this.HasCube then
-                    textureHeapWrapperCube.AddResource(resource, isCube, fromArray)
-                else 
-                    textureHeapWrapper.AddResource(resource, isCube, false)
-                textures.Add(textureName, textureIdx)
-                textureIdx <- textureIdx + 1
+        member this.AddTexture(texture:Texture, bitmapManager:BitmapManager) =
+            if texture.IsCube then
+                textureHeapWrapperCube.AddResource(bitmapManager.Resource, texture.Idx, true, bitmapManager.FromArray)
+            else 
+                textureHeapWrapper.AddResource(bitmapManager.Resource, texture.Idx, false, false)
+
+            textures.Add(texture.Name, texture.Idx)
 
         member this.ResetTextures() =
-            textureIdx <- 0
             textures.Clear()
             textureHeapWrapperCube.Reset()
             textureHeapWrapper.Reset()
@@ -470,7 +463,7 @@ module MyGPU =
         //
         // DrawPerObject mit dem Pipelinestate 
         //
-        member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, textureName:string, textureIsCube) = 
+        member this.DrawPerObject(objectIdx, geometryName:string, topology:PrimitiveTopology, materialIdx, texture:Texture) = 
             if frameResources.Count > 0 then
 
                 this.CurrFrameResource.Recorder.PipelineState <- pipelineProvider.GetCurrentPipelineState()         
@@ -488,12 +481,11 @@ module MyGPU =
                 commandList.SetGraphicsRootConstantBufferView(ROP_IDX_MATERIAL, this.CurrFrameResource.MaterialCB.ElementAdress(materialIdx)) 
 
                 // Textur (wenn vorhanden)    
-                if textureName <> "" then  
-                    if textureIsCube then                    
-                        commandList.SetGraphicsRootDescriptorTable(ROP_IDX_CUBE, textureHeapWrapperCube.GetGpuHandle(0)) 
+                if texture.notEmpty then  
+                    if texture.IsCube then                    
+                        commandList.SetGraphicsRootDescriptorTable(ROP_IDX_CUBE, textureHeapWrapperCube.GetGpuHandle(texture.Idx)) 
                     else
-                        let textureIdx = textures.Item(textureName)
-                        commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEXTURE, textureHeapWrapper.GetGpuHandle(textureIdx)) 
+                        commandList.SetGraphicsRootDescriptorTable(ROP_IDX_TEXTURE, textureHeapWrapper.GetGpuHandle(texture.Idx)) 
             
                 commandList.DrawIndexedInstanced(meshCache.getIndexCount(geometryName), 1, 0, 0, 0) 
 

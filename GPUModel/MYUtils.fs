@@ -102,7 +102,6 @@ module MYUtils =
     [<AllowNullLiteralAttribute>]
     type HeapWrapper(device:Device, heap:DescriptorHeap) =
         let mutable device=device
-        let mutable index=0
         let mutable cbvSrvUavDescriptorSize=0
         let mutable hDescriptor = CpuDescriptorHandle()
         do  
@@ -113,23 +112,17 @@ module MYUtils =
             with get() = hDescriptor
             and set(value) = hDescriptor <- value
 
-        member this.Reset() =
-            index<-0
+        member this.Reset() = 
             hDescriptor <- heap.CPUDescriptorHandleForHeapStart
 
-        member this.Increment() =
-            hDescriptor <- hDescriptor + cbvSrvUavDescriptorSize
-            index <- index + 1
-
-        member this.Index
-            with get() = index
+        member this.DescHandle(index) =
+            hDescriptor + index * cbvSrvUavDescriptorSize 
 
         member this.GetGpuHandle(index) =
             heap.GPUDescriptorHandleForHeapStart + index * cbvSrvUavDescriptorSize
 
-        member this.AddResource(resource:Resource, isCube:bool, fromArray:bool) =
-            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube, fromArray)), hDescriptor)
-            this.Increment()
+        member this.AddResource(resource:Resource, index, isCube:bool, fromArray:bool) =
+            device.CreateShaderResourceView(resource, Nullable (textureDescription(resource, isCube, fromArray)), this.DescHandle(index))
 
     [<AllowNullLiteralAttribute>]
     type ObjectControlblock (StartVertices:int, StartIndices:int, EndVertices:int, EndIndices:int, IndexCount:int, Topology:PrimitiveTopology) =

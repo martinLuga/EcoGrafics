@@ -8,10 +8,13 @@
 
 open SharpDX
 open System.IO
+open log4net
 open Base.ModelSupport
 open Base.ObjectBase
 open Base.MaterialsAndTextures
+open Base.LoggingSupport
 open Surfaces
+
 
 // ----------------------------------------------------------------------------------------------------
 // ZifferAnzeige mit Hilfe von Segmenten
@@ -19,6 +22,10 @@ open Surfaces
 // ----------------------------------------------------------------------------------------------------
 
 module DigitSupport = 
+
+    let logger = LogManager.GetLogger("DigitSupport")
+    let logDebug = Debug(logger)
+    let logInfo  = Info(logger) 
 
     let MAT_BACKGROUND  = MAT_BLACK
     let MAT_NOT_SET     = MAT_BACKGROUND
@@ -149,8 +156,12 @@ module DigitSupport =
     [<AllowNullLiteral>]  
     type MultiZifferTexture(name:string, anz:int, position:Vector3, laenge:float32, hoehe:float32, rotation:Matrix, scale:Vector3 ) =  
         inherit AnimatedObject (name, new Display(), position, rotation, scale)
+        let mutable count = 0
 
         new (name, anz, position, laenge, hoehe) = MultiZifferTexture(name, anz, position,  laenge , hoehe, Matrix.Identity, Vector3.One)
+
+        member this.Count 
+            with get() = count
 
         member this.Parts =
             if this.Display.Parts.IsEmpty then
@@ -167,16 +178,30 @@ module DigitSupport =
         member this.AsXML() =
             ()
 
-        member this.ShowInitialized() =
+        member this.ResetCounter() =
             for i in 0..anz-1 do
                 this.Digit(0, i)
+        
+        member this.SetCount(counter:int) =
+            count <- counter
+            this.ShowCount()
+
+        member this.ShowCount() =
+            this.ResetCounter()
+            let output = sprintf "%04i" count   
+            for i in 0..anz-1 do
+                this.Digit(int(output.Substring(i,1)), i) 
 
         member this.Show(number:int) =
-            this.ShowInitialized()
-            this.Digit(8, 0)         
-            this.Digit(4, 2)               
+            this.ResetCounter()
+            this.Digit(number, anz-1)          
 
         member this.Digit(number:int, slot:int) =
             let numString = number.ToString()
             this.Parts.[slot].Texture <- getTexture(numString) 
 
+        member this.AddCounter(addTo:int) =
+            count <- count + addTo
+            logDebug(this.Name + " ADD " + addTo.ToString()) 
+            logDebug(this.Name + " COUNT " + count.ToString()) 
+            this.ShowCount()

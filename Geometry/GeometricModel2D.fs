@@ -40,12 +40,18 @@ module GeometricModel2D =
     type Geometry2D(name: string, points: Vector3 [], color: Color, representation:Representation) =
         inherit GeometryBased(name, points.[0], color, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One)
         let mutable representation = representation
+        let mutable _points:Vector3[] = [||]
 
         new (name, geo:NTSMultiPoint, representation) = new Geometry2D (name, FromNTSMultiPoints(geo), Color.White, representation)
         new (name, geo:NTSMultiPoint, color) = new Geometry2D (name, FromNTSMultiPoints(geo),color , Representation.Surface)
         new (name, geo:NTSMultiPoint) = new Geometry2D (name, FromNTSMultiPoints(geo), Color.White, Representation.Surface)
 
         abstract member Points: Vector3 []
+            with get, set
+             
+        default this.Points  
+            with get() = _points
+            and set(value) = _points <- value
 
         override this.Center =
             try
@@ -56,6 +62,13 @@ module GeometricModel2D =
 
         abstract member Copy: Unit -> Geometry2D
         default this.Copy() = this
+
+        abstract member Shift: float32 -> Unit 
+        default this.Shift(s:float32) = 
+            this.Points <- shiftUp(this.Points, s) |> Seq.toArray
+
+        abstract member NormalizePosition:unit->Unit
+        default this.NormalizePosition() = ()
         
         member this.Representation
             with get() = representation
@@ -125,7 +138,7 @@ module GeometricModel2D =
         new (name: string, points:Vector3[]) = new Polygon (name, closePolygon(points), Representation.Surface)
         new () = new Polygon ("DUMMY", [||],  Representation.Surface)
 
-        member this.Shift(height) = 
+        override this.Shift(height) = 
             points <- shiftUp(points, height) |> Seq.toArray
  
         override this.Points = points
@@ -133,7 +146,7 @@ module GeometricModel2D =
         override this.Copy() =
             new Polygon(this.Name + "Copy", points, representation)
 
-        member this.NormalizePosition() =             
+        override this.NormalizePosition() =             
              let min = computeMinimumXYZ(points|> Seq.toList) 
              for i = 0 to points.Length - 1 do
                  let mutable resized = points.[i]

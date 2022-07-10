@@ -761,16 +761,16 @@ module GeometricModel3D =
     // ----------------------------------------------------------------------------------------------------
     //  Tiefenkörper
     // ----------------------------------------------------------------------------------------------------
-    type Tiefenkörper(name: string, polygon: Polygon, height:float32) =
+    type Tiefenkörper(name: string, polygon: Geometry2D, height:float32) =
         inherit GeometryBased(name, Vector3.Zero, Color.White, DEFAULT_TESSELATION, DEFAULT_RASTER, Vector3.One) 
         let mutable lowerPolygon = polygon
-        let mutable upperPolygon = polygon.Copy():?> Polygon
+        let mutable upperPolygon = polygon.Copy() 
         let mutable center = polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f)
         do            
             
             lowerPolygon.NormalizePosition()
             center <- polygon.Center + Vector3(0.0f, height / 2.0f, 0.0f)
-            upperPolygon <- polygon.Copy():?> Polygon
+            upperPolygon <- polygon.Copy() 
             upperPolygon.Shift(height)
 
         member this.UpperPolygon = upperPolygon

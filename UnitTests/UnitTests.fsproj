@@ -69,6 +69,12 @@
     <None Include="shaders\VS.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="sound\matrix_whoa3.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sound\CoinIn.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="textures\bricks.dds" />
     <Content Include="textures\bricks2.dds" />
     <Content Include="textures\bricks2_nmap.dds" />

@@ -348,6 +348,22 @@ module GraficController =
                 |> List.map (fun disp -> disp.Display.Parts.Length)
                 |> List.reduce (fun len1 len2 -> len1 + len2)
 
+        member this.ObjectParts = 
+            objects.Values
+                |> Seq.collect(fun obj -> obj.Display.Parts |> List.toSeq) 
+
+        member this.ObjectMaterials = 
+            this.ObjectParts                    
+                |> Seq.map(fun part -> part.Material)
+                |> Seq.distinctBy(fun mat -> mat.Name)
+                |> Seq.toList
+
+        member this.ObjectTextures = 
+            this.ObjectParts                   
+                |> Seq.map(fun part -> part.Texture)
+                |> Seq.distinctBy(fun text -> text.Name)
+                |> Seq.toList
+
         // ----------------------------------------------------------------------------------------------------
         // Controller verwalten
         // ----------------------------------------------------------------------------------------------------
@@ -362,10 +378,10 @@ module GraficController =
             myGpu.StartInstall()
 
             this.InstallMaterials(DefaultMaterials)
-
-            for object in objects.Values do  
-                for part in object.Display.Parts do                  
-                    this.addMaterial(part.Material)
+            this.InstallMaterials(this.ObjectMaterials)
+            
+            this.InstallTextures(DefaultTextures)
+            this.InstallTextures(this.ObjectTextures)
 
             myGpu.PrepareInstall(this.AnzahlParts(objects.Values |>Seq.toList), Material.MAT_COUNT) 
 
@@ -384,19 +400,18 @@ module GraficController =
         member this.InstallMaterials(materials:Material list) =
             for material in materials do
                 this.addMaterial(material)
+
+        member this.InstallTextures(textures:Texture list) =
+            for texture in textures do
+                if texture.notEmpty then
+                    myGpu.InstallTexture(texture)
         
         member this.InstallPart(part: Part) =
             if  myGpu.hasMesh(part.Shape.Name)  then
                 ()
             else
                 let meshData = part.Shape.CreateVertexData(part.Visibility)
-                myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology)
-            
-            if part.Texture <> null && (not part.Texture.isEmpty)  then
-                myGpu.InstallTexture(part.Texture.Name, part.Texture.Path, part.Texture.IsCube, part.Texture.Data, part.Texture.MimeType)  
-
-        member this.addTexture(texture:Texture)=
-            myGpu.InstallTexture(texture.Name, texture.Path, texture.IsCube, texture.Data, texture.MimeType)  
+                myGpu.InstallMesh(part.Shape.Name, meshData.Vertices, meshData.Indices, part.Shape.Topology)            
 
         // ---------------------------------------------------------------------------------------------------- 
         // Alle Meshes erneut schreiben
@@ -591,7 +606,7 @@ module GraficController =
                 part.TextureIsCube()
             )
 
-            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, part.Material.IDX, part.TextureName(), part.TextureIsCube())
+            myGpu.DrawPerObject(idx, part.Shape.Name, part.Shape.Topology, part.Material.IDX, part.Texture)
 
         override this.ToString() =
             "GraficController-" + graficWindow.ToString()

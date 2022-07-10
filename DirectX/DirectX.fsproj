@@ -13,6 +13,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SoundSupport.fs" />
     <Compile Include="TextRendering.fs" />
     <Compile Include="BitmapSupport.fs" />
     <Compile Include="D3DUtilities.fs" />
@@ -28,6 +29,7 @@
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+    <PackageReference Include="SharpDX.XAudio2" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />

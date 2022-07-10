@@ -20,6 +20,8 @@ open GraficBase.GraficWindow
 
 open GPUModel.MyGPU
 
+open DirectX.SoundSupport
+
 open Initializations
 
 module Hardware = 
@@ -55,4 +57,27 @@ module Hardware =
                 let text = "***Adapter: " +  desc.Description +  "\n"  
                 logger.Info(text)
                 LogAdapterOutputs(adapter)
+
+    [<TestFixture>]
+    type XAudio2() = 
+
+        [<DefaultValue>] val mutable logger : ILog
+        [<DefaultValue>] val mutable graficWindow : MyWindow
+        [<DefaultValue>] val mutable myGpu:MasterGPU  
+        [<DefaultValue>] val mutable debugController:Debug1 
+        [<DefaultValue>] val mutable wavePlayer:WavePlayer
+
+        [<SetUp>]
+        member this.Init() =
+            this.logger <- getLogger("XAudio2")
+            this.logger.Info(" ")
+            this.wavePlayer <- new WavePlayer()
+
+        [<Test>]
+        member this.PlayWave() =
+            PLaySoundFile("sound/CoinIn.wav")
+
+        [<Test>]
+        member this.PlayWhoa() =
+            PLaySoundFile("sound/matrix_whoa3.wav")
 

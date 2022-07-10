@@ -164,7 +164,7 @@ module AdobeSurfaces =
             "ADOBE1",
             shape =new Quader("ADOBE1", 3.0f, 4.0f, 4.0f, Color.Brown),
             material = MAT_GREEN,
-            texture = Texture(name = "texture_140", fileName = "texture_140.jpg", pathName = "")
+            texture  = TEXT_HILL
         ) 
  
     let PART_ADOBE2 =
@@ -244,7 +244,7 @@ module KorpusSurfaces =
 // ----------------------------------------------------------------------------------------------------  
 //  Tesselated objects test
 // ----------------------------------------------------------------------------------------------------   
-module GroundPlaneSurfaces = 
+module GroundSurfaces = 
 
     let PART_FRONT =
         new Part(

@@ -101,29 +101,38 @@ module ModelSupport =
 
     type TesselationMode = 
         TRI | QUAD | BEZIER | NONE
-
+    
+    let mutable textureIndex = new Dictionary<string, int>()
     [<AllowNullLiteral>]
-    type Texture(name: string, fileName:string, pathName:string, idx:int, _data:byte[], _mimeType, isCube:bool) =
+    type Texture(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, isCube:bool) =
         let mutable name=name
         let mutable mimeType=_mimeType
-        let mutable idx=idx
+        let mutable idx=0
         let mutable fileName=fileName
         let mutable path = pathName 
         let mutable isCube = isCube 
         let mutable data:byte[] = _data
-        
-        new(name, fileName, pathName, isCube, data, mimeType) = Texture(name, fileName, pathName, 0, data, mimeType, isCube)
-        new(name, fileName, pathName, isCube, data) = Texture(name, fileName, pathName, 0, data, "", isCube)
-        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, 0, [||], "", isCube) 
-        new(name, fileName, pathName) = Texture(name, fileName, pathName, false)
-        new(name, mimeType, data) = Texture(name, "", "", 0, data, mimeType, false)   
-        new(name, data) = Texture(name, "", "", 0, data, "", false)  
-        new(name, idx) = Texture(name, "", "", idx, [||], "", false)  
-        new(name) = Texture(name, 0)  
-        new() = Texture("", "", "", 0, [||], "", false)  
 
-        member this.Name = name
+        static let mutable text_count = 0 
+
+        do  
+            if not (textureIndex.ContainsKey(name)) then 
+                textureIndex.Add(name, text_count)
+                idx <- text_count
+                text_count <- text_count + 1
+            else 
+                idx <- textureIndex.Item(name)
         
+        new(name, fileName, pathName, data, mimeType) = Texture(name, fileName, pathName, data, mimeType, false)
+        new(name, fileName, pathName, data, isCube) = Texture(name, fileName, pathName, data, "", isCube)
+        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, [||], "", isCube) 
+        new(name, fileName, pathName) = Texture(name, fileName, pathName, false)
+        new(name, mimeType, data) = Texture(name, "", "",  data, mimeType, false)   
+        new(name, data) = Texture(name, "", "",  data, "", false)   
+        new(name) = Texture(name )  
+        new() = Texture("", "", "", [||], "", false)  
+
+        member this.Name = name        
         member this.Idx = idx
         member this.MimeType = mimeType
         member this.FileName = fileName
@@ -138,6 +147,8 @@ module ModelSupport =
             and set(value) = data <- value 
 
         member this.isEmpty = this.Name = "" 
+
+        member this.notEmpty = this.Name <> ""
 
         override this.ToString() = "Texture " + (if this.isEmpty then " Empty " else this.Name)
     
