@@ -162,6 +162,7 @@ module MaterialsAndTextures =
     let TEXT_BUMPER     = TEXTURE("BUMBER", "Bumper-100.jpg", false)
     let TEXT_FLPG       = TEXTURE("FLIPPERGROUND", "texture_140.jpg", false)
     let TEXT_BITCN      = TEXTURE("BITCOIN", "bitcoin-g66b7a0261_1280.png", false)
+    let TEXT_BACKSIDE   = TEXTURE("BACKSIDE", "Backside.jpg", false)
 
     let TEXT_NULL       = TEXTURE("NULL",   "//Digits//Null.jpg",  false)
     let TEXT_ONE        = TEXTURE("ONE",    "//Digits//One.jpg",   false)

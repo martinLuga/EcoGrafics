@@ -173,6 +173,15 @@ module GeometricModel3D =
             with get () = breite
             and set (value) = breite <- value
 
+        override this.Points =
+            [ p1
+              p2
+              p3
+              p4
+              p5
+              p6
+              p7
+              p8 ]
         member this.ColorFront = colorFront
         member this.ColorRight = colorRight
         member this.ColorBack = colorBack

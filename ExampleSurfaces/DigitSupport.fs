@@ -168,33 +168,18 @@ module DigitSupport =
                 for i in 0..anz-1 do
                     let partName = "NUMBR" + i.ToString()
                     this.Display.AddPart(
-                        PART_PLANE(partName, Vector3.Zero, i, laenge, hoehe, MAT_NONE, TEXT_EMPTY)
+                        PART_PLANE(partName, Vector3.Zero, i, laenge, hoehe, MAT_BLACK, TEXT_EMPTY)
                     )
             this.Display.Parts 
+       
+        member this.Initialize() =
+            count <- 0
+            this.Update()
 
-        member this.InitFromXML(file:File) =
-            ()
-
-        member this.AsXML() =
-            ()
-
-        member this.ResetCounter() =
-            for i in 0..anz-1 do
-                this.Digit(0, i)
-        
-        member this.SetCount(counter:int) =
-            count <- counter
-            this.ShowCount()
-
-        member this.ShowCount() =
-            this.ResetCounter()
+        member this.Update() =
             let output = sprintf "%04i" count   
             for i in 0..anz-1 do
                 this.Digit(int(output.Substring(i,1)), i) 
-
-        member this.Show(number:int) =
-            this.ResetCounter()
-            this.Digit(number, anz-1)          
 
         member this.Digit(number:int, slot:int) =
             let numString = number.ToString()
@@ -204,4 +189,4 @@ module DigitSupport =
             count <- count + addTo
             logDebug(this.Name + " ADD " + addTo.ToString()) 
             logDebug(this.Name + " COUNT " + count.ToString()) 
-            this.ShowCount()
+            this.Update()

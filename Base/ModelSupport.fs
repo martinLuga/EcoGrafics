@@ -305,7 +305,8 @@ module ModelSupport =
 
         abstract member CreateVertexData : Visibility -> MeshData<Vertex> 
 
-        member this.Points = 
+        abstract member Points:seq<Vector3>
+        default this.Points = 
             vertices |> Seq.map (fun v -> v.Position)
 
         member this.Name
