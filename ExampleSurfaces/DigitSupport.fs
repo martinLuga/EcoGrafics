@@ -177,7 +177,8 @@ module DigitSupport =
             this.Update()
 
         member this.Update() =
-            let output = sprintf "%04i" count   
+            let format = "D" + anz.ToString() 
+            let output = count.ToString(format)
             for i in 0..anz-1 do
                 this.Digit(int(output.Substring(i,1)), i) 
 

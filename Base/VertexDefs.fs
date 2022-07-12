@@ -71,8 +71,8 @@ module VertexDefs =
             member this.Shifted(amount:Vector3) =
                 this.Position <- this.Position + amount
                 this
-            member this.Resized (factor:float32) =
-                this.Position <- this.Position * factor
+            member this.Resized (scale:Vector3) =
+                this.Position <- this.Position * scale
                 this
         end
 

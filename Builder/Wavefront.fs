@@ -203,8 +203,7 @@ module Wavefront =
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------    
     type WavefrontBuilder(name, fileName: string) =
-        let mutable name = name 
-        let mutable fileName = fileName 
+        inherit ShapeBuilder(name, fileName)
         let mutable groupName = ""
         let mutable parts : List<Part> = new List<Part>()
         let mutable part : Part = null
@@ -278,7 +277,7 @@ module Wavefront =
             defaultMaterial <- material
             actualTexture <- texture
         
-            fileName <- fileName
+            this.FileName <- fileName
             visibility <- _visibility  
             quality <- _quality
             shaders <- _shaders

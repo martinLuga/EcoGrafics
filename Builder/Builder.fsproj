@@ -22,7 +22,6 @@
     <Compile Include="Wavefront.fs" />
     <Compile Include="Segment.fs" />
     <Compile Include="Builder.fs" />
-    <Compile Include="ModelExtension.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspose.SVG" Version="22.6.0" />

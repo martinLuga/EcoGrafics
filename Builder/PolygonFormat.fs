@@ -63,11 +63,8 @@ module PolygonFormat =
     // 3. Ein Part erstellen
     // ----------------------------------------------------------------------------------------------------    
     type PolygonBuilder(name:String, fileName:String) =
-        let mutable name = name
-        let mutable fileName = fileName
+        inherit ShapeBuilder(name, fileName)
         let mutable kontur = new List<Vector3>()
-        let mutable parts : List<Part> = new List<Part>()
-        let mutable part : Part = null
         let mutable shape : Shape = null 
         let mutable size = Vector3.One 
 
@@ -115,7 +112,7 @@ module PolygonFormat =
             // ----------------------------------------------------------------------------------------------------
             //  Erzeugen des Part
             // ----------------------------------------------------------------------------------------------------
-            part <- 
+            this.Part <- 
                 new Part(
                     name,
                     shape,
@@ -127,15 +124,12 @@ module PolygonFormat =
 
             match augmentation with
             | Augmentation.Hilite ->
-                let hp =  createHilitePart(part) 
-                parts.Add(part)
-                parts.Add(hp)                
+                let hp =  createHilitePart(this.Part) 
+                this.Parts.Add(this.Part)
+                this.Parts.Add(hp)                
             | Augmentation.ShowCenter ->
-                let hp =  createCenterPart(part) 
-                parts.Add(hp)
-                parts.Add(part)
+                let hp =  createCenterPart(this.Part) 
+                this.Parts.Add(hp)
+                this.Parts.Add(this.Part)
             | _ ->
-                parts.Add(part)
-
-        member this.Parts =
-            parts |> Seq.toList
+                this.Parts.Add(this.Part)

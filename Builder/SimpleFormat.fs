@@ -64,25 +64,17 @@ module SimpleFormat =
     // 3. Ein Part erstellen
     // ----------------------------------------------------------------------------------------------------    
     type SimpleBuilder(name:String, fileName:String) =
-        let mutable name = name
-        let mutable fileName = fileName
-        let mutable vertices = new List<Vertex>()
-        let mutable parts : List<Part> = new List<Part>()
-        let mutable part : Part = null
-        let mutable indices = new List<int>()
+        inherit ShapeBuilder(name, fileName)
         let mutable isTransparent = false
-        let mutable augmentation = Augmentation.None
-        let mutable size = Vector3.One
         let mutable actualMaterial : Material = null
         let mutable actualTexture : Texture = null
+
         // ----------------------------------------------------------------------------------------------------
         //  Erzeugen der Meshdaten für eine Menge von Punkten
         // ----------------------------------------------------------------------------------------------------
         member this. Build(material:Material, texture:Texture, sizeFactor: Vector3, visibility:Visibility, augment:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
 
-            augmentation <- augment 
-
-            size <- sizeFactor
+            this.Size <- sizeFactor
 
             actualMaterial <- material
 
@@ -120,18 +112,17 @@ module SimpleFormat =
                             Convert.ToSingle(vals.[0].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[1].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[2].Trim(), CultureInfo.InvariantCulture)
-                        ) * size
+                        ) 
                     let norm =
                         Vector3(
                             Convert.ToSingle(vals.[3].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[4].Trim(), CultureInfo.InvariantCulture),
                             Convert.ToSingle(vals.[5].Trim(), CultureInfo.InvariantCulture)
                         ) 
-                    vertices.Add(
-                        let color = Color.White
-                        let mutable color4 = if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
-                        createVertex pos norm color4 cv2                     
-                    )
+                    let vertex:Vertex = createVertex pos norm (transparentColor4(Color.White, isTransparent)) cv2 
+
+                    this.Vertices.Add(vertex)    
+                    
             advanceLines()
 
             // ----------------------------------------------------------------------------------------------------
@@ -142,75 +133,50 @@ module SimpleFormat =
 
                 if input <> null then
                     let m = input.Trim().Split(' ')
-                    indices.Add(Convert.ToInt32(m.[0].Trim()))
-                    indices.Add(Convert.ToInt32(m.[1].Trim()))
-                    indices.Add(Convert.ToInt32(m.[2].Trim()))
+                    this.Indices.Add(Convert.ToInt32(m.[0].Trim()))
+                    this.Indices.Add(Convert.ToInt32(m.[1].Trim()))
+                    this.Indices.Add(Convert.ToInt32(m.[2].Trim()))
 
             logDebug ("Build complete --------------------------------------------")
 
             // ----------------------------------------------------------------------------------------------------
-            //  Position an XYZ ausrichten
-            // ----------------------------------------------------------------------------------------------------
-            this.adjustXYZ()
-
-            this.Resize()
-
-            // ----------------------------------------------------------------------------------------------------
             //  Erzeugen des Parts
             // ----------------------------------------------------------------------------------------------------
-            part <- 
+            this.Part <- 
                 new Part(
                     name,
-                    new TriangularShape(name, Vector3.Zero, vertices, indices, size, quality),
+                    new TriangularShape(name, Vector3.Zero, this.Vertices, this.Indices, Vector3.One, quality),
                     material,
                     texture,
                     visibility,
                     shaders
                 )
-                
-            parts.Add(part)
-
-            match augmentation with
-            | Augmentation.Hilite ->
-                let hp =  createHilitePart(part) 
-                parts.Add(hp)                
-            | Augmentation.ShowCenter ->
-                let hp =  createCenterPart(part) 
-                parts.Add(hp)
-            | _ -> ()
-
-        member this.Parts =
-            parts 
-            |> Seq.toList
+            this.Parts.Add(this.Part)
             
-        member this.Vertices =
-            parts 
-            |> Seq.map(fun p -> p.Shape.Vertices)   
-            |> Seq.concat
-            |> Seq.toList 
+            // ----------------------------------------------------------------------------------------------------
+            //  Position an XYZ ausrichten
+            // ----------------------------------------------------------------------------------------------------
+            this.adjustXYZ()
 
-        // ----------------------------------------------------------------------------------------------------
-        // Normierung. Größe und Position.
-        // ----------------------------------------------------------------------------------------------------            
-        member this.adjustXYZ()=
-           let min = computeMinimum(vertices|> Seq.toList) 
-           vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
-           ()
+            this.Normalize()
 
-        member this.ComputeFactor() =
-            let min = computeMinimum(vertices|> Seq.toList)
-            let max= computeMaximum(vertices|> Seq.toList)
+            this.Resize()
+
+            this.Augment(augment)
+
+        member this.MyVertices  
+            with get() =
+                this.Parts 
+                |> Seq.map(fun p -> p.Shape.Vertices)   
+                |> Seq.concat |> ResizeArray
+
+        override this.ComputeFactor() =
+            let min = computeMinimum(this.MyVertices |> Seq.toList)
+            let max= computeMaximum(this.MyVertices |> Seq.toList)
             let mutable box = BoundingBox()
-            box.Minimum <- min.Position 
-            box.Maximum <- max.Position  
-            
-            let actualHeight = box.Maximum.Y - box.Minimum
+            box.Minimum <- min.Position
+            box.Maximum <- max.Position
+
+            let actualHeight = box.Maximum.Y - box.Minimum.Y
             let standardHeight = 1.0f
             standardHeight / actualHeight 
-
-        member this.Resize() =
-            let aFactor = this.ComputeFactor() * size
-            for i = 0 to vertices.Count - 1 do
-                let mutable resizedVertex = vertices.Item(i)
-                resizedVertex.Position <- vertices.Item(i).Position * aFactor
-                vertices.Item(i) <- resizedVertex

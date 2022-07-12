@@ -42,7 +42,7 @@ module SimpleBuilder =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new SimpleBuilder(name, fileName)  
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
-        builder.Parts
+        builder.Parts |> Seq.toList
 
 module PolygonBuilder = 
     // ----------------------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ module PolygonBuilder =
         logInfo ("Creating Geometry for3D-Points-File:" + fileName  )
         let builder = new PolygonBuilder(name, fileName)  
         builder.Build(origin, height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
-        builder.Parts
+        builder.Parts |> Seq.toList
 
 module SvgBuilder = 
     // ----------------------------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ module GltfBuilder =
         logInfo ("Creating Geometry for GLTF-File: " + _fileName)
         let builder = new GlTfBuilder(_objectName, _fileName)  
         builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
-        builder.Parts
+        builder.Parts |> Seq.toList
          
 module WavefrontBuilder =
     // ----------------------------------------------------------------------------------------------------

@@ -910,11 +910,19 @@ module GeometricModel3D =
     // Beispiel: SimpleShape
     // ----------------------------------------------------------------------------------------------------
     [<AllowNullLiteral>]
-    type TriangularShape(name: string, origin: Vector3, vertices:List<Vertex>, indices:List<int>, size: Vector3, quality:Quality) =
-        inherit FileBased(name, origin, vertices, indices, size, quality)  
-        
-        new(name: string,  origin: Vector3,  size: Vector3, quality:Quality) = 
-            new TriangularShape(name , origin , List<Vertex>(), List<int>(), size, quality)
+    type TriangularShape
+        (
+            name: string,
+            origin: Vector3,
+            vertices: List<Vertex>,
+            indices: List<int>,
+            size: Vector3,
+            quality: Quality
+        ) =
+        inherit FileBased(name, origin, vertices, indices, size, quality)
+
+        new(name: string, origin: Vector3, size: Vector3, quality: Quality) =
+            new TriangularShape(name, origin, List<Vertex>(), List<int>(), size, quality)
 
         override this.ToString() = "TriangularShape: " + this.Name 
 

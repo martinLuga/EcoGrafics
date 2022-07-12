@@ -23,6 +23,12 @@ open Geometry.GeometricModel3D
 // ----------------------------------------------------------------------------------------------------
 module BuilderSupport =
 
+    let transparentColor4(color:Color, isTransparent) = 
+        if isTransparent then ToTransparentColor(color.ToColor4()) else color.ToColor4()
+
+    // ----------------------------------------------------------------------------------------------------
+    // Augmentierung
+    // ----------------------------------------------------------------------------------------------------  
     let createHilitePart(part:Part) =
         let mutable box = BoundingBox()
         box.Minimum <- part.Shape.Minimum 
@@ -71,35 +77,98 @@ module BuilderSupport =
         )
 
     // ----------------------------------------------------------------------------------------------------
-    //Gemeinsam genutzte Builder Funktionen
-    // ----------------------------------------------------------------------------------------------------  
-    type ShapeBuilder(name:String, fileName:String) =
-        
+    // Gemeinsam genutzte Builder Funktionen
+    // ---------------------------------------------------------------------------------------------------- 
+    [<AllowNullLiteral>]
+    type ShapeBuilder(name:String, fileName:String) =        
+        let mutable name = name
+        let mutable fileName = fileName
+
         let mutable vertices = new List<Vertex>()
+        let mutable indices = new List<int>()
         let mutable size = Vector3.One
+        
+        let mutable parts : List<Part> = new List<Part>()
+        let mutable part  : Part = null
+
+        member this.Name
+            with get() = name
+            and set(value) = name <- value
+
+        member this.FileName
+            with get() = fileName
+            and set(value) = fileName <- value
+
+        member this.Parts
+            with get() = parts
+            and set(value) = parts <- value
+
+        member this.Part
+            with get() = part
+            and set(value) = part <- value
+
+        abstract Vertices:List<Vertex> with get, set
+        default this.Vertices
+            with get() = vertices
+            and set(value) = vertices <- value
+
+        member this.Indices
+            with get() = indices
+            and set(value) = indices <- value
+
+        member this.Size
+            with get() = size
+            and set(value) = size <- value
+
+        member this.GetVertices =
+            parts 
+            |> Seq.map(fun p -> p.Shape.Vertices)   
+            |> Seq.concat
+            |> Seq.toList 
 
         // ----------------------------------------------------------------------------------------------------
         // Normierung. Größe und Position.
-        // ----------------------------------------------------------------------------------------------------            
-        member this.adjustXYZ()=
-           let min = computeMinimum(vertices|> Seq.toList) 
-           vertices <- vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
-           ()
+        // ----------------------------------------------------------------------------------------------------
+        abstract adjustXYZ:unit->Unit
+        default this.adjustXYZ()=
+           let min = computeMinimum(this.Vertices|> Seq.toList) 
+           for part in this.Parts do 
+                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
 
-        member this.ComputeFactor() =
-            let min = computeMinimum(vertices|> Seq.toList)
-            let max= computeMaximum(vertices|> Seq.toList)
-            let mutable box = BoundingBox()
-            box.Minimum <- min.Position 
-            box.Maximum <- max.Position  
-            
-            let actualHeight = box.Maximum.Y - box.Minimum
+        abstract ComputeFactor:Unit->float32
+        default this.ComputeFactor() =
+            let minimum = computeMinimum(this.GetVertices|> Seq.toList)
+            let maximum = computeMaximum(this.GetVertices|> Seq.toList)
+            let actualHeight = maximum.Position.Y - minimum.Position.Y
+            let actualDepth = maximum.Position.Z - minimum.Position.Z
+            let actualWidt = maximum.Position.X - minimum.Position.X
+            let mutable actualSize = max actualHeight actualWidt             
+            actualSize <- max actualSize actualDepth 
             let standardHeight = 1.0f
-            standardHeight / actualHeight 
+            standardHeight / actualSize 
 
-        member this.Resize() =
-            let aFactor = this.ComputeFactor() * size
-            for i = 0 to vertices.Count - 1 do
-                let mutable resizedVertex = vertices.Item(i)
-                resizedVertex.Position <- vertices.Item(i).Position * aFactor
-                vertices.Item(i) <- resizedVertex
+        abstract Normalize:Unit->Unit
+        default this.Normalize() =
+            let mutable aFactor = this.ComputeFactor() 
+            let factor = Vector3(aFactor, aFactor, aFactor)
+            for part in this.Parts do 
+                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(factor)) |> ResizeArray 
+
+        abstract Resize:unit->Unit
+        default this.Resize() =
+            let newSize = this.Size  
+            for part in this.Parts do 
+                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(newSize)) |> ResizeArray
+
+        member this.Augment(_augment) =
+            match _augment with
+            | Augmentation.Hilite ->
+                let hp = createHilitePartFrom(this.Name, this.Parts)  
+                this.Parts.Add(hp)
+                logDebug ("Augmentation Hilte " + hp.Shape.Name )
+            | Augmentation.ShowCenter ->
+                let hp = createCenterPartFrom(this.Name, this.Parts)  
+                this.Parts.Add(hp)
+                this.Parts.Add(this.Part)
+            | None -> ()
+            | _ -> raise (System.Exception("Augmentation not supported"))
