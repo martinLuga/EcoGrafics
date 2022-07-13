@@ -93,28 +93,33 @@ module Glb =
             let texture = gltf.Textures[bcti]
 
             // Vertex
-            let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
-            let normalen = normalBuffer.GetEntity<float32, Vector3> (fromArray3) 
-            let ueberAlleNormalen  = normalen.GetEnumerable().GetEnumerator()
-
             let posBuffer  = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["POSITION"])
-            let positionen = posBuffer.GetEntity<float32, Vector3> (fromArray3) 
-            let ueberAllePositionen  = positionen.GetEnumerable().GetEnumerator()
+            let positionen = posBuffer.GetEntity<float32, Vector4> (Mapper<float32, Vector4>(toArray4AndIntFromFloat32)) 
+            let ueberAllePositionen  = positionen.AsArray().GetEnumerator()
+
+            let normalBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["NORMAL"])             
+            let normalen = normalBuffer.GetEntity<float32, Vector3> (Mapper<float32, Vector3>(toArray3AndIntFromFloat32))
+            let ueberAlleNormalen  = normalen.AsArray().GetEnumerator()
 
             let texCoordBuffer = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Attributes["TEXCOORD_0"])
-            let alleTexCoord = texCoordBuffer.GetEntity<float32, Vector2> (fromArray2) 
-            let ueberAlleTexCoords  = alleTexCoord.GetEnumerable().GetEnumerator()
+            let alleTexCoord = texCoordBuffer.GetEntity<float32, Vector2>  (Mapper<float32, Vector2>(toArray2AndIntFromFloat32))
+            let ueberAlleTexCoords  = alleTexCoord.AsArray().GetEnumerator()
 
-            while ueberAllePositionen.MoveNext() && ueberAlleNormalen.MoveNext() && ueberAlleTexCoords.MoveNext()  do
-                let pos = ueberAllePositionen.Current * size
-                let norm = ueberAlleNormalen.Current
-                let tex = ueberAlleTexCoords.Current
-                let vertex = new Vertex(pos, norm , Color4.White, tex)
+            // Vertex
+            let meshVertices = new List<Vertex>()
+
+            while ueberAllePositionen.MoveNext()
+                  && ueberAlleNormalen.MoveNext()
+                  && ueberAlleTexCoords.MoveNext() do
+                let pos =  ueberAllePositionen.Current :?> Vector4 
+                let norm = ueberAlleNormalen.Current :?> Vector3 
+                let tex = ueberAlleTexCoords.Current :?> Vector2 
+                let vertex = new  Vertex(Vector3(pos.X, pos.Y, pos.Z), norm ,tex)
                 vertices.Add(vertex)
 
             // Index
             let indicies = store.GetOrLoadTypedBufferByAccessorIndex(primitive.Indices.Value)
-            indices.AddRange(indicies.GetPrimitivesAsCasted<int>())
+            indices.AddRange(indicies.GetPrimitivesAsInt())
 
         member this.CreateMaterials(cmaterials) =
             materials.Clear()

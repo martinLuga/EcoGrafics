@@ -19,13 +19,14 @@ open Base.Framework
 open Base.VertexDefs
 
 open BaseObject
-open MeshBuild2
+open MeshBuild2 
 open NodeAdapter
 open Katalog
 open GPUInfrastructure
 
 // ----------------------------------------------------------------------------------------------------
 // Deployment auf Base.Framework + Vertex
+// EcoGrafics Technologie
 // ---------------------------------------------------------------------------------------------------- 
 module Deployment2 =
 

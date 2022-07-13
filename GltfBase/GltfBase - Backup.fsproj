@@ -16,7 +16,6 @@
     <Compile Include="Structures.fs" />
     <Compile Include="MeshBuild2.fs" />
     <Compile Include="MeshBuild.fs" />
-    <Compile Include="MeshBuilder.fs" />
     <Compile Include="AnotherGPU.fs" />
     <Compile Include="Katalog.fs" />
     <Compile Include="GraficWindow.fs" />
