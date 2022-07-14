@@ -16,6 +16,7 @@ open glTFLoader.Schema
 
 // ----------------------------------------------------------------------------------------------------
 // Objekt-Modell 
+//      Lib=Gltf2Loader
 //      mit Gltf 3D Support
 //      und Bullet Physics 
 // 
@@ -44,12 +45,14 @@ module BaseObject =
 
         let mutable tree:NodeAdapter = null
 
-        // HACK
         do
-            let nodes = _gltf.Nodes |> Seq.toList
-            let node:Node = nodes.Item(0)
-            let root = node.Children[0]             
-            tree <- new NodeAdapter(_gltf, root)
+            let rootNodes = _gltf.Nodes |> Array.tryFind   (fun node -> node.Name = "root")  
+            if rootNodes.IsSome then
+                let node:Node = rootNodes.Value
+                let root = node.Children[0]             
+                tree <- new NodeAdapter(_gltf, root)
+            else 
+                tree <- new NodeAdapter(_gltf, 0)
 
         new (objectName, gltf, position, rotation, scale) = new Objekt(objectName, gltf, position, rotation, scale, Vector3.Zero, 0.0f, false ) 
         new (objectName, gltf, position, rotation) = new Objekt(objectName, gltf, position, rotation, Vector3.One, Vector3.Zero, 0.0f,false )

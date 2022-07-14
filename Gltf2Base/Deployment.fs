@@ -15,11 +15,12 @@ open Base.LoggingSupport
 open Base.Framework
 open Base.VertexDefs
 
+open glTFLoader
 open glTFLoader.Schema 
 
-open Structures
+ 
 open BaseObject
-open MeshBuilder 
+open Builder 
 open NodeAdapter
 open Katalog
 open GPUInfrastructure 
@@ -57,13 +58,14 @@ module Deployment =
     [<AllowNullLiteral>]
     type Deployer() =
         let mutable gltf:Gltf = null 
+        let mutable fileName = ""
         let mutable materialCount = 0
         let mutable shaderDefines = new List<ShaderDefinePBR>()
         let mutable meshKatalog:MeshKatalog<Vertex> = new MeshKatalog<Vertex>(DEVICE_RTX3090)
         let mutable textureKatalog:TextureKatalog = new TextureKatalog() 
         let mutable materialKatalog:MaterialKatalog = new MaterialKatalog()
         let mutable nodeKatalog:NodeKatalog = new NodeKatalog()
-        let mutable meshBuilder:MeshBuilder = null
+        let mutable meshBuilder:GltfBuilder = null
         
         // ----------------------------------------------------------------------------------------------------
         // Singleton
@@ -77,12 +79,9 @@ module Deployment =
                 instance
             and set(value) = instance <- value
 
-        static member Deploy(_objekt:Objekt, fileName:string) =
-            Deployer.Instance.Initialize()
+        static member Deploy(_gltf:Gltf, _objekt:Objekt, fileName:string) =
+            Deployer.Instance.Initialize(_gltf)
             Deployer.Instance.Deploy(_objekt, fileName)
-
-        static member Reset() =  
-            Deployer.Instance.Initialize()
 
         member this.MeshKatalog
             with get() = meshKatalog
@@ -93,8 +92,9 @@ module Deployment =
         member this.MaterialKatalog
             with get () = materialKatalog
         
-        member this.Initialize() = 
+        member this.Initialize(_gltf:Gltf) = 
             logInfo("Initialize") 
+            gltf <- _gltf
             meshKatalog.Reset()
             textureKatalog.Reset() 
             materialKatalog.Reset()
@@ -105,9 +105,11 @@ module Deployment =
         // ----------------------------------------------------------------------------------------------------
         // Deploy 1 Gltf
         // ----------------------------------------------------------------------------------------------------   
-        member this.Deploy(_objekt:Objekt, fileName:string) =
+        member this.Deploy(_objekt:Objekt, _fileName:string) =
 
-            meshBuilder <- new MeshBuilder(fileName)
+            fileName <- _fileName
+
+            meshBuilder <- new GltfBuilder(_fileName)
             
             let allNodes = _objekt.Nodes()
 
@@ -136,8 +138,6 @@ module Deployment =
                 meshKatalog.AddMesh(_objectName, meshName, meshIdx, vertices.ToArray(), indices.ToArray(), topology, matIdx)                  
                 
                 let material    = gltf.Materials[matIdx] 
-                let text        = material.GetTextures() |>Seq.toList
-                let tinfo       = text[0]
 
                 let mutable texture:Texture = null
                 let mutable textureIdx:int = 0
@@ -177,28 +177,6 @@ module Deployment =
                     if texture <> null then
                         this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.occlusionTexture, false)
                         shaderDefines.Add(ShaderDefinePBR.HAS_OCCLUSIONMAP)
-                
-                if material.Extensions <> null then
-                    let glossiness = material.Extensions.Item("KHR_materials_pbrSpecularGlossiness")
-                    if glossiness <> null then
-                    
-                        let diffuseText = glossiness.Item("diffuseTexture")
-                        if diffuseText.GenericContent <> null then
-                            let index = diffuseText.Item("index")
-                            textureIdx <- index.GenericContent.ToString()|> int
-                            texture <- gltf.Textures[textureIdx]
-                            if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, texture, TextureTypePBR.envDiffuseTexture, true)
-                                shaderDefines.Add(ShaderDefinePBR.USE_IBL)
-
-                        let specularGlossinessText = glossiness.Item("specularGlossinessTexture")
-                        if specularGlossinessText.GenericContent <> null then
-                            let index = specularGlossinessText.Item("index")
-                            textureIdx <- index.GenericContent.ToString()|> int
-                            texture <- gltf.Textures[textureIdx]
-                            if texture <> null then
-                                this.DeployTexture(_objectName, matIdx, material, texture,  TextureTypePBR.envSpecularTexture, true)
-                                shaderDefines.Add(ShaderDefinePBR.USE_TEX_LOD)
 
                 let baseColourFactor        = material.PbrMetallicRoughness.BaseColorFactor
                 let emissiveFactor          = material.EmissiveFactor
@@ -214,10 +192,7 @@ module Deployment =
                 let textureIdx          = texture.Source.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
                 let imageInfo           = gltf.Images[textureIdx]
-                let imageResource       = store.GetOrLoadImageResourceAt(textureIdx)                
-                let bitmap              = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                let imageData           = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
-                
+                let imageData, bitmap   = meshBuilder.CreateImage(texture)                
                 textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, imageInfo, isCube)                
               
 

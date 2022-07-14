@@ -6,7 +6,7 @@
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
-open glTFLoader.Schema 
+ 
 
 open SharpDX
 
@@ -39,23 +39,14 @@ module GlTf2 =
             this.Size <- _scale            
             let gltf = getGltf(this.FileName)
             objekt <- new Objekt(this.Name, gltf, Vector3.Zero, Matrix.Identity, Vector3.One)
-            Deployer.Deploy(objekt, this.FileName)
+            Deployer.Deploy(gltf, objekt, this.FileName)
 
             for node in objekt.LeafNodes() do
                 let mutable mesh = Deployer.Instance.MeshKatalog.GetMesh(this.Name, node.Node.Mesh.Value)
                 let material = Deployer.Instance.MeshKatalog.Material(this.Name, node.Node.Mesh.Value)
                 let textures = Deployer.Instance.TextureKatalog.GetTextures(this.Name, material)
-                let texture = 
-                    textures 
-                    |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
-
-                let vertexe = seq {
-                    for vertex in mesh.Vertices do
-                        let mutable v1 = vertex
-                        v1.Position <- v1.Position  
-                        yield v1
-                    } 
-                this.AddPart(node.Node.Name, vertexe |> ResizeArray , mesh.Indices, _material, texture, _visibility, _shaders) 
+                let texture  = textures |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
+                this.AddPart(node.Node.Name, mesh.Vertices , mesh.Indices, _material, texture, _visibility, _shaders) 
 
             this.adjustXYZ()
 

@@ -4,6 +4,7 @@
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarnOn>3390;$(WarnOn)</WarnOn>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +18,7 @@
     <Compile Include="Common.fs" />
     <Compile Include="Structures.fs" />
     <Compile Include="AnotherGPU.fs" />
-    <Compile Include="MeshBuilder.fs" />
+    <Compile Include="Builder.fs" />
     <Compile Include="Katalog.fs" />
     <Compile Include="Deployment.fs" />
   </ItemGroup>

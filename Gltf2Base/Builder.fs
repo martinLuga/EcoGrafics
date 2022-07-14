@@ -1,7 +1,6 @@
 ﻿namespace Gltf2Base
-
 //
-//  MeshBuilder.fs
+//  Builder.fs
 //
 //  Created by Martin Luga on 08.02.22.
 //  Copyright © 2022 Martin Luga. All rights reserved.
@@ -9,27 +8,30 @@
 
 open System 
 open System.Collections.Generic
+open System.IO
 
 open SharpDX
 
 open log4net
 
+open Base.Framework
+open Base.VertexDefs
+
 open glTFLoader 
 open glTFLoader.Schema 
 
 open Common
-open Structures
 
 // ----------------------------------------------------------------------------------------------------
 // MeshBuilder auf Basis Gltf2Loader
 // ---------------------------------------------------------------------------------------------------- 
-module MeshBuilder = 
+module Builder = 
 
     // ----------------------------------------------------------------------------------------------------
     // Erzeugen Vertex und Indices
     // ---------------------------------------------------------------------------------------------------- 
     [<AllowNullLiteral>]
-    type MeshBuilder(fileName:string) =
+    type GltfBuilder(fileName:string) =
         let mutable fileName=fileName        
         let mutable gltf = Interface.LoadModel (fileName) 
         let mutable buffers=gltf.Buffers
@@ -46,19 +48,19 @@ module MeshBuilder =
             let primitive       = mesh.Primitives[0]
 
             // Positions
-            let mutable positions = new List<Vector4>()
+            let mutable positions = new List<Vector3>()
             let accPos          = primitive.Attributes["POSITION"]  
             let accessor        = gltf.Accessors[accPos]  
             let bufferView      = gltf.BufferViews[accessor.BufferView.Value] 
             let buffer          = buffers.[bufferView.Buffer]             
             let bufferBytes     = gltf.LoadBinaryBuffer(accessor.ByteOffset, fileName)
 
-            for i in bufferView.ByteOffset .. 16 .. bufferView.ByteOffset + bufferView.ByteLength   do 
+            for i in bufferView.ByteOffset .. 12 .. bufferView.ByteOffset + bufferView.ByteLength - 1   do 
                 let x   = BitConverter.ToSingle (bufferBytes, i)
                 let y   = BitConverter.ToSingle (bufferBytes, i + 4)
                 let z   = BitConverter.ToSingle (bufferBytes, i + 8)
-                let w   = BitConverter.ToSingle (bufferBytes, i + 8)
-                let pos = new Vector4(x,y,z, w)
+                let w   = BitConverter.ToSingle (bufferBytes, i + 12)
+                let pos = new Vector3(x,y,z)
                 positions.Add(pos)
 
             // Normal
@@ -66,7 +68,6 @@ module MeshBuilder =
             let accNormal       = primitive.Attributes["NORMAL"] 
             let accessor        = gltf.Accessors[accNormal]  
             let bufferView      = gltf.BufferViews[accessor.BufferView.Value] 
-            let buffer          = buffers.[bufferView.Buffer]             
             let bufferBytes     = gltf.LoadBinaryBuffer(accessor.ByteOffset, fileName)
 
             for i in bufferView.ByteOffset .. 12 .. bufferView.ByteOffset + bufferView.ByteLength - 1    do 
@@ -81,7 +82,6 @@ module MeshBuilder =
             let accTexture          = primitive.Attributes["TEXCOORD_0"]
             let accessor            = gltf.Accessors[accTexture] 
             let bufferView          = gltf.BufferViews[accessor.BufferView.Value] 
-            let buffer              = buffers.[bufferView.Buffer]             
             let bufferBytes         = gltf.LoadBinaryBuffer(accessor.ByteOffset, fileName)
 
             for i in bufferView.ByteOffset .. 8 .. bufferView.ByteOffset + bufferView.ByteLength - 1   do 
@@ -104,11 +104,19 @@ module MeshBuilder =
             let accIndex        =  primitive.Indices.Value
             let accessor        = gltf.Accessors[accIndex] 
             let bufferView      = gltf.BufferViews[accessor.BufferView.Value] 
-            let buffer          = buffers.[bufferView.Buffer]             
             let bufferBytes     = gltf.LoadBinaryBuffer(accessor.ByteOffset, fileName)
-            for i in bufferView.ByteOffset .. 4 .. bufferView.ByteOffset + bufferView.ByteLength - 1 do 
-                let idx   = BitConverter.ToInt32 (bufferBytes, i)  
-                meshIndices.Add(idx)
+            for i in bufferView.ByteOffset .. 2 .. bufferView.ByteOffset + bufferView.ByteLength - 1 do 
+                let idx   = BitConverter.ToInt16 (bufferBytes, i)  
+                meshIndices.Add(int idx)
 
             let topology        =  myTopology(primitive)
             mesh.Name, meshVertices, meshIndices, topology, primitive.Material.Value
+
+        member this.CreateImage(texture:Texture) = 
+            let bufferStream  = gltf.OpenImageFile(0, fileName)   // TODO richtiger Imagename
+            let mutable imageData:byte[] = [||]
+            using (new BinaryReader(bufferStream))(fun r ->
+                imageData <- r.ReadBytes (int bufferStream.Length)
+            ) 
+            let bitmap = ByteArrayToImage(imageData, 0, imageData.Length)
+            imageData, bitmap

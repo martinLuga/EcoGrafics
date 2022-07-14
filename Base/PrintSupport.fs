@@ -111,13 +111,13 @@ module PrintSupport =
         Vector4( x.[0],   x.[1],   x.[2], 0.0f)
 
     let toArray4AndIntFromFloat32 (x:float32[])  (i:int) =
-        Vector4( x.[0],   x.[1],   x.[2], 0.0f)
+        Vector4( x.[i],   x.[i+1],   x.[i+2], 0.0f)
 
     let toArray3AndIntFromFloat32 (x:float32[])  (i:int) =
-        Vector3( x.[0],   x.[1],   x.[2])
+        Vector3( x.[i],   x.[i+1],   x.[i+2])
 
     let toArray2AndIntFromFloat32 (x:float32[])  (i:int) =
-        Vector2( x.[0],   x.[1])
+        Vector2( x.[i],   x.[i+1])
 
     let fromArray3(x:float32[]) =
         Vector3( x.[0],   x.[1],   x.[2])

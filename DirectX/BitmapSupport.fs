@@ -39,9 +39,11 @@ module BitmapSupport =
 
         match extension with
         | ".jpg"
+        | "image_jpg"
         | "image/jpg"   -> decoder <- new JpegBitmapDecoder(factory)
         | ".png"
-        | "image/png"   -> decoder <- new PngBitmapDecoder(factory)
+        | "image/png" 
+        | "image_png"   -> decoder <- new PngBitmapDecoder(factory)
         | _             -> decoder <- new BitmapDecoder(factory, Guid.Empty)
 
         decoder
