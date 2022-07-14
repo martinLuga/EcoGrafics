@@ -18,6 +18,7 @@
     <Compile Include="WavefrontFormat.fs" />
     <Compile Include="Svg.fs" />
     <Compile Include="GlTf.fs" />
+    <Compile Include="GlTf2.fs" />
     <Compile Include="Glb.fs" />
     <Compile Include="Wavefront.fs" />
     <Compile Include="Segment.fs" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
+    <ProjectReference Include="..\Gltf2Base\Gltf2Base.fsproj" />
     <ProjectReference Include="..\GltfBase\GltfBase.fsproj" />
   </ItemGroup>
 

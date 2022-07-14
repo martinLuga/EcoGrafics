@@ -21,7 +21,6 @@ open PolygonFormat
 open Segment
 open Svg
 open Glb
-open GlTf
 
 // ----------------------------------------------------------------------------------------------------
 // Client-Schnittestelle
@@ -156,8 +155,10 @@ module GlbBuilder =
         builder.Parts
 
 module GltfBuilder = 
+
+    open GlTf
     // ----------------------------------------------------------------------------------------------------
-    // Builder für das gltf Format in der EcoGrafics Technologie
+    // Builder für das gltf Format in der EcoGrafics Technologie mit VGltf (deprecated)
     // ----------------------------------------------------------------------------------------------------
     let logger = LogManager.GetLogger("Builder.Gltf")
     let logInfo = Info(logger)
@@ -168,6 +169,24 @@ module GltfBuilder =
     let Build (_objectName, _fileName, _sizeFactor, _material:Material, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
         logInfo ("Creating Geometry for GLTF-File: " + _fileName)
         let builder = new GlTfBuilder(_objectName, _fileName)  
+        builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
+        builder.Parts |> Seq.toList
+
+module Gltf2Builder = 
+    
+    open GlTf2
+    // ----------------------------------------------------------------------------------------------------
+    // Builder für das gltf Format in der EcoGrafics Technologie mit gltfLoader
+    // ----------------------------------------------------------------------------------------------------
+    let logger = LogManager.GetLogger("Builder.Gltf2")
+    let logInfo = Info(logger)
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
+    // ----------------------------------------------------------------------------------------------------
+    let Build (_objectName, _fileName, _sizeFactor, _material:Material, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+        logInfo ("Creating Geometry for GLTF2-File: " + _fileName)
+        let builder = new GlTf2Builder(_objectName, _fileName)  
         builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
         builder.Parts |> Seq.toList
          

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework> 
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarnOn>3390;$(WarnOn)</WarnOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FrameResource.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="GPUAccess.fs" />
+    <Compile Include="GPUInfrastructure.fs" />
+    <Compile Include="MeshManager.fs" />
+    <Compile Include="NodeAdapter.fs" />
+    <Compile Include="BaseObject.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="Structures.fs" />
+    <Compile Include="AnotherGPU.fs" />
+    <Compile Include="MeshBuilder.fs" />
+    <Compile Include="Katalog.fs" />
+    <Compile Include="Deployment.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="glTF2Loader" Version="1.1.3-alpha" />
+    <PackageReference Include="log4net" Version="2.0.14" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.fsproj" />
+    <ProjectReference Include="..\DirectX\DirectX.fsproj" />
+    <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
+  </ItemGroup>
+</Project>
