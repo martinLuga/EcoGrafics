@@ -12,14 +12,11 @@ open SharpDX
 
 open Base.LoggingSupport 
 open Base.MeshObjects
-open Base.VertexDefs
-open Base.MaterialsAndTextures
+open Base.VertexDefs 
 
 open Base.ModelSupport 
-open Base.ShaderSupport 
-
-open Builder.PBRFormat
-open Builder.PBR
+ 
+open Builder 
  
 open Initializations
 open ExampleShaders
@@ -88,8 +85,7 @@ module BuilderTests =
     type GlbBuilding() = 
 
         [<DefaultValue>] val mutable logger : ILog
-        [<DefaultValue>] val mutable filename : string  
-        [<DefaultValue>] val mutable builder : PBRBuilder
+        [<DefaultValue>] val mutable filename : string   
 
         [<OneTimeSetUp>]
         member this.setUp() =
@@ -104,13 +100,14 @@ module BuilderTests =
 
         [<TestCase("Megalodon.glb")>]
         member this.Build(fileName) = 
-            this.initFiles("C:\\temp\\gltf\\", fileName) 
-            this.builder <- new PBRBuilder("Megalodon", this.filename) 
-            let parts =             
-                this.builder.Build(
-                   Vector3(0.7f,0.7f,0.7f), 
-                   Visibility.Opaque,
-                   Augmentation.None
-                )
-            Assert.NotNull(this.builder.Parts)
-            Assert.IsNotEmpty(this.builder.Parts)
+            this.initFiles("C:\\temp\\gltf\\", fileName)  
+            let parts = PBRBuilder.Build(
+                "megalodon",
+                "C:\\temp\\gltf\\Megalodon.glb",
+                Vector3(0.0f, 0.0f, 0.0f),
+                Matrix.Identity,
+                Vector3.One,
+                Visibility.Opaque,
+                Augmentation.Hilite
+            )
+            Assert.NotNull(parts)
