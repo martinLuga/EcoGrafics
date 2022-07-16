@@ -1,4 +1,4 @@
-﻿namespace ShaderPBR
+﻿namespace PBRBase
 //
 //  Common.fs
 //
@@ -7,15 +7,10 @@
 //
 
 open Base
-open Base.Framework
-open Base.ShaderSupport
-
-open SharpDX
 open SharpDX.Direct3D
 open SharpDX.Direct3D12
 
 open System
-open System.Collections.Generic
 
 open glTFLoader.Schema 
  
@@ -24,7 +19,9 @@ module Common =
     // ----------------------------------------------------------------------------------------------------
     // Helper Classes
     // ----------------------------------------------------------------------------------------------------
- 
+    let myTexture(tex:Texture) = 
+        new ModelSupport.Texture(tex.Name)
+
     let myTopologyType(typ: MeshPrimitive) =
         match typ.Mode with
         | MeshPrimitive.ModeEnum.POINTS      -> PrimitiveTopologyType.Point

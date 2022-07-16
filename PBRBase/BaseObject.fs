@@ -1,5 +1,4 @@
 ﻿namespace PBRBase
-
 //
 //  ModelSupport.fs
 //
@@ -7,13 +6,19 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open NodeAdapter
-open Base.GeometryUtils
 open SharpDX
-open VGltf.Types
+
+open glTFLoader.Schema 
+
+open Base.GeometryUtils
+open Base.ObjectBase
+open Base.ModelSupport
+
+open NodeAdapter
 
 // ----------------------------------------------------------------------------------------------------
 // Objekt-Modell 
+//      Lib=Gltf2Loader
 //      mit Gltf 3D Support
 //      und Bullet Physics 
 // 
@@ -43,10 +48,13 @@ module BaseObject =
         let mutable tree:NodeAdapter = null
 
         do
-            let rootNodes = _gltf.RootNodes |> Seq.toList
-            let node:Node = rootNodes.Item(0)
-            let root = node.Children[0]             
-            tree <- new NodeAdapter(_gltf, root)
+            let rootNodes = _gltf.Nodes |> Array.tryFind   (fun node -> node.Name = "root")  
+            if rootNodes.IsSome then
+                let node:Node = rootNodes.Value
+                let root = node.Children[0]             
+                tree <- new NodeAdapter(_gltf, root)
+            else 
+                tree <- new NodeAdapter(_gltf, 0)
 
         new (objectName, gltf, position, rotation, scale) = new Objekt(objectName, gltf, position, rotation, scale, Vector3.Zero, 0.0f, false ) 
         new (objectName, gltf, position, rotation) = new Objekt(objectName, gltf, position, rotation, Vector3.One, Vector3.Zero, 0.0f,false )
@@ -54,7 +62,10 @@ module BaseObject =
 
         override this.ToString() =
             "BaseObject: " + this.Name
-       
+
+        member this.ToBaseObject() =
+            BaseObject(name, new Display(), position, rotation , scale) 
+            
         member this.Name
             with get() = name
             and set(value)  = name <- value 
@@ -70,6 +81,10 @@ module BaseObject =
         member this.Position
             with get() = position
             and set(value)  = position <- value 
+
+        member this.Rotation
+            with get() = rotation
+            and set(value)  = rotation <- value 
 
         abstract member Center: Vector3 with get
         default this.Center 

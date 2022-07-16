@@ -8,16 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="FrameResource.fs" />
-    <Compile Include="GPUAccess.fs" />
-    <Compile Include="MeshManager.fs" />
-    <Compile Include="GPUInfrastructure.fs" />
+    <Compile Include="PBRShaders.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="Builder.fs" />
+    <Compile Include="Conversion.fs" />
     <Compile Include="NodeAdapter.fs" />
     <Compile Include="BaseObject.fs" />
-    <Compile Include="AnotherGPU.fs" />
-    <Compile Include="Katalog.fs" />
-    <Compile Include="Builder.fs" />
-    <Compile Include="Deployment.fs" />
   </ItemGroup>
 
   <ItemGroup>

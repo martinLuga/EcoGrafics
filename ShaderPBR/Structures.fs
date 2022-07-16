@@ -14,9 +14,7 @@ open Base.PrintSupport
 open SharpDX
 open SharpDX.Direct3D12
 
-open glTFLoader.Schema
-
-open Common 
+open glTFLoader.Schema 
 
 // ----------------------------------------------------------------------------------------------------
 // Ein Scene stellt eine graphische Ausgangssituation her
@@ -98,30 +96,6 @@ module Structures =
         struct
             val mutable Light: DirectionalLight 
             new(light ) = { Light = light }
-        end
-
-    [<type: StructLayout(LayoutKind.Sequential, Pack = 4)>]
-    type MaterialConstantsPBR =
-        struct
-            val mutable normalScale: float32
-            val mutable emissiveFactor: Vector3
-            val mutable occlusionStrength: float32
-            val mutable metallicRoughnessValues: Vector2 
-            val mutable padding1: float32
-            val mutable baseColorFactor: Color4
-            val mutable camera: Vector3
-            val mutable padding2: float32
-            new(material:MyMaterial, _camera:Vector3) =
-                {
-                    normalScale=1.0f
-                    emissiveFactor=Vector3(material.Material.EmissiveFactor)
-                    occlusionStrength=1.0f
-                    metallicRoughnessValues=Vector2(material.MetallicRoughnessValues) 
-                    padding1=0.0f
-                    baseColorFactor=Color4(material.BaseColourFactor)
-                    camera=_camera
-                    padding2=0.0f
-                }
         end
 
     // Wrap Filter 

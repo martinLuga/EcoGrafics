@@ -104,7 +104,7 @@ module ModelSupport =
     
     let mutable textureIndex = new Dictionary<string, int>()
     [<AllowNullLiteral>]
-    type Texture(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, isCube:bool) =
+    type Texture(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, isCube:bool, samplerDesc:SamplerStateDescription) =
         let mutable name=name
         let mutable mimeType=_mimeType
         let mutable idx=0
@@ -112,6 +112,7 @@ module ModelSupport =
         let mutable path = pathName 
         let mutable isCube = isCube 
         let mutable data:byte[] = _data
+        let mutable sampler:SamplerStateDescription = samplerDesc
 
         static let mutable text_count = 0 
 
@@ -122,10 +123,12 @@ module ModelSupport =
                 text_count <- text_count + 1
             else 
                 idx <- textureIndex.Item(name)
-        
+
+        new(name, fileName, pathName, data, mimeType, samplerDesc) = Texture(name, fileName, pathName, data, mimeType, false, samplerDesc)
+        new(name, fileName, pathName, data, mimeType, isCube) = Texture(name, fileName, pathName, data, mimeType, isCube, SamplerStateDescription())
         new(name, fileName, pathName, data, mimeType) = Texture(name, fileName, pathName, data, mimeType, false)
-        new(name, fileName, pathName, data, isCube) = Texture(name, fileName, pathName, data, "", isCube)
-        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, [||], "", isCube) 
+        new(name, fileName, pathName, data, isCube) = Texture(name, fileName, pathName, data, "", isCube, SamplerStateDescription())
+        new(name, fileName, pathName, isCube) = Texture(name, fileName, pathName, [||], "", isCube, SamplerStateDescription()) 
         new(name, fileName, pathName) = Texture(name, fileName, pathName, false)
         new(name, mimeType, data) = Texture(name, "", "",  data, mimeType, false)   
         new(name, data) = Texture(name, "", "",  data, "", false)   
@@ -146,11 +149,36 @@ module ModelSupport =
             with get() = data
             and set(value) = data <- value 
 
+        member this.Sampler
+            with get() = sampler 
+            and set(value) = sampler <- value
+
         member this.isEmpty = this.Name = "" 
 
         member this.notEmpty = this.Name <> ""
 
         override this.ToString() = "Texture " + (if this.isEmpty then " Empty " else this.Name)
+
+    
+    [<AllowNullLiteral>]
+    type TextureBaseColour(name: string, fileName:string, pathName:string, _data:byte[], _mimeType:string, samplerDesc:SamplerStateDescription) =
+        inherit Texture(name, fileName, pathName, _data, _mimeType, samplerDesc) 
+
+    [<AllowNullLiteral>]
+    type TextureMetallicRoughness(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, sampler:SamplerStateDescription) =
+        inherit Texture(name, fileName, pathName, _data, _mimeType, sampler) 
+    
+    [<AllowNullLiteral>]
+    type TextureEmission(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, sampler:SamplerStateDescription) =
+        inherit Texture(name, fileName, pathName, _data, _mimeType, sampler) 
+    
+    [<AllowNullLiteral>]
+    type TextureNormal(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, sampler:SamplerStateDescription) =
+        inherit Texture(name, fileName, pathName, _data, _mimeType, sampler) 
+    
+    [<AllowNullLiteral>]
+    type TextureOcclusion(name: string, fileName:string, pathName:string, _data:byte[], _mimeType, sampler:SamplerStateDescription) =
+        inherit Texture(name, fileName, pathName, _data, _mimeType, sampler)
     
     // ----------------------------------------------------------------------------------------------------
     //  Material - Parameter zur Beschreibung der Lichtsituation
@@ -270,6 +298,35 @@ module ModelSupport =
             and set (value) = specular <- value
 
         member this.isEmpty = this.Name = ""
+
+    type MaterialPBR() =
+        inherit Material("", Vector4.Zero, Vector3.Zero, 0.0f)
+
+        let mutable textureBaseColour: TextureBaseColour = null
+        let mutable textureMetallicRoughness: TextureMetallicRoughness = null 
+        let mutable textureEmission: TextureEmission = null 
+        let mutable textureNormal: TextureNormal = null 
+        let mutable textureOcclusion : TextureOcclusion = null 
+
+        member this.BaseColourTexture
+            with get() = textureBaseColour 
+            and set(value) = textureBaseColour <- value
+
+        member this.MetallicRoughnessTexture
+            with get() = textureMetallicRoughness 
+            and set(value) = textureMetallicRoughness <- value
+
+        member this.EmissionTexture
+            with get() = textureEmission
+            and set(value) = textureEmission <- value
+        
+        member this.NormalTexture
+            with get() = textureNormal
+            and set(value) = textureNormal <- value 
+        
+        member this.OcclusionTexture
+            with get() = textureOcclusion 
+            and set(value) = textureOcclusion <- value  
 
 
     [<AllowNullLiteral>]
@@ -538,6 +595,7 @@ module ModelSupport =
         new(name, shape, material ) = Part(name, shape, material, new Texture(), Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation())
         new(name, shape, texture, shaders) = Part(name, shape, new Material(), texture, Visibility.Opaque, shaders)
         new(name, shape, shaders) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque, shaders)
+        new(name, shape, visibility) = Part(name, shape, new Material(), new Texture(), visibility,  ShaderConfiguration.CreateNoTesselation())
         new(name, shape) = Part(name, shape, new Material(), new Texture(), Visibility.Opaque,  ShaderConfiguration.CreateNoTesselation())
         new(material, shaders) = Part("", null, material, new Texture(), Visibility.Opaque, shaders)
         new(name, material, texture, shaders) = Part(name, null, material, texture, Visibility.Opaque, shaders)
@@ -612,7 +670,7 @@ module ModelSupport =
         override this.ToString() = shape.ToString() + " | " + material.ToString() + " | " + this.Texture.ToString()
 
     [<AllowNullLiteral>]
-    type Display(parts:Part list, visibility: Visibility, size:Vector3, augmentation) =
+    type Display(parts:Part list, visibility: Visibility, size:Vector3, augmentation:Augmentation) =
         let mutable size = size
         let mutable parts = parts
         let mutable visibility = visibility
@@ -622,9 +680,12 @@ module ModelSupport =
                 parts |> List.iter(fun p -> p.Visibility <- visibility)
 
         new() = new Display([], Visibility.NotSet, Vector3.One, Augmentation.None)
+        new(visibility, augmentation) = new Display([], visibility, Vector3.One, augmentation )
+        new(visibility, size, augmentation) = new Display([], visibility, size, augmentation )
         new(parts) = new Display(parts, Visibility.NotSet, Vector3.One, Augmentation.None)
         new(parts, visibility) = new Display(parts, visibility, Vector3.One, Augmentation.None)
         new(parts, visibility, size) = new Display(parts, visibility, size, Augmentation.None)
+        new(parts, visibility, augmentation) = new Display(parts, visibility, Vector3.One, augmentation)
         new(parts, augmentation) = new Display(parts, Visibility.NotSet, Vector3.One, augmentation)
 
         member this.Size

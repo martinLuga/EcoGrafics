@@ -20,6 +20,7 @@
     <Compile Include="GlTf.fs" />
     <Compile Include="GlTf2.fs" />
     <Compile Include="PBR.fs" />
+    <None Include="PBR.md" />
     <Compile Include="Wavefront.fs" />
     <Compile Include="Segment.fs" />
     <Compile Include="Builder.fs" />
@@ -36,6 +37,7 @@
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\Gltf2Base\Gltf2Base.fsproj" />
     <ProjectReference Include="..\GltfBase\GltfBase.fsproj" />
+    <ProjectReference Include="..\PBRBase\PBRBase.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

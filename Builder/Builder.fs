@@ -148,11 +148,10 @@ module PBRBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, fileName, sizeFactor:Vector3, visibility:Visibility, augmentation:Augmentation) =
+    let Build (name, fileName, position, rotation, scale:Vector3, visibility:Visibility, augmentation:Augmentation) =
         logInfo ("Creating Geometry for GLB-File: " + fileName  )
-        let builder = new PBRBuilder(name, fileName) 
-        builder.Build(sizeFactor, visibility, augmentation)    
-        builder.Parts
+        let builder = new PBRBuilder(name, fileName, position, rotation, scale) 
+        builder.Build(position, scale, visibility, augmentation)    
 
 module GltfBuilder = 
 

@@ -8,18 +8,17 @@
 
 open System.Collections.Generic
 
-open Base.GeometryUtils
-open Base.ShaderSupport
-open Base.PrintSupport
-
 open log4net
 
 open SharpDX
 
+open Base.GeometryUtils
+open Base.ShaderSupport
+open Base.PrintSupport
 open Base.LoggingSupport
 
-open VGltf.Types
- 
+open glTFLoader.Schema 
+
 module NodeAdapter = 
 
     let TEST_MESH_IDX = 0  

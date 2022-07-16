@@ -9,22 +9,21 @@
 open System 
 open System.Collections.Generic
 open System.IO
+open System.Drawing
 
 open SharpDX
 
 open log4net
 
-open Base.Framework
 open Base.VertexDefs
 
 open glTFLoader 
 open glTFLoader.Schema 
 
-open ShaderPBR
 open Common
 
 // ----------------------------------------------------------------------------------------------------
-// MeshBuilder auf Basis Gltf2Loader
+// GltfBuilder auf Basis Gltf2Loader
 // ---------------------------------------------------------------------------------------------------- 
 module Builder = 
 
@@ -38,6 +37,9 @@ module Builder =
         let mutable buffers=gltf.Buffers
         let mutable meshes=gltf.Meshes
         let mutable nodes=gltf.Nodes
+
+        member this.Gltf
+            with get() = gltf
         
         member this.Log(logger:ILog) =        
             
@@ -45,7 +47,7 @@ module Builder =
             logger.Debug(fileName + " contains " + buffers.Length.ToString() + " Buffers")
             logger.Debug(fileName + " contains " + nodes.Length.ToString()   + " Nodes")
 
-        member this.CreateMeshData(mesh:Mesh) =
+        member this.CreateMeshData(nodeName, mesh:Mesh) =
             let primitive       = mesh.Primitives[0]
 
             // Positions
@@ -111,13 +113,17 @@ module Builder =
                 meshIndices.Add(int idx)
 
             let topology        =  myTopology(primitive)
-            mesh.Name, meshVertices, meshIndices, topology, primitive.Material.Value
+            nodeName, meshVertices, meshIndices, topology, primitive.Material.Value
 
-        member this.CreateImage(texture:Texture) = 
-            let bufferStream  = gltf.OpenImageFile(0, fileName)   // TODO richtiger Imagename
+        member this.CreateImage(imgIndex, ibuf) = 
             let mutable imageData:byte[] = [||]
+            let bufferView      = gltf.BufferViews[ibuf] 
+
+            let bufferStream    = gltf.OpenImageFile(imgIndex, fileName)
+
             using (new BinaryReader(bufferStream))(fun r ->
                 imageData <- r.ReadBytes (int bufferStream.Length)
-            ) 
-            let bitmap = ByteArrayToImage(imageData, 0, imageData.Length)
+            )             
+            let bufferStream    = gltf.OpenImageFile(bufferView.Buffer, fileName) 
+            let bitmap = Image.FromStream(bufferStream , true, false)
             imageData, bitmap

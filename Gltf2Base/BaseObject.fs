@@ -1,5 +1,4 @@
 ﻿namespace Gltf2Base
-
 //
 //  ModelSupport.fs
 //
@@ -7,11 +6,14 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 //
 
-open NodeAdapter
-open Base.GeometryUtils
 open SharpDX
-open glTFLoader 
 open glTFLoader.Schema 
+
+open Base.GeometryUtils
+open Base.ObjectBase
+open Base.ModelSupport
+
+open NodeAdapter
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -60,7 +62,10 @@ module BaseObject =
 
         override this.ToString() =
             "BaseObject: " + this.Name
-       
+
+        member this.ToBaseObject() =
+            BaseObject(name, new Display(), position, rotation , scale) 
+            
         member this.Name
             with get() = name
             and set(value)  = name <- value 
@@ -76,6 +81,10 @@ module BaseObject =
         member this.Position
             with get() = position
             and set(value)  = position <- value 
+
+        member this.Rotation
+            with get() = rotation
+            and set(value)  = rotation <- value 
 
         abstract member Center: Vector3 with get
         default this.Center 
