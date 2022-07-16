@@ -20,7 +20,7 @@ open SimpleFormat
 open PolygonFormat
 open Segment
 open Svg
-open Glb
+open PBR
 
 // ----------------------------------------------------------------------------------------------------
 // Client-Schnittestelle
@@ -138,7 +138,7 @@ module SegmentBuilder =
         builder.Build(zahl, position) 
         builder.Parts
 
-module GlbBuilder = 
+module PBRBuilder = 
     // ----------------------------------------------------------------------------------------------------
     // Builder für das glb Format
     // ----------------------------------------------------------------------------------------------------
@@ -148,10 +148,10 @@ module GlbBuilder =
     // ----------------------------------------------------------------------------------------------------
     //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (name, fileName, material:Material, texture:Texture, sizeFactor, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
+    let Build (name, fileName, sizeFactor:Vector3, visibility:Visibility, augmentation:Augmentation) =
         logInfo ("Creating Geometry for GLB-File: " + fileName  )
-        let builder = new GlbBuilder(name, fileName) 
-        builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)    
+        let builder = new PBRBuilder(name, fileName) 
+        builder.Build(sizeFactor, visibility, augmentation)    
         builder.Parts
 
 module GltfBuilder = 

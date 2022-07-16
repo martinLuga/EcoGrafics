@@ -9,6 +9,7 @@
 open System 
 open System.Collections.Generic
 open System.IO
+open System.Drawing
 
 open SharpDX
 
@@ -112,11 +113,15 @@ module Builder =
             let topology        =  myTopology(primitive)
             mesh.Name, meshVertices, meshIndices, topology, primitive.Material.Value
 
-        member this.CreateImage(texture:Texture) = 
-            let bufferStream  = gltf.OpenImageFile(0, fileName)   // TODO richtiger Imagename
+        member this.CreateImage(imgIndex, ibuf) = 
             let mutable imageData:byte[] = [||]
+            let bufferView      = gltf.BufferViews[ibuf] 
+
+            let bufferStream    = gltf.OpenImageFile(imgIndex, fileName)
+
             using (new BinaryReader(bufferStream))(fun r ->
                 imageData <- r.ReadBytes (int bufferStream.Length)
-            ) 
-            let bitmap = ByteArrayToImage(imageData, 0, imageData.Length)
+            )             
+            let bufferStream    = gltf.OpenImageFile(bufferView.Buffer, fileName) 
+            let bitmap = Image.FromStream(bufferStream , true, false)
             imageData, bitmap

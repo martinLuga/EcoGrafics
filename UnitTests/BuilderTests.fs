@@ -18,8 +18,8 @@ open Base.MaterialsAndTextures
 open Base.ModelSupport 
 open Base.ShaderSupport 
 
-open Builder.GlbFormat
-open Builder.Glb
+open Builder.PBRFormat
+open Builder.PBR
  
 open Initializations
 open ExampleShaders
@@ -68,7 +68,7 @@ module BuilderTests =
             configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             let getLogger(name:string) = LogManager.GetLogger(name)
             this.logger <- getLogger("GlbBuilder")
-            this.initFiles("C:\\temp\\obj\\", "Megalodon.obj")
+            this.initFiles("C:\\temp\\gltf\\", "Megalodon.obj")
 
         member this.initFiles(directory, newFileName) =
             this.filename <- directory + newFileName
@@ -84,32 +84,19 @@ module BuilderTests =
             for object in objects do
                 logger.Debug(">> OBJCT << " + (object.Head.ToString()))
 
-        [<TestCase("Megalodon.glb")>]
-        member this.ReadFromFile(fileName) = 
-            this.initFiles("C:\\temp\\obj\\", fileName)  
-            let container = getGlbContainer (this.filename)  
-            Assert.NotNull(container)
-
-        [<TestCase("Megalodon.glb")>]
-        member this.ReadMeshes(fileName) = 
-            this.initFiles("C:\\temp\\obj\\", fileName) 
-            let container = getGlbContainer (this.filename)             
-            let meshes = container.Gltf.Meshes  
-            Assert.NotNull(meshes)
-
     [<TestFixture>]
     type GlbBuilding() = 
 
         [<DefaultValue>] val mutable logger : ILog
         [<DefaultValue>] val mutable filename : string  
-        [<DefaultValue>] val mutable builder : GlbBuilder
+        [<DefaultValue>] val mutable builder : PBRBuilder
 
         [<OneTimeSetUp>]
         member this.setUp() =
             configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
             let getLogger(name:string) = LogManager.GetLogger(name)
             this.logger <- getLogger("GlbBuilder")
-            this.initFiles("C:\\temp\\obj\\", "Megalodon.obj")
+            this.initFiles("C:\\temp\\gltf\\", "Megalodon.obj")
 
         member this.initFiles(directory, newFileName) =
             this.filename <- directory + newFileName
@@ -117,22 +104,13 @@ module BuilderTests =
 
         [<TestCase("Megalodon.glb")>]
         member this.Build(fileName) = 
-            this.initFiles("C:\\temp\\obj\\", fileName) 
-            this.builder <- new GlbBuilder("Megalodon", this.filename) 
+            this.initFiles("C:\\temp\\gltf\\", fileName) 
+            this.builder <- new PBRBuilder("Megalodon", this.filename) 
             let parts =             
                 this.builder.Build(
-                   MAT_BEIGE,
-                   TEXT_HILL, 
                    Vector3(0.7f,0.7f,0.7f), 
                    Visibility.Opaque,
-                   Augmentation.None,
-                   Quality.Medium,
-                   new ShaderConfiguration(
-                       vertexShaderDesc=vertexShaderTesselateDesc,
-                       pixelShaderDesc=pixelShaderPhongDesc,
-                       domainShaderDesc=ShaderDescription.CreateToBeFilledIn(ShaderType.Domain),
-                       hullShaderDesc=ShaderDescription.CreateToBeFilledIn(ShaderType.Hull)
-                   )
+                   Augmentation.None
                 )
             Assert.NotNull(this.builder.Parts)
             Assert.IsNotEmpty(this.builder.Parts)

@@ -231,6 +231,4 @@ module Deployment2 =
                 let bitmap              = ByteArrayToImage(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 let imageData           = ByteArrayToArray(imageResource.Data.Array, imageResource.Data.Offset, imageResource.Data.Count)
                 
-                textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, imageInfo, isCube)                
-              
-
+                textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, imageInfo, isCube)   

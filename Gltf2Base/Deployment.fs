@@ -191,8 +191,6 @@ module Deployment =
                 let samplerIdx          = texture.Sampler.Value
                 let textureIdx          = texture.Source.Value
                 let sampler             = gltf.Samplers[samplerIdx] 
-                let imageInfo           = gltf.Images[textureIdx]
-                let imageData, bitmap   = meshBuilder.CreateImage(texture)                
-                textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, imageInfo, isCube)                
-              
-
+                let image               = gltf.Images[textureIdx]
+                let imageData, bitmap   = meshBuilder.CreateImage(textureIdx, image.BufferView.Value)                 
+                textureKatalog.Add(_objectName, _matIdx, textureIdx, texture.Name, textType, samplerIdx, sampler, bitmap, imageData, image, isCube)   

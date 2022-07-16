@@ -12,14 +12,14 @@
   <ItemGroup>
     <Compile Include="BuilderSupport.fs" />
     <Compile Include="PolygonFormat.fs" />
-    <Compile Include="GlbFormat.fs" />
     <Compile Include="SimpleFormat.fs" />
     <Compile Include="SVGFormat.fs" />
     <Compile Include="WavefrontFormat.fs" />
-    <Compile Include="Svg.fs" />
+    <Compile Include="PBRFormat.fs" />
+    <Compile Include="SVG.fs" />
     <Compile Include="GlTf.fs" />
     <Compile Include="GlTf2.fs" />
-    <Compile Include="Glb.fs" />
+    <Compile Include="PBR.fs" />
     <Compile Include="Wavefront.fs" />
     <Compile Include="Segment.fs" />
     <Compile Include="Builder.fs" />
