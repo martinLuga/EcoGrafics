@@ -36,8 +36,6 @@ open MyGPUInfrastructure
 // ----------------------------------------------------------------------------------------------------
 module MyGPU = 
 
-    type MeshGeometry= MyMesh.MeshGeometry<Vertex,int>    
-
     let TEXTUREWIDTH = 256; 
     let TEXTUREHEIGHT = 256 
     let TEXTUREPIXELSIZE = 4    // The number of bytes used to represent a pixel in the texture.
@@ -83,8 +81,6 @@ module MyGPU =
 
         // Geometry        
         let mutable meshCache:MeshCache<Vertex> = null
-        let mutable geometry:MeshGeometry = null
-        let mutable hasCube = false
 
         // Resources     
         let mutable textures = new Dictionary<string, int>()
@@ -124,10 +120,7 @@ module MyGPU =
         member this.Device
             with get() = device
 
-        member this.Geometry
-            with get() = geometry
-
-        member this.ItemLength
+         member this.ItemLength
             with get() = itemLength
             and set(value) = itemLength <- value 
  

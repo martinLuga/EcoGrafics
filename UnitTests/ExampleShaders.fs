@@ -7,7 +7,6 @@
 // 
 
 open Base.ShaderSupport
-open GraficBase.Cache
 
 open ShaderRenderingCookbook.Pipeline
 

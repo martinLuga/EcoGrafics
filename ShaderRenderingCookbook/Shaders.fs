@@ -23,16 +23,10 @@ module Shaders =
 
     let vertexShaderSkyDesc = 
         ShaderDescription(ShaderType.Vertex,    "shader",  "Box","VSMain","vs_5_1", ShaderUsage.Required, rootSignatureDesc)
-
-    let vertexShaderPBRDesc = 
-        ShaderDescription(ShaderType.Vertex,    "shader",  "PbrVS","main","vs_5_1", ShaderUsage.Required, rootSignatureDesc)
-    
+   
     let pixelShaderSkyDesc = 
         ShaderDescription(ShaderType.Pixel,     "shader",  "Box","PSMain","ps_5_1", ShaderUsage.Required, rootSignatureDesc)
 
-    let pixelShaderPBRDesc = 
-        ShaderDescription(ShaderType.Pixel,     "shader",  "PbrPS","main","ps_5_1", ShaderUsage.Required, rootSignatureDesc)
-    
     let vertexShaderTesselateDesc = 
         ShaderDescription(ShaderType.Vertex,    "shader",  "VS","VSPassThruTessellate","vs_5_1", ShaderUsage.Required, rootSignatureDesc)
 

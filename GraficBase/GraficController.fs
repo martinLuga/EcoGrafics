@@ -28,15 +28,15 @@ open Base.MaterialsAndTextures
 open DirectX.D3DUtilities
 open DirectX.Assets
 
-open ShaderRenderingCookbook.Pipeline 
-
 open GPUModel.MyGPU
 
 open CameraControl 
 open Camera
 open GraficWindow
 
-open ShaderRenderingCookbook.Structures
+open ShaderRenderingCookbook
+open Pipeline 
+open Structures
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
@@ -581,6 +581,9 @@ module GraficController =
 
             myGpu.UpdateObject(idx, ref perObject)
 
+        // ----------------------------------------------------------------------------------------------------
+        // Draw
+        // ----------------------------------------------------------------------------------------------------
         member this.drawPerPart(idx, part:Part) =  
             logDebug("Draw part " + idx.ToString() + " " + part.Shape.Name)
  
