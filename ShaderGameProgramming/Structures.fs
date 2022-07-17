@@ -13,7 +13,8 @@ open System.Linq
 open SharpDX
 
 // ----------------------------------------------------------------------------------------------------
-// Strukturen aus dx12-game-programming
+// Strukturen  
+// Luna, Frank D. Introduction To 3D Game Programming With Direct X 12 
 // ----------------------------------------------------------------------------------------------------
 module Structures = 
 

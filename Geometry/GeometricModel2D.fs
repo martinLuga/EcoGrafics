@@ -173,12 +173,12 @@ module GeometricModel2D =
     type Kreis(name: string, center, radius: float32, representation:Representation) =
         inherit Geometry2D(name, [|center|], Color.White, representation)   
         let radius = radius 
-        let origin = center 
+        let center = center 
         let mutable points: Vector3 [] = [||] 
         do
-            points <- closePolygon(Circle2D.GetPoints(origin, radius, Shape.Raster).ToArray())
+            points <- closePolygon(Circle2D.GetPoints(center, radius, Shape.Raster).ToArray())
         
-        new (name, origin, radius) = new Kreis (name, origin, radius,  Representation.Surface)
+        new (name, center, radius) = new Kreis (name, center, radius,  Representation.Surface)
 
         member this.Radius  
             with get() = radius
@@ -187,7 +187,7 @@ module GeometricModel2D =
             points
 
         override this.Center =
-            origin
+            center
 
         override this.ToString() = "Kreis:" + this.Name + " r " + radius.ToString() 
 

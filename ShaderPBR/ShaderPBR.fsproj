@@ -8,12 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="shader\PbrPS.hlsl" />
-    <None Include="shader\PbrVS.hlsl" />
     <Compile Include="Common.fs" />
     <Compile Include="Pipeline.fs" />
+    <Compile Include="Shaders.fs" />
     <Compile Include="Structures.fs" />
     <Compile Include="VertexDefs.fs" />
+    <None Include="shader\PbrPS.hlsl" />
+    <None Include="shader\PbrVS.hlsl" />
   </ItemGroup>
 
   <ItemGroup>

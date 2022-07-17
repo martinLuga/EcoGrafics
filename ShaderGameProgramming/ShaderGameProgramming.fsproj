@@ -9,12 +9,30 @@
 
   <ItemGroup>
     <Compile Include="Pipeline.fs" />
+    <Compile Include="Shaders.fs" />
     <Compile Include="Structures.fs" />
+    <None Include="shader\Common.hlsl" />
+    <None Include="shader\Default.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="shader\VS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="shader\LightingUtil.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="shader\Box.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

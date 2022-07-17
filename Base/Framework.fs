@@ -13,11 +13,7 @@ open System.Threading
 open System.Drawing
 open System.IO
 
-open log4net
-
 open SharpDX
-
-open LoggingSupport
 
 // ----------------------------------------------------------------------------
 // Immer benötigte Basis Funktionen
@@ -26,9 +22,6 @@ open LoggingSupport
 // Logging
 // ----------------------------------------------------------------------------
 module Framework = 
-
-    let logger = LogManager.GetLogger("Framework") 
-    let logDebug = Debug(logger)
 
     let random = Random(0)
     
@@ -276,7 +269,6 @@ module Framework =
     let Delayer() = 
         for i= 0 to 10 do
             let line = sprintf  "--> %O  %i " "Delay: " i 
-            logDebug(line)
             Thread.Sleep(10) 
 
     let delayed(worker:unit->unit) =

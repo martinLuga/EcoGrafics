@@ -22,7 +22,7 @@ open Base.LoggingSupport
 open Base.ObjectBase 
 open Base.ShaderSupport
 open Base.GameTimer
-open Base.GeometryUtils
+open Base.ShaderSupport
 open Base.MaterialsAndTextures
 
 open DirectX.D3DUtilities
@@ -34,7 +34,6 @@ open GPUModel.MyGPU
 
 open CameraControl 
 open Camera
-open Cache
 open GraficWindow
 
 open ShaderRenderingCookbook.Structures

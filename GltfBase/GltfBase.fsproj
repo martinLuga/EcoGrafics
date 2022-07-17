@@ -34,7 +34,6 @@
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GraficBase\GraficBase.fsproj" />
-    <ProjectReference Include="..\ShaderGltf\ShaderGltf.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.5" />

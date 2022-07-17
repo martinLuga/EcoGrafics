@@ -15,7 +15,7 @@ open SharpDX.Direct3D12
 open Base.ShaderSupport
 open Base.Framework 
 
-module Cache =
+module CacheXX =
 
     // ----------------------------------------------------------------------------------------------------
     // Alle PipelineConfigurations werden im  NestedDict zu ihren Schlüsseln abgelegt

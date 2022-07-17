@@ -25,12 +25,12 @@
     <Compile Include="PrintSupport.fs" />
     <Compile Include="GameTimer.fs" />
     <Compile Include="MathHelper.fs" />
-    <Compile Include="ShaderSupport.fs" />
+    <Compile Include="Framework.fs" />
     <Compile Include="StringSupport.fs" />
     <Compile Include="FileSupport.fs" />
-    <Compile Include="ShaderCompile.fs" />
     <Compile Include="LoggingSupport.fs" />
-    <Compile Include="Framework.fs" />
+    <Compile Include="ShaderSupport.fs" />
+    <Compile Include="ShaderCompile.fs" />
     <Compile Include="GlobalDefs.fs" />
     <Compile Include="VertexDefs.fs" />
     <Compile Include="MathSupport.fs" />

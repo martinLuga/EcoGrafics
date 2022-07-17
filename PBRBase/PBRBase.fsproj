@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
-    <ProjectReference Include="..\ShaderGltf\ShaderGltf.fsproj" />
     <ProjectReference Include="..\ShaderPBR\ShaderPBR.fsproj" />
   </ItemGroup>
 </Project>

@@ -25,6 +25,8 @@
     <ProjectReference Include="..\Base\Base.fsproj" />
     <ProjectReference Include="..\Geometry\Geometry.fsproj" />
     <ProjectReference Include="..\GPUModel\GPUModel.fsproj" />
+    <ProjectReference Include="..\ShaderGameProgramming\ShaderGameProgramming.fsproj" />
+    <ProjectReference Include="..\ShaderPBR\ShaderPBR.fsproj" />
     <ProjectReference Include="..\ShaderRenderingCookbook\ShaderRenderingCookbook.fsproj" />
   </ItemGroup>
   <ItemGroup>
