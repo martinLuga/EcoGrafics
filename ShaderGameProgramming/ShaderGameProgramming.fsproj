@@ -8,9 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MaterialsAndTextures.fs" />
     <Compile Include="Pipeline.fs" />
     <Compile Include="Shaders.fs" />
     <Compile Include="Structures.fs" />
+    <Compile Include="Interface.fs" />
+    <Compile Include="Materials.fs" />
     <None Include="shader\Common.hlsl" />
     <None Include="shader\Default.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

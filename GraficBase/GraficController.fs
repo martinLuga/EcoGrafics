@@ -34,7 +34,9 @@ open CameraControl
 open Camera
 open GraficWindow
 
+//open ShaderGameProgramming
 open ShaderRenderingCookbook
+open Interface
 open Pipeline 
 open Structures
 
@@ -525,16 +527,7 @@ module GraficController =
             myGpu.UpdateFrame(ref frameConst)
 
         member this.updatePerMaterial(material:Material, hasTexture:bool) = 
-            let newMaterial = 
-                new MaterialConstants( 
-                    Ambient = material.Ambient,
-                    Diffuse = material.Diffuse,
-                    Specular = material.Specular,
-                    SpecularPower = material.SpecularPower,
-                    Emissive = material.Emissive,
-                    HasTexture = RawBool(hasTexture), 
-                    UVTransform = Matrix.Identity
-                )
+            let newMaterial = shaderMaterial(material)
             myGpu.UpdateMaterial(material.IDX, ref newMaterial)
         
         // Update 

@@ -1,4 +1,8 @@
-﻿
+﻿//***************************************************************************************
+// Common.hlsl by Frank Luna (C) 2015 All Rights Reserved.
+//***************************************************************************************
+
+// Defaults for number of lights.
 #ifndef NUM_DIR_LIGHTS
 #define NUM_DIR_LIGHTS 3
 #endif
@@ -12,7 +16,7 @@
 #endif
 
 // Include structures and functions for lighting.
-#include "LightingUtil.hlsl"
+#include "Shaders\LightingUtil.hlsl"
 
 struct MaterialData
 {
@@ -80,3 +84,5 @@ cbuffer cbPass : register(b1)
     // are spot lights for a maximum of MaxLights per object.
     Light gLights[MaxLights];
 };
+
+

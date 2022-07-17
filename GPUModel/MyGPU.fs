@@ -311,6 +311,7 @@ module MyGPU =
 
         // ----------------------------------------------------------------------------------------------------
         // Texture
+        // Dict textures dient nur dazu, EIndeutigkeit herzustellen
         // ----------------------------------------------------------------------------------------------------
         member this.InstallTexture(texture:Texture) = 
 
