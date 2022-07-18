@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="GPUAccess.fs" />
-    <Compile Include="MeshManager.fs" />
     <Compile Include="NodeAdapter.fs" />
     <Compile Include="BaseObject.fs" />
     <Compile Include="Common.fs" />

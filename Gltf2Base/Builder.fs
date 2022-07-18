@@ -47,7 +47,7 @@ module Builder =
             logger.Debug(fileName + " contains " + buffers.Length.ToString() + " Buffers")
             logger.Debug(fileName + " contains " + nodes.Length.ToString()   + " Nodes")
 
-        member this.CreateMeshData(nodeName, mesh:Mesh) =
+        member this.CreateMeshData(nodeName, mesh:Mesh, isTransparent) =
             let primitive       = mesh.Primitives[0]
 
             // Positions
@@ -99,7 +99,8 @@ module Builder =
                 let pos =  positions.Item(i) 
                 let norm = normals.Item(i) 
                 let tex = textures.Item(i) 
-                let vertex = new Vertex(pos, norm, tex)
+                let mutable color4 = if isTransparent then ToTransparentColor(Color4.White) else Color4.White                 
+                let vertex = createVertex pos norm color4 tex
                 meshVertices.Add(vertex)
 
             // Index

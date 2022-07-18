@@ -81,13 +81,14 @@ module GLTF2 =
             this.Parts <- this.ToParts(tree, visibility )
 
         member this.ToParts(tree: NodeAdapter, visibility: Visibility ) =
-            this.ToShapes(tree)
+            this.ToShapes(tree, visibility)
             |> List.map (fun shapeMaterialTexture -> this.ToPart(shapeMaterialTexture, visibility))
             |> ResizeArray
 
-        member this.ToShapes(tree: NodeAdapter) =
+        member this.ToShapes(tree: NodeAdapter, visibility: Visibility) =
+            let isTransparent = TransparenceFromVisibility(visibility)
             tree.LeafAdapters()
-            |> List.map (fun node -> builder.CreateMeshData(node.Node.Name, node.Mesh))
+            |> List.map (fun node -> builder.CreateMeshData(node.Node.Name, node.Mesh, isTransparent))
             |> List.map (fun nameVerIndTopoMat -> this.ToShape(nameVerIndTopoMat))
 
         member this.ToShape(name, vertices, indices, topology, material: int) =
