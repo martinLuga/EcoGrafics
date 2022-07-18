@@ -10,27 +10,23 @@ open SharpDX
 
 open log4net
 
-open Base.LoggingSupport
-open Base.ModelSupport
-open Base.ShaderSupport
-open Base.ObjectBase
- 
-open Wavefront
-open SimpleFormat
-open PolygonFormat
-open Segment
-open Svg
-open PBR
+open Base
+open LoggingSupport
+open ModelSupport
+open ShaderSupport
+open ObjectBase
 
 // ----------------------------------------------------------------------------------------------------
 // Client-Schnittestelle
 // Für Grafik-Dateien
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// Builder für das einfache Format
+// ----------------------------------------------------------------------------------------------------
 module SimpleBuilder = 
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für das einfache Format
-    // ----------------------------------------------------------------------------------------------------
+    open SimpleFormat
+
     let logger = LogManager.GetLogger("Builder.Simple")
     let logInfo = Info(logger)
 
@@ -43,10 +39,12 @@ module SimpleBuilder =
         builder.Build(material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts |> Seq.toList
 
+// ----------------------------------------------------------------------------------------------------
+// Builder für Polygone aus Datei
+// ----------------------------------------------------------------------------------------------------
 module PolygonBuilder = 
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für Polygone aus Datei
-    // ----------------------------------------------------------------------------------------------------
+    open PolygonFormat
+
     let logger = LogManager.GetLogger("Builder.Polygon")
     let logInfo = Info(logger)
 
@@ -59,10 +57,12 @@ module PolygonBuilder =
         builder.Build(origin, height, material, texture, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Parts |> Seq.toList
 
+// ----------------------------------------------------------------------------------------------------
+// Builder für Polygone aus Svg-Datei
+// ----------------------------------------------------------------------------------------------------
 module SvgBuilder = 
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für Polygone aus Svg-Datei
-    // ----------------------------------------------------------------------------------------------------
+    open Svg
+
     let logger = LogManager.GetLogger("Builder.Svg")
     let logInfo = Info(logger)
 
@@ -84,10 +84,12 @@ module SvgBuilder =
         builder.Build(klass, elem, height, material, texture, position, sizeFactor, visibility, augmentation, quality, shaders)  
         builder.Objects
 
+// ----------------------------------------------------------------------------------------------------
+// Builder für Zahlen aus Segmenten
+// ----------------------------------------------------------------------------------------------------
 module SegmentBuilder = 
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für Zahlen aus Segmenten
-    // ----------------------------------------------------------------------------------------------------
+    open Segment
+
     let logger = LogManager.GetLogger("Builder.Segment")
     let logInfo = Info(logger)
 
@@ -139,6 +141,9 @@ module SegmentBuilder =
         builder.Parts
 
 module PBRBuilder = 
+
+    open PBR
+
     // ----------------------------------------------------------------------------------------------------
     // Builder für das glb Format
     // ----------------------------------------------------------------------------------------------------
@@ -153,12 +158,12 @@ module PBRBuilder =
         let builder = new PBRBuilder(name, fileName, position, rotation, scale) 
         builder.Build(position, scale, visibility, augmentation)    
 
-module GltfBuilder = 
-
+// ----------------------------------------------------------------------------------------------------
+// Builder für das gltf Format in der EcoGrafics Technologie mit VGltf (deprecated)
+// ----------------------------------------------------------------------------------------------------
+ module GltfBuilder = 
     open GlTf
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für das gltf Format in der EcoGrafics Technologie mit VGltf (deprecated)
-    // ----------------------------------------------------------------------------------------------------
+    
     let logger = LogManager.GetLogger("Builder.Gltf")
     let logInfo = Info(logger)
 
@@ -171,28 +176,29 @@ module GltfBuilder =
         builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
         builder.Parts |> Seq.toList
 
+// ----------------------------------------------------------------------------------------------------
+// Builder für das gltf Format in der EcoGrafics Technologie mit gltfLoader
+// ----------------------------------------------------------------------------------------------------
 module Gltf2Builder = 
-    
-    open GlTf2
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für das gltf Format in der EcoGrafics Technologie mit gltfLoader
-    // ----------------------------------------------------------------------------------------------------
+    open GLTF2
+
     let logger = LogManager.GetLogger("Builder.Gltf2")
     let logInfo = Info(logger)
 
     // ----------------------------------------------------------------------------------------------------
     //  Parts für eine vorgegebene Menge an Vertex/Index erzeugen
     // ----------------------------------------------------------------------------------------------------
-    let Build (_objectName, _fileName, _sizeFactor, _material:Material, visibility:Visibility, augmentation:Augmentation, quality:Quality, shaders:ShaderConfiguration) =
-        logInfo ("Creating Geometry for GLTF2-File: " + _fileName)
-        let builder = new GlTf2Builder(_objectName, _fileName)  
-        builder.Build(_sizeFactor, _material, visibility, augmentation, quality, shaders)    
-        builder.Parts |> Seq.toList
+    let Build (name, fileName, position, rotation, scale:Vector3, visibility:Visibility, augmentation:Augmentation) =
+        logInfo ("Creating Geometry for GLTF2-File: " + fileName)
+        let builder = new GlTf2Builder(name, fileName)  
+        builder.Build(position, rotation, scale, visibility, augmentation)    
          
+// ----------------------------------------------------------------------------------------------------
+// Builder für das Wavefront-Format
+// ----------------------------------------------------------------------------------------------------
 module WavefrontBuilder =
-    // ----------------------------------------------------------------------------------------------------
-    // Builder für das Wavefront-Format
-    // ----------------------------------------------------------------------------------------------------
+    open Wavefront
+
     let logger = LogManager.GetLogger("Builder.Wavefront")
     let logInfo = Info(logger)
 

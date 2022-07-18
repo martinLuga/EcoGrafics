@@ -15,7 +15,6 @@
     <Compile Include="SimpleFormat.fs" />
     <Compile Include="SVGFormat.fs" />
     <Compile Include="WavefrontFormat.fs" />
-    <Compile Include="PBRFormat.fs" />
     <Compile Include="SVG.fs" />
     <Compile Include="GlTf.fs" />
     <Compile Include="GlTf2.fs" />

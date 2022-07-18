@@ -24,13 +24,13 @@ open PBRBase
 open BaseObject
 open NodeAdapter
 open Builder
-open Shaders
 
 open BuilderSupport
 open Conversion
 
 open ShaderPBR
 open Structures
+open Shaders
 
 // ----------------------------------------------------------------------------------------------------
 // Einlesen von gltf-Files
@@ -39,18 +39,10 @@ open Structures
 // ----------------------------------------------------------------------------------------------------
 module PBR =
 
-    let shadersPBR = 
-        new ShaderConfiguration(
-            vertexShaderDesc=vertexShaderPBRDesc,
-            pixelShaderDesc=pixelShaderPBRDesc,
-            domainShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Domain),
-            hullShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Hull)
-        ) 
-
     let shaders = 
         new ShaderConfiguration(
             vertexShaderDesc=vertexShaderDesc,
-            pixelShaderDesc=pixelShaderPhongDesc,
+            pixelShaderDesc=pixelShaderDesc,
             domainShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Domain),
             hullShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Hull)
         ) 

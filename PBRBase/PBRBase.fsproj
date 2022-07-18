@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="PBRShaders.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="Builder.fs" />
     <Compile Include="Conversion.fs" />

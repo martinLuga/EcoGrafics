@@ -1,115 +1,109 @@
 ﻿namespace Builder
 //
-//  GlTf2.fs
+//  Wavefront.fs
 //
 //  Created by Martin Luga on 08.02.22.
 //  Copyright © 2022 Martin Luga. All rights reserved.
 //
 
- 
-
 open SharpDX
+open SharpDX.Direct3D
 
-open Base.ModelSupport
-open Base.ShaderSupport
-open Base.VertexDefs
+open Base
+open ModelSupport
+open ObjectBase
+open ShaderSupport
+open Framework
 
-open Geometry.GeometricModel3D
+open Geometry
+open GeometricModel3D
 
-open Gltf2Base.Deployment
-open Gltf2Base.Gltf2Reader
-open Gltf2Base.BaseObject
+open Gltf2Base
+open BaseObject
+open NodeAdapter
+open Builder
 
 open BuilderSupport
+open Conversion
 
-type Material = Base.ModelSupport.Material
-type Texture = Base.ModelSupport.Texture
+open ShaderRenderingCookbook
+open Structures
+open Shaders
 
 // ----------------------------------------------------------------------------------------------------
-// Support für das Einlesen von glb-Files in der EcoGrafics Technologie
+// Einlesen von gltf-Files (EcoGrafics)
+// Objekt-Baum erzeugen
+// Konvertieren
 // ----------------------------------------------------------------------------------------------------
-module GlTf2 =
+module GLTF2 =
 
-    [<AllowNullLiteral>]
-    type GlTf2Builder(name, fileName) = 
+    let shaders = 
+        new ShaderConfiguration(
+            vertexShaderDesc=vertexShaderDesc,
+            pixelShaderDesc=pixelShaderPhongDesc,
+            domainShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Domain),
+            hullShaderDesc=ShaderDescription.CreateNotRequired(ShaderType.Hull)
+        ) 
+
+    let log(objekt:Objekt) = 
+        objekt.Tree.printAll ()
+        objekt.Tree.printAllGltf ()
+
+    // ----------------------------------------------------------------------------------------------------
+    // PBRBuilder
+    // ----------------------------------------------------------------------------------------------------
+    type GlTf2Builder(name:string, fileName: string) =
         inherit ShapeBuilder(name, fileName)
+        let fileName = fileName
+        let builder = new GltfBuilder(fileName)
+        let gltf = builder.Gltf
         let mutable objekt:Objekt = null
-                
-        member this.Build(_scale:Vector3, _material:Material, _visibility:Visibility, _augment:Augmentation, _quality:Quality, _shaders:ShaderConfiguration) =
-            this.Size <- _scale            
-            let gltf = getGltf(this.FileName)
-            objekt <- new Objekt(this.Name, gltf, Vector3.Zero, Matrix.Identity, Vector3.One)
-            Deployer.Deploy(gltf, objekt, this.FileName)
+        let mutable tree:NodeAdapter = null
+        let mutable mainObject: BaseObject = null
+        let mutable display: Display = null
 
-            for node in objekt.LeafNodes() do
-                let mutable mesh = Deployer.Instance.MeshKatalog.GetMesh(this.Name, node.Node.Mesh.Value)
-                let material = Deployer.Instance.MeshKatalog.Material(this.Name, node.Node.Mesh.Value)
-                let textures = Deployer.Instance.TextureKatalog.GetTextures(this.Name, material)
-                let texture  = textures |> List.find (fun text -> text.Kind = TextureTypePBR.baseColourTexture)
-                this.AddPart(node.Node.Name, mesh.Vertices , mesh.Indices, _material, texture, _visibility, _shaders) 
+        member this.Build(position: Vector3, rotation:Matrix, scale: Vector3, visibility: Visibility, augmentation: Augmentation) =            
+            objekt <- Objekt(name, gltf, position, rotation, scale)
 
-            this.adjustXYZ()
+            this.ToBaseObject(visibility, augmentation)
 
+            this.adjustXYZ ()
             this.Normalize()
-
             this.Resize()
+            this.Augment(augmentation)
 
-            this.Augment(_augment) 
+            this.Result
 
-        member this.Initialize() =  
-            objekt <- null
-            this.Name <- "" 
+        member this.ToBaseObject(visibility: Visibility, augmentation: Augmentation) =
+            mainObject <- objekt.ToBaseObject()
+            display <- Display(visibility, augmentation)            
+            tree <- objekt.Tree
+            this.Parts <- this.ToParts(tree, visibility )
 
-        member this.Read(_objectName, _path) = 
-            this.Initialize()
-            this.Name  <- _objectName 
+        member this.ToParts(tree: NodeAdapter, visibility: Visibility ) =
+            this.ToShapes(tree)
+            |> List.map (fun shapeMaterialTexture -> this.ToPart(shapeMaterialTexture, visibility))
+            |> ResizeArray
 
-        member this.AddPart(_name, _vertices, _indices, _material, _texture, _visibility, _shaders) =
-            let mutable texture = Texture(_texture.Name, _texture.Info.MimeType.ToString(), _texture.Data) 
-            this.Part <- 
-                new Part(
-                    _name,
-                    new TriangularShape(_name, Vector3.Zero, _vertices, _indices, Vector3.One, Quality.High),
-                    _material,
-                    texture,
-                    _visibility,
-                    _shaders
-                )
-            this.Parts.Add(this.Part)
+        member this.ToShapes(tree: NodeAdapter) =
+            tree.LeafAdapters()
+            |> List.map (fun node -> builder.CreateMeshData(node.Node.Name, node.Mesh))
+            |> List.map (fun nameVerIndTopoMat -> this.ToShape(nameVerIndTopoMat))
 
-        override this.Vertices  
-            with get() =
-                this.Parts 
-                |> Seq.map(fun p -> p.Shape.Vertices)   
-                |> Seq.concat
-                |> ResizeArray
+        member this.ToShape(name, vertices, indices, topology, material: int) =
+            let material, texture = ToMaterialAndTexture(builder, material)
+            let shape =
+                match topology with
+                | PrimitiveTopology.TriangleList ->
+                    new TriangularShape(name, Vector3.Zero, vertices, indices, Vector3.One, Quality.High) :> Shape
+                | _ -> new PatchShape(name, Vector3.Zero, vertices, indices, Vector3.One, Quality.High) :> Shape
 
-        // ----------------------------------------------------------------------------------------------------
-        // Normierung. Größe und Position
-        // Für alle Parts und Vertices
-        // ----------------------------------------------------------------------------------------------------
-        override this.adjustXYZ()=
-           let min = computeMinimum(this.Vertices|> Seq.toList) 
-           for part in this.Parts do 
-                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Shifted(-min.Position)) |> ResizeArray
+            name, shape, material, texture
 
-        override this.Normalize() =
-            let mutable aFactor = this.ComputeFactor() 
-            let factor = Vector3(aFactor, aFactor, aFactor)
-            for part in this.Parts do 
-                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(factor)) |> ResizeArray 
+        member this.ToPart((name, shape:Shape, material:MaterialBase, texture:TextureBase), visibility: Visibility) =
+            Part(name, shape, material, texture, visibility)
 
-        override this.Resize() =  
-            for part in this.Parts do 
-                part.Shape.Vertices <- part.Shape.Vertices |> Seq.map (fun v -> v.Resized(this.Size)) |> ResizeArray 
-
-        override this.ComputeFactor() =
-            let minimum = computeMinimum(this.Vertices|> Seq.toList)
-            let maximum = computeMaximum(this.Vertices|> Seq.toList)
-            let actualHeight = maximum.Position.Y - minimum.Position.Y
-            let actualDepth = maximum.Position.Z - minimum.Position.Z
-            let actualWidt = maximum.Position.X - minimum.Position.X
-            let mutable actualSize = max actualHeight actualWidt             
-            actualSize <- max actualSize actualDepth 
-            let standardHeight = 1.0f
-            standardHeight / actualSize  
+        member this.Result =
+            display.Parts <- this.Parts |> Seq.toList
+            mainObject.Display <- display
+            mainObject
