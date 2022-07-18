@@ -12,8 +12,7 @@ open SharpDX
 
 open Base.ModelSupport
 open Base.ShaderSupport
-open Base.VertexDefs
-open Base.MaterialsAndTextures
+open Base.VertexDefs 
 
 open Geometry.GeometricModel3D
 

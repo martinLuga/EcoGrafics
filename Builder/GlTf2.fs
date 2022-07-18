@@ -12,8 +12,7 @@ open SharpDX.Direct3D
 open Base
 open ModelSupport
 open ObjectBase
-open ShaderSupport
-open Framework
+open ShaderSupport  
 
 open Geometry
 open GeometricModel3D
@@ -26,8 +25,7 @@ open Builder
 open BuilderSupport
 open Conversion
 
-open ShaderRenderingCookbook
-open Structures
+open ShaderRenderingCookbook 
 open Shaders
 
 // ----------------------------------------------------------------------------------------------------
