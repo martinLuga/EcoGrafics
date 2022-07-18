@@ -18,14 +18,14 @@ open Structures
 // ----------------------------------------------------------------------------------------------------
 module Interface =
 
-    let shaderMaterial(material:Material)  = 
+    let shaderMaterial(material:Material, hasTexture:bool)  = 
         new MaterialConstants( 
             Ambient = material.Ambient,
             Diffuse = material.Diffuse,
             Specular = material.Specular,
             SpecularPower = material.SpecularPower,
             Emissive = material.Emissive,
-            HasTexture = RawBool(true), 
+            HasTexture = RawBool(hasTexture), 
             UVTransform = Matrix.Identity
         ) 
 

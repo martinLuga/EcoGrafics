@@ -30,14 +30,14 @@ module Materials =
     let DIFFUSE_LIGHT = Color.LightYellow.ToColor4()
 
     // ----------------------------------------------------------------------------------------------------
-    // COLOR
+    // FRESNEL
     // ----------------------------------------------------------------------------------------------------
-    let COLOR_GROUND = Color.DarkGray
-    let COLOR_HILL = Color.DarkSeaGreen
-    let COLOR_ANT = Color.DarkGoldenrod
-    let COLOR_PREDATOR = Color.Black
-    let COLOR_ANTHILL = Color.Black
-    let COLOR_FOOD = Color.SandyBrown
+    // WATER   0.02, 0.02, 0.02
+    // GLASS   0.08  0.08  0.08
+    // PLASTIC 0.05  0.05  0.05
+    // GOLD    1.00  0.71  0.29
+    // SILVER  0.95  0.93  0.88
+    // COPPER  0.95  0.64  0.54
 
     // ----------------------------------------------------------------------------------------------------
     // MATERIAL
@@ -99,3 +99,6 @@ module Materials =
 
     let MAT_SHADOW =
         MAT("shadow", new Vector4(0.0f, 0.0f, 0.0f, 0.5f), Vector3(0.001f), 0.0f) 
+
+    let MAT_COPPER =
+        MAT("copper", Vector4(0.95f, 0.64f, 0.54f, 0.5f), Vector3(0.001f), 0.0f) 

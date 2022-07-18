@@ -20,7 +20,7 @@ open Structures
 // ----------------------------------------------------------------------------------------------------
 module Interface =
 
-    let shaderMaterial(material:Material)  = 
+    let shaderMaterial(material:Material, hasTexture:bool)  = 
         new MaterialConstants(
             material.DiffuseAlbedo,         // diffuseAlbedo  
             material.FresnelR0,             // fresnelR0 

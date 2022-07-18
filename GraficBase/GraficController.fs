@@ -22,7 +22,6 @@ open Base.LoggingSupport
 open Base.ObjectBase 
 open Base.ShaderSupport
 open Base.GameTimer
-open Base.ShaderSupport
 open Base.MaterialsAndTextures
 
 open DirectX.D3DUtilities
@@ -527,7 +526,7 @@ module GraficController =
             myGpu.UpdateFrame(ref frameConst)
 
         member this.updatePerMaterial(material:Material, hasTexture:bool) = 
-            let newMaterial = shaderMaterial(material)
+            let newMaterial = shaderMaterial(material, hasTexture)
             myGpu.UpdateMaterial(material.IDX, ref newMaterial)
         
         // Update 
