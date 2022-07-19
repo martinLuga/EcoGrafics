@@ -60,6 +60,13 @@ module GLTF2 =
         let mutable mainObject: BaseObject = null
         let mutable display: Display = null
 
+        override this.Vertices  
+            with get() =
+                this.Parts 
+                |> Seq.map(fun p -> p.Shape.Vertices)   
+                |> Seq.concat
+                |> ResizeArray
+
         member this.Build(position: Vector3, rotation:Matrix, scale: Vector3, visibility: Visibility, augmentation: Augmentation) =            
             objekt <- Objekt(name, gltf, position, rotation, scale)
 

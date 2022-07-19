@@ -10,6 +10,7 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ShaderPackage.fs" />
     <Compile Include="Camera.fs" />
     <Compile Include="CameraControl.fs" />
     <Compile Include="GraficWindow.fs" />

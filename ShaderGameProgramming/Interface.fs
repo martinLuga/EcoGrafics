@@ -27,3 +27,20 @@ module Interface =
             material.Roughness,             // roughness  
             material.MatTransform           // matTransform
         ) 
+    
+    let shaderObject(_world, _view, _proj, _eyePos) = 
+        let _invView        = Matrix.Invert(_view)
+        let _invProj        = Matrix.Invert(_proj) 
+        let _viewProj       = _view * _proj
+        let _invViewProj    = Matrix.Invert(_viewProj) 
+        let obj =
+            new ObjectConstants(
+                gView = Matrix.Transpose(_view),
+                gInvView = Matrix.Transpose(_invView), 
+                gProj = Matrix.Transpose(_proj) ,
+                gInvProj = Matrix.Transpose(_invProj) ,
+                gViewProj = Matrix.Transpose(_viewProj) ,
+                gInvViewProj = Matrix.Transpose(_invViewProj), 
+                EyePosW = _eyePos  
+            )
+        obj

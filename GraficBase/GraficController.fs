@@ -6,15 +6,16 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
+open System
 open System.Collections.Generic
+open System.Runtime.InteropServices
 
 open log4net
 
 open SharpDX
 open SharpDX.Windows
 open SharpDX.DXGI 
-open SharpDX.Direct3D12
-open SharpDX.Mathematics.Interop
+open SharpDX.Direct3D12 
 
 open Base.ModelSupport
 open Base.PrintSupport
@@ -24,7 +25,6 @@ open Base.ShaderSupport
 open Base.GameTimer
 open Base.MaterialsAndTextures
 
-open DirectX.D3DUtilities
 open DirectX.Assets
 
 open GPUModel.MyGPU
@@ -32,12 +32,13 @@ open GPUModel.MyGPU
 open CameraControl 
 open Camera
 open GraficWindow
+open ShaderPackage
 
 //open ShaderGameProgramming
 open ShaderRenderingCookbook
 open Interface
-open Pipeline 
-open Structures
+//open Pipeline 
+//open Structures
 
 // ----------------------------------------------------------------------------------------------------
 // Application using shaders from DirectX Cookbook  
@@ -71,8 +72,8 @@ module GraficController =
         
         let mutable aspectRatio = 1.0f
         
-        let mutable defaultInputLayoutDesc:InputLayoutDescription = inputLayoutDescription
-        let mutable defaultRootSignatureDesc:RootSignatureDescription = rootSignatureDesc
+        let mutable defaultInputLayoutDesc:InputLayoutDescription = null
+        let mutable defaultRootSignatureDesc:RootSignatureDescription = null
         let mutable defaultVertexShaderDesc : ShaderDescription = null
         let mutable defaultPixelShaderDesc : ShaderDescription = null
         let mutable defaultDomainShaderDesc : ShaderDescription = null
@@ -82,12 +83,12 @@ module GraficController =
         let mutable defaultSampleDesc = SampleDescription()
         let mutable defaultTopologyType = PrimitiveTopologyType.Triangle
 
-        let mutable objects = Dictionary<string, BaseObject>()
-        let mutable frameLight : DirectionalLight = DirectionalLight(Color4.White)
+        let mutable objects = Dictionary<string, BaseObject>()        
+        let mutable lightDir = Vector3.Zero
+        let mutable lightColor:Color4  = Color4.White
         let mutable graficWindow = graficWindow
         let mutable status = ControllerStatus.New
         let mutable idle = false
-        let mutable lightDir = Vector4.Zero
         let mutable myGpu = new MasterGPU()
         let mutable rasterizationFactor = 8.0f
         let mutable tessellationFactor = 8.0f
@@ -95,7 +96,6 @@ module GraficController =
         let mutable blendDesc = BlendDescription.Default()
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
-        let mutable worldMatrix = Matrix.Identity
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
 
         let currentVertexShader(part:Part)  = 
@@ -158,39 +158,20 @@ module GraficController =
         // ----------------------------------------------------------------------------------------------------
         // Construct
         // ----------------------------------------------------------------------------------------------------
-        static member CreateInstance
-            (
-                graficWindow: MyWindow,
-                inputLayoutDescription:InputLayoutDescription,
-                rootSignatureDesc:RootSignatureDescription,
-                vertexShaderDesc:ShaderDescription,
-                pixelShaderDepthDesc:ShaderDescription
-            ) =
+        static member CreateInstance(graficWindow: MyWindow,shaderPackage) =
             MyController.Instance <- MyController(graficWindow)
             graficWindow.Renderer <- MyController.Instance.GPU
-
-            instance.Configure(
-
-                inputLayoutDescription,
-                rootSignatureDesc,
-                vertexShaderDesc,
-                pixelShaderDepthDesc
-            )
+            instance.Configure(shaderPackage)
 
         // ----------------------------------------------------------------------------------------------------
         // Initialize (Default Configuration)
         // ----------------------------------------------------------------------------------------------------
-        member this.Configure
-            (
-                _inputLayoutDescription,
-                _rootSignatureDesc,
-                _vertexShaderDescription,
-                _pixelShaderDescription
-            ) =
-            defaultInputLayoutDesc      <- inputLayoutDescription
-            defaultRootSignatureDesc    <- rootSignatureDesc
-            defaultVertexShaderDesc     <-_vertexShaderDescription
-            defaultPixelShaderDesc      <-_pixelShaderDescription
+        member this.Configure(shaderPackage:ShaderPackage) =
+
+            defaultInputLayoutDesc      <- shaderPackage.InputLayoutDesc 
+            defaultRootSignatureDesc    <- shaderPackage.RootSignatureDesc
+            defaultVertexShaderDesc     <- shaderPackage.VertexShaderDesc 
+            defaultPixelShaderDesc      <- shaderPackage.PixelShaderDesc 
 
             defaultDomainShaderDesc     <- ShaderDescription.CreateNotRequired(ShaderType.Domain)
             defaultHullShaderDesc       <- ShaderDescription.CreateNotRequired(ShaderType.Hull)
@@ -199,7 +180,7 @@ module GraficController =
             defaultBlendDesc            <- BlendDescription.Default()
             defaultTopologyType         <- PrimitiveTopologyType.Triangle
 
-            this.ConfigureGPU()
+            this.ConfigureGPU(shaderPackage.FrameLength, shaderPackage.MatLength, shaderPackage.ItemLength)
 
             myGpu.Initialize(graficWindow)
 
@@ -217,11 +198,11 @@ module GraficController =
                 new ShaderDefineMacros([])
             )
 
-        abstract member ConfigureGPU:Unit -> Unit 
-        default this.ConfigureGPU() =
-            myGpu.FrameLength <- D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
-            myGpu.MatLength   <- D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
-            myGpu.ItemLength  <- D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
+        abstract member ConfigureGPU: int * int * int  -> Unit 
+        default this.ConfigureGPU(frameLength, matLength, itemLength) =
+            myGpu.FrameLength <- frameLength
+            myGpu.MatLength   <- matLength
+            myGpu.ItemLength  <- itemLength
 
         member this.ConfigureWorld(origin:Vector3, halfLength:float32, makeGround, makeAxes) =
             let axes = makeAxes(halfLength) 
@@ -248,8 +229,8 @@ module GraficController =
             this.initLight(lightDirection, lightColor) 
 
         member this.initLight(dir:Vector3, color: Color) = 
-            lightDir <- Vector3.Transform(dir, worldMatrix)
-            frameLight <- new DirectionalLight(color.ToColor4(), new Vector3(lightDir.X, lightDir.Y, lightDir.Z))
+            lightDir <-  dir 
+            lightColor <- color.ToColor4() 
 
         // ----------------------------------------------------------------------------------------------------
         // Member
@@ -296,22 +277,6 @@ module GraficController =
             if success then 
                 materials.Item(idx) 
             else null
-
-        member this.getMaterialConstants(idx, hasTexture:bool) = 
-            let material = this.getMaterial(idx)
-            if material = null then
-                raise (ObjectNotFoundException("Invalid Materialname ")) 
-            let mutable newMaterial = 
-                new MaterialConstants( 
-                    Ambient = material.Ambient,
-                    Diffuse = material.Diffuse,
-                    Specular = material.Specular,
-                    SpecularPower = material.SpecularPower,
-                    Emissive = material.Emissive,
-                    HasTexture = RawBool(hasTexture), 
-                    UVTransform = Matrix.Identity
-                )
-            material.IDX, ref newMaterial
 
         // ----------------------------------------------------------------------------------------------------
         // Objects im Controller verwalten
@@ -517,14 +482,9 @@ module GraficController =
         // Update GPU
         // ----------------------------------------------------------------------------------------------------
         member this.updatePerFrame() =
-            let frameConst = 
-                new FrameConstants(
-                    TessellationFactor = tessellationFactor, 
-                    Light = frameLight,
-                    CameraPosition  = Camera.Instance.EyePosition    
-                )
+            let frameConst = shaderFrame(tessellationFactor, lightColor, lightDir, Camera.Instance.EyePosition )
             myGpu.UpdateFrame(ref frameConst)
-
+             
         member this.updatePerMaterial(material:Material, hasTexture:bool) = 
             let newMaterial = shaderMaterial(material, hasTexture)
             myGpu.UpdateMaterial(material.IDX, ref newMaterial)
@@ -545,31 +505,11 @@ module GraficController =
             part.Transform.Decompose(&sclePt, &rotPt, &tranPt) |> ignore
 
             let _world          = displayable.World * part.Transform 
-
             let _view           = Camera.Instance.View
-            let _proj           = Camera.Instance.Proj
-            let _invView        = Matrix.Invert(_view)
-            let _invProj        = Matrix.Invert(_proj) 
-            let _viewProj       = _view * _proj
-            let _invViewProj    = Matrix.Invert(_viewProj) 
+            let _proj           = Camera.Instance.Proj            
             let _eyePos         = Camera.Instance.EyePosition
- 
-            let objConst = 
-                new ObjectConstants(
-                    World = _world,
-                    View = Matrix.Transpose(_view),
-                    InvView = Matrix.Transpose(_invView), 
-                    Proj = Matrix.Transpose(_proj) ,
-                    InvProj = Matrix.Transpose(_invProj) ,
-                    ViewProj = Matrix.Transpose(_viewProj) ,
-                    InvViewProj = Matrix.Transpose(_invViewProj), 
-                    WorldViewProjection= _world * _viewProj,
-                    WorldInverseTranspose = Matrix.Transpose(Matrix.Invert(_world)),
-                    ViewProjection = _viewProj,
-                    EyePosW = _eyePos  
-                )
 
-            let perObject = Transpose(objConst)
+            let perObject = shaderObject(_world, _view, _proj, _eyePos)
 
             myGpu.UpdateObject(idx, ref perObject)
 
