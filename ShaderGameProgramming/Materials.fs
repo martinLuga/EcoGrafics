@@ -8,9 +8,7 @@
 
 open SharpDX
 
-open Interface
-
-open Structures
+open Base.ModelSupport
 
 // ----------------------------------------------------------------------------------------------------
 // Speicher für viel benutzte Eigenschaften
@@ -47,11 +45,8 @@ module Materials =
             name = name,
             diffuseAlbedo = diffuseAlbedo,
             fresnelR0 = fresnelR0,
-            matTransform = Matrix.Identity,
             roughness = roughness,
-            matCBIndex = -1,
-            diffuseSrvHeapIndex = -1,
-            normalSrvHeapIndex = -1
+            matTransform=Matrix.Identity
         )
 
     let MAT_GRASS =

@@ -191,6 +191,7 @@ module ModelSupport =
             diffuseAlbedo: Vector4,
             fresnelR0: Vector3,
             roughness: float32,
+            matTransform: Matrix,
             ambient: Color4,
             diffuse: Color4,
             specular: Color4,
@@ -198,13 +199,23 @@ module ModelSupport =
             emissive: Color4,
             hasTexture:bool 
         ) =
+        
+        let mutable name = name
+        let mutable idx = 0
+
+        // Shader: cookbook
         let mutable ambient = ambient
         let mutable diffuse = diffuse
         let mutable specular = specular
+        let mutable specularPower = specularPower
         let mutable emissive = emissive
-        let mutable name = name
-        let mutable idx = 0
         let mutable hasTexture = hasTexture
+
+        // Shader: Diffuse lighting
+        let mutable diffuseAlbedo = diffuseAlbedo
+        let mutable fresnelR0 = fresnelR0
+        let mutable roughness  = roughness
+        let mutable matTransform = matTransform
 
         static let mutable mat_count = 0 
 
@@ -219,22 +230,16 @@ module ModelSupport =
         static member MAT_COUNT
             with get() = mat_count
 
-        member this.DiffuseAlbedo = diffuseAlbedo
-        member this.FresnelR0 = fresnelR0
-        member this.Roughness = roughness
-        member this.SpecularPower = specularPower
-        member this.MatTransform:Matrix = Matrix.Identity
         member this.IDX = idx
 
-        new() = Material("", Vector4.Zero, Vector3.Zero, 0.0f)
-        new(name: string) = Material(name, Vector4.Zero, Vector3.Zero, 0.0f)
-
-        new(name: string, diffuseAlbedo: Vector4, fresnelR0: Vector3, roughness: float32) =
+        // Shader: Diffuse lighting
+        new(name: string, diffuseAlbedo: Vector4, fresnelR0: Vector3, roughness: float32, matTransform) =
             Material(
                 name,
                 diffuseAlbedo,
                 fresnelR0,
                 roughness,
+                matTransform,
                 Color4.White,
                 Color4.White,
                 Color4.White,
@@ -243,12 +248,17 @@ module ModelSupport =
                 false
             )
 
+        new() = Material("", Vector4.Zero, Vector3.Zero, 0.0f, Matrix.Identity)
+        new(name: string) = Material(name, Vector4.Zero, Vector3.Zero, 0.0f, Matrix.Identity)
+
+        // Shader: Cookbook
         new( name:string, ambient: Color4, diffuse: Color4, specular: Color4, specularPower: float32, emissive: Color4, hasTexture) =
             Material(
                 name,
                 Vector4.Zero,
                 Vector3.Zero, 
                 0.0f, 
+                Matrix.Identity,
                 ambient,
                 diffuse,
                 specular,
@@ -257,12 +267,14 @@ module ModelSupport =
                 hasTexture
                 )
 
+        // Shader: Cookbook
         new( name:string, ambient: Color4, diffuse: Color4, specular: Color4, specularPower: float32, emissive: Color4) =
             Material(
                 name,
                 Vector4.Zero,
                 Vector3.Zero, 
                 0.0f, 
+                Matrix.Identity,
                 ambient,
                 diffuse,
                 specular,
@@ -297,11 +309,30 @@ module ModelSupport =
             with get () = specular
             and set (value) = specular <- value
 
+        member this.SpecularPower
+            with get () = specularPower
+            and set (value) = specularPower <- value
+
+        member this.DiffuseAlbedo
+            with get () = diffuseAlbedo
+            and set (value) = diffuseAlbedo <- value
+
+        member this.FresnelR0
+            with get () = fresnelR0
+            and set (value) = fresnelR0 <- value
+
+        member this.Roughness
+            with get () = roughness
+            and set (value) = roughness <- value
+
+        member this.MatTransform
+            with get () = matTransform
+            and set (value) = matTransform <- value
+
         member this.isEmpty = this.Name = ""
 
     type MaterialPBR() =
-        inherit Material("", Vector4.Zero, Vector3.Zero, 0.0f)
-
+        inherit Material("", Vector4.Zero, Vector3.Zero, 0.0f, Matrix.Identity)
         let mutable textureBaseColour: TextureBaseColour = null
         let mutable textureMetallicRoughness: TextureMetallicRoughness = null 
         let mutable textureEmission: TextureEmission = null 

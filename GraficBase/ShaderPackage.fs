@@ -10,53 +10,97 @@ open SharpDX.Direct3D12
 
 open DirectX.D3DUtilities
 
-open ShaderRenderingCookbook
-open Structures
-open Interface
+open Base.ShaderSupport
 
 // ----------------------------------------------------------------------------------------------------
 //  Shader specifics
 // ----------------------------------------------------------------------------------------------------
-module ShaderPackage = 
+module ShaderPackage =
 
-    type ShaderPackage() =
-        let mutable inputLayoutDesc:InputLayoutDescription = Pipeline.inputLayoutDescription
-        let mutable rootSignatureDesc:RootSignatureDescription = Pipeline.rootSignatureDesc
-        let mutable vertexShaderDesc = Shaders.vertexShaderDesc
-        let mutable pixelShaderDesc  = Shaders.pixelShaderPhongDesc
-        let mutable frameLength  = D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
+    type IShaderPackage =
+
+        abstract member InputLayoutDesc: InputLayoutDescription
+
+        abstract member RootSignatureDesc: RootSignatureDescription
+
+        abstract member VertexShaderDesc: ShaderDescription
+
+        abstract member PixelShaderDesc: ShaderDescription
+
+        abstract member FrameLength: int
+
+        abstract member MatLength: int
+
+        abstract member ItemLength: int
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Shader specifics ShaderRenderingCookbook
+    // ----------------------------------------------------------------------------------------------------
+    open ShaderRenderingCookbook
+    open Structures
+    open Interface
+    open Pipeline
+    open Shaders
+    type ShaderPackageCB() =        
+        let mutable inputLayoutDesc: InputLayoutDescription = inputLayoutDescription
+        let mutable rootSignatureDesc: RootSignatureDescription = rootSignatureDesc
+        let mutable vertexShaderDesc = vertexShaderDesc
+        let mutable pixelShaderDesc = pixelShaderPhongDesc
+        let mutable frameLength = D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
         let mutable matLength = D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
         let mutable itemLength = D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
         let shaderMaterial = shaderMaterial
         let shaderFrame = shaderFrame
         let shaderObject = shaderObject
-        
-        member this.InputLayoutDesc
-            with get() = inputLayoutDesc
 
-        member this.RootSignatureDesc
-            with get() = rootSignatureDesc
-        
-        member this.VertexShaderDesc
-            with get() = vertexShaderDesc
-        
-        member this.PixelShaderDesc
-            with get() = pixelShaderDesc
-        
-        member this.FrameLength
-         with get() = frameLength 
-        
-        member this.MatLength
-            with get() = matLength 
-        
-        member this.ItemLength
-            with get() = itemLength 
+        interface IShaderPackage with
 
-        member this.ShaderMaterial
-            with get() = shaderMaterial 
+            member this.InputLayoutDesc = inputLayoutDesc
 
-        member this.ShaderFrame
-            with get() = shaderFrame 
+            member this.RootSignatureDesc = rootSignatureDesc
 
-        member this.ShaderObject
-            with get() = shaderObject 
+            member this.VertexShaderDesc = vertexShaderDesc
+
+            member this.PixelShaderDesc = pixelShaderDesc
+
+            member this.FrameLength = frameLength
+
+            member this.MatLength = matLength
+
+            member this.ItemLength = itemLength
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Shader specifics ShaderRenderingGameProgramming
+    // ----------------------------------------------------------------------------------------------------
+    open ShaderGameProgramming
+    open Structures
+    open Interface
+    open Pipeline
+    open Shaders
+    type ShaderPackageGP() =
+        let mutable inputLayoutDesc: InputLayoutDescription = inputLayoutDescription
+        let mutable rootSignatureDesc: RootSignatureDescription = rootSignatureDesc
+        let mutable vertexShaderDesc = vertexShaderDesc
+        let mutable pixelShaderDesc = pixelShaderPhongDesc
+        let mutable frameLength = D3DUtil.CalcConstantBufferByteSize<FrameConstants>()
+        let mutable matLength = D3DUtil.CalcConstantBufferByteSize<MaterialConstants>()
+        let mutable itemLength = D3DUtil.CalcConstantBufferByteSize<ObjectConstants>()
+        let shaderMaterial = shaderMaterial
+        let shaderFrame = shaderFrame
+        let shaderObject = shaderObject
+
+        interface IShaderPackage with
+
+            member this.InputLayoutDesc = inputLayoutDesc
+
+            member this.RootSignatureDesc = rootSignatureDesc
+
+            member this.VertexShaderDesc = vertexShaderDesc
+
+            member this.PixelShaderDesc = pixelShaderDesc
+
+            member this.FrameLength = frameLength
+
+            member this.MatLength = matLength
+
+            member this.ItemLength = itemLength

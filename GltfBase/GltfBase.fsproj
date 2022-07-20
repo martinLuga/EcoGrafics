@@ -22,7 +22,6 @@
     <Compile Include="GraficWindow.fs" />
     <Compile Include="BaseObject.fs" />
     <Compile Include="Reader.fs" />
-    <Compile Include="Runner.fs" />
     <Compile Include="Deployment2.fs" />
   </ItemGroup>
   <ItemGroup>

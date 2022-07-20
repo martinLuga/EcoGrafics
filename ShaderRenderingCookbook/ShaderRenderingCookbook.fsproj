@@ -7,6 +7,7 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="MaterialsAndTextures.fs" />
     <Compile Include="VertexDefs.fs" />
     <Compile Include="Pipeline.fs" />
     <Compile Include="Shaders.fs" />

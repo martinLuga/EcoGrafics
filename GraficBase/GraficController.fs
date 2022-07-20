@@ -17,13 +17,15 @@ open SharpDX.Windows
 open SharpDX.DXGI 
 open SharpDX.Direct3D12 
 
-open Base.ModelSupport
-open Base.PrintSupport
-open Base.LoggingSupport
-open Base.ObjectBase 
-open Base.ShaderSupport
-open Base.GameTimer
-open Base.MaterialsAndTextures
+open Base
+open ModelSupport
+open Framework
+open PrintSupport
+open LoggingSupport
+open ObjectBase 
+open ShaderSupport
+open GameTimer
+open MaterialsAndTextures
 
 open DirectX.Assets
 
@@ -70,7 +72,11 @@ module GraficController =
     type MyController(graficWindow: MyWindow) =
         static let mutable instance:MyController = null
         
+        let mutable graficWindow = graficWindow
+        let mutable myGpu = new MasterGPU()
+        
         let mutable aspectRatio = 1.0f
+        let mutable timer = new GameTimer()
         
         let mutable defaultInputLayoutDesc:InputLayoutDescription = null
         let mutable defaultRootSignatureDesc:RootSignatureDescription = null
@@ -86,10 +92,8 @@ module GraficController =
         let mutable objects = Dictionary<string, BaseObject>()        
         let mutable lightDir = Vector3.Zero
         let mutable lightColor:Color4  = Color4.White
-        let mutable graficWindow = graficWindow
         let mutable status = ControllerStatus.New
         let mutable idle = false
-        let mutable myGpu = new MasterGPU()
         let mutable rasterizationFactor = 8.0f
         let mutable tessellationFactor = 8.0f
         let mutable rasterizerDesc = RasterizerDescription.Default()
@@ -98,6 +102,7 @@ module GraficController =
         let mutable startCameraTarget = Vector3.Zero
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
 
+        // Shader comes from: 1.Part  2.ShaderCache
         let currentVertexShader(part:Part)  = 
             match part.Shaders.VertexShaderDesc with
             | {ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->               
@@ -105,7 +110,7 @@ module GraficController =
             | {ShaderDescription.Use=ShaderUsage.Required} -> 
                 part.Shaders.VertexShaderDesc
             | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                raise (System.Exception("VertexShader muss gesetzt sein"))
+                raiseException("VertexShader muss gesetzt sein") 
             |_ -> defaultVertexShaderDesc            
 
         let currentPixelShader(part:Part)   =
@@ -113,7 +118,7 @@ module GraficController =
             | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
                 ShaderCache.GetShader(ShaderType.Pixel,part.Shape.TopologyType, part.Shape.Topology)
             | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                raise (System.Exception("VertexShader muss gesetzt sein"))
+                raiseException("VertexShader muss gesetzt sein")
             | {ShaderDescription.Use=ShaderUsage.Required} -> 
                 part.Shaders.PixelShaderDesc                
             |_ -> defaultPixelShaderDesc  
@@ -126,7 +131,7 @@ module GraficController =
                 part.Shaders.DomainShaderDesc 
             | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
                 defaultDomainShaderDesc 
-            |_ -> raise (System.Exception("DomainShader invalid use"))
+            |_ -> raiseException("DomainShader invalid use") 
 
         let currentHullShader(part:Part)  =
             match part.Shaders.HullShaderDesc with
@@ -136,38 +141,38 @@ module GraficController =
                 part.Shaders.HullShaderDesc 
             | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
                  defaultHullShaderDesc 
-            |_ -> raise (System.Exception("DomainShader invalid use"))
+            |_ -> raiseException("DomainShader invalid use") 
 
         // RootSignature 
-        let currentRootSignatureDesc(part:Part, defaultRootSignatureDesc:RootSignatureDescription) =
+        let currentRootSignatureDesc(part:Part, rootSignatureDesc:RootSignatureDescription) =
             if isRootSignatureDescEmpty(part.Shaders.VertexShaderDesc.RootSignature) then
                 let fromCache = ShaderCache.GetShader(ShaderType.Vertex, part.Shape.TopologyType, part.Shape.Topology)
                 if fromCache = null || (fromCache.Use=ShaderUsage.ToBeFilledIn) then
-                    defaultRootSignatureDesc
+                    rootSignatureDesc
                 else
                     fromCache.RootSignature
             else 
-                part.Shaders.VertexShaderDesc.RootSignature
-        
-        let mutable timer = new GameTimer()
+                part.Shaders.VertexShaderDesc.RootSignature        
 
+        // ----------------------------------------------------------------------------------------------------
+        // Instance
+        // ----------------------------------------------------------------------------------------------------
         static member Instance  
             with get() = instance
             and set(value) = instance <- value
 
-        // ----------------------------------------------------------------------------------------------------
-        // Construct
-        // ----------------------------------------------------------------------------------------------------
-        static member CreateInstance(graficWindow: MyWindow,shaderPackage) =
+        static member CreateInstance(graficWindow: MyWindow, shaderPackage:IShaderPackage) =
             MyController.Instance <- MyController(graficWindow)
             graficWindow.Renderer <- MyController.Instance.GPU
+            graficWindow.Renderer.Initialize(graficWindow)
             instance.Configure(shaderPackage)
 
         // ----------------------------------------------------------------------------------------------------
-        // Initialize (Default Configuration)
+        //  Configuration
         // ----------------------------------------------------------------------------------------------------
-        member this.Configure(shaderPackage:ShaderPackage) =
-
+        member this.Configure(shaderPackage:IShaderPackage) =
+            
+            // default values
             defaultInputLayoutDesc      <- shaderPackage.InputLayoutDesc 
             defaultRootSignatureDesc    <- shaderPackage.RootSignatureDesc
             defaultVertexShaderDesc     <- shaderPackage.VertexShaderDesc 
@@ -180,9 +185,9 @@ module GraficController =
             defaultBlendDesc            <- BlendDescription.Default()
             defaultTopologyType         <- PrimitiveTopologyType.Triangle
 
-            this.ConfigureGPU(shaderPackage.FrameLength, shaderPackage.MatLength, shaderPackage.ItemLength)
-
-            myGpu.Initialize(graficWindow)
+            myGpu.FrameLength <- shaderPackage.FrameLength
+            myGpu.MatLength   <- shaderPackage.MatLength
+            myGpu.ItemLength  <- shaderPackage.ItemLength
 
             myGpu.InstallPipelineProvider(
                 defaultInputLayoutDesc ,      
@@ -197,12 +202,6 @@ module GraficController =
                 defaultTopologyType ,                
                 new ShaderDefineMacros([])
             )
-
-        abstract member ConfigureGPU: int * int * int  -> Unit 
-        default this.ConfigureGPU(frameLength, matLength, itemLength) =
-            myGpu.FrameLength <- frameLength
-            myGpu.MatLength   <- matLength
-            myGpu.ItemLength  <- itemLength
 
         member this.ConfigureWorld(origin:Vector3, halfLength:float32, makeGround, makeAxes) =
             let axes = makeAxes(halfLength) 
