@@ -318,4 +318,3 @@ module ShaderSupport =
 
         member this.Get(_ShaderType:ShaderType, topoType:PrimitiveTopologyType, topo:PrimitiveTopology) =
             ndict.Item(_ShaderType, topoType, topo)
-

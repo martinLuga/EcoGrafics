@@ -14,6 +14,7 @@ open Base.VertexDefs
 open GPUModel.MyGPU
 open GraficBase.GraficController
 open GraficBase.GraficWindow
+open GraficBase.ShaderPackage
 open Initializations
 open log4net
 open NUnit.Framework
@@ -53,7 +54,7 @@ module Architecture =
 
             WindowLayout.Setup("TEST")
 
-            MyController.CreateInstance(this.myWindow, inputLayoutDescription, rootSignatureDesc, vertexShaderDesc, pixelShaderPhongDesc)   |> ignore           
+            MyController.CreateInstance(this.myWindow, ShaderPackageCB())   |> ignore           
             MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
             // Camera  

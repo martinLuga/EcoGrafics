@@ -6,9 +6,7 @@
 //  Copyright © 2021 Martin Luga. All rights reserved.
 // 
 
-open System
 open System.Collections.Generic
-open System.Runtime.InteropServices
 
 open log4net
 
@@ -19,15 +17,12 @@ open SharpDX.Direct3D12
 
 open Base
 open ModelSupport
-open Framework
 open PrintSupport
 open LoggingSupport
 open ObjectBase 
 open ShaderSupport
 open GameTimer
 open MaterialsAndTextures
-
-open DirectX.Assets
 
 open GPUModel.MyGPU
 
@@ -101,58 +96,6 @@ module GraficController =
         let mutable startCameraPosition = Vector3.Zero
         let mutable startCameraTarget = Vector3.Zero
         let mutable materials:Dictionary<int,Material> = new Dictionary<int,Material>()
-
-        // Shader comes from: 1.Part  2.ShaderCache
-        let currentVertexShader(part:Part)  = 
-            match part.Shaders.VertexShaderDesc with
-            | {ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->               
-                ShaderCache.GetShader(ShaderType.Vertex,part.Shape.TopologyType, part.Shape.Topology)
-            | {ShaderDescription.Use=ShaderUsage.Required} -> 
-                part.Shaders.VertexShaderDesc
-            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                raiseException("VertexShader muss gesetzt sein") 
-            |_ -> defaultVertexShaderDesc            
-
-        let currentPixelShader(part:Part)   =
-            match part.Shaders.PixelShaderDesc with 
-            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
-                ShaderCache.GetShader(ShaderType.Pixel,part.Shape.TopologyType, part.Shape.Topology)
-            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                raiseException("VertexShader muss gesetzt sein")
-            | {ShaderDescription.Use=ShaderUsage.Required} -> 
-                part.Shaders.PixelShaderDesc                
-            |_ -> defaultPixelShaderDesc  
-
-        let currentDomainShader(part:Part)  = 
-            match part.Shaders.DomainShaderDesc with 
-            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
-                ShaderCache.GetShader(ShaderType.Domain, part.Shape.TopologyType, part.Shape.Topology)
-            | {ShaderDescription.Use=ShaderUsage.Required} -> 
-                part.Shaders.DomainShaderDesc 
-            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                defaultDomainShaderDesc 
-            |_ -> raiseException("DomainShader invalid use") 
-
-        let currentHullShader(part:Part)  =
-            match part.Shaders.HullShaderDesc with
-            | { ShaderDescription.Use=ShaderUsage.ToBeFilledIn} ->
-                ShaderCache.GetShader(ShaderType.Hull, part.Shape.TopologyType, part.Shape.Topology)
-            | {ShaderDescription.Use=ShaderUsage.Required} -> 
-                part.Shaders.HullShaderDesc 
-            | {ShaderDescription.Use=ShaderUsage.NotRequired} ->
-                 defaultHullShaderDesc 
-            |_ -> raiseException("DomainShader invalid use") 
-
-        // RootSignature 
-        let currentRootSignatureDesc(part:Part, rootSignatureDesc:RootSignatureDescription) =
-            if isRootSignatureDescEmpty(part.Shaders.VertexShaderDesc.RootSignature) then
-                let fromCache = ShaderCache.GetShader(ShaderType.Vertex, part.Shape.TopologyType, part.Shape.Topology)
-                if fromCache = null || (fromCache.Use=ShaderUsage.ToBeFilledIn) then
-                    rootSignatureDesc
-                else
-                    fromCache.RootSignature
-            else 
-                part.Shaders.VertexShaderDesc.RootSignature        
 
         // ----------------------------------------------------------------------------------------------------
         // Instance

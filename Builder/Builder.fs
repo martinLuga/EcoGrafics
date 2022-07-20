@@ -192,6 +192,11 @@ module Gltf2Builder =
         logInfo ("Creating Geometry for GLTF2-File: " + fileName)
         let builder = new GlTf2Builder(name, fileName)  
         builder.Build(position, rotation, scale, visibility, augmentation)    
+
+    let Parts (name, fileName, position, rotation, scale:Vector3, visibility:Visibility, augmentation:Augmentation) =
+        let builder = new GlTf2Builder(name, fileName)  
+        builder.Build(position, rotation, scale, visibility, augmentation) |> ignore
+        builder.Parts |> Seq.toList
          
 // ----------------------------------------------------------------------------------------------------
 // Builder für das Wavefront-Format

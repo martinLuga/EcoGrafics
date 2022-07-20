@@ -182,6 +182,7 @@ module Common =
             diffuseAlbedo=Vector4.Zero,
             fresnelR0=Vector3.Zero,
             roughness=0.0f,
+            matTransform=Matrix.Identity,
             ambient=Color4.White,
             diffuse=Color4.White,
             specular=Color4.White,

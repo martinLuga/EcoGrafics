@@ -271,7 +271,7 @@ module MyGPU =
 
         abstract PrepareInstall:int*int->Unit
         default this.PrepareInstall(anzObjects, anzMaterials) =
-            logger.Info("Install " + anzObjects.ToString() + " objects for display ") 
+            logInfo("Install " + anzObjects.ToString() + " objects for display ") 
             this.BuildFrameResources(anzObjects, anzMaterials)
             this.resetMeshCache()
 
@@ -337,7 +337,7 @@ module MyGPU =
         member this.ResetTextures() =
             textures.Clear()
             textureHeapWrapperCube.Reset()
-            textureHeapWrapper.Reset()
+            textureHeapWrapper <- new HeapWrapper(device, srvDescriptorHeap)
             logDebug("Reset Textures")
 
         // ---------------------------------------------------------------------------------------------------- 

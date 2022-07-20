@@ -29,13 +29,13 @@
     <Compile Include="StringSupport.fs" />
     <Compile Include="FileSupport.fs" />
     <Compile Include="LoggingSupport.fs" />
-    <Compile Include="ShaderSupport.fs" />
-    <Compile Include="ShaderCompile.fs" />
     <Compile Include="GlobalDefs.fs" />
     <Compile Include="VertexDefs.fs" />
     <Compile Include="MathSupport.fs" />
     <Compile Include="MeshObject.fs" />
     <Compile Include="QuaderSupport.fs" />
+    <Compile Include="ShaderSupport.fs" />
+    <Compile Include="ShaderCompile.fs" />
     <Compile Include="ModelSupport.fs" />
     <Compile Include="MaterialsAndTextures.fs" />
     <Compile Include="RecordSupport.fs" />
