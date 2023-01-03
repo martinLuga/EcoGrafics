@@ -14,9 +14,6 @@ open Geometry.GeometricModel3D
 open Base.ModelSupport
 open Base.MaterialsAndTextures  
 
-open Base.ShaderSupport
-
-
 // ---------------------------------------------------------------------------------------------------- 
 // 
 //  Example Surfaces
