@@ -167,6 +167,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>

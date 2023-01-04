@@ -10,7 +10,9 @@
 
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild> 
 
-    <PackageOutputPath>C:\Users\Lugi2\source\F#\Nuget</PackageOutputPath>
+    <PackageOutputPath>C:\Users\Lugi2\source\F#\Nuget</PackageOutputPath> 
+
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Logging.fs" />
@@ -20,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BulletSharp.x64" Version="0.12.0" />
+    <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Desktop" Version="4.2.0" />
   </ItemGroup>
