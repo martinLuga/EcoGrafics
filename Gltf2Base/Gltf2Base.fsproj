@@ -8,6 +8,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageOutputPath>C:\Users\Lugi2\source\F#\Nuget</PackageOutputPath>
     <PlatformTarget>x64</PlatformTarget>
+    <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
