@@ -117,7 +117,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EcoGraficsPKG" Version="2.0.4" />
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />

@@ -16,7 +16,7 @@ open ModelSupport
 module MaterialsAndTextures =
 
     let GRAFIC_ECO_PATH =
-        "C:/Users/Lugi2/source/F#/Framework/EcoGrafics/ExampleSurfaces/bin/x64/Debug/net48/texture/" 
+        "C:/Users/Lugi2/source/F#/Framework/EcoGrafics/ExampleSurfaces/bin/x64/Debug/net471/texture/" 
         
     let ECO_PATH = System.Reflection.Assembly.GetExecutingAssembly().GetName()
 
