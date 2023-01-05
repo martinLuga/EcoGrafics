@@ -13,7 +13,6 @@ open Base.ObjectBase
 open Geometry.GeometricModel3D
 open log4net
 open SharpDX
-open BulletSharp
 open System.Collections.Generic 
 
 // ----------------------------------------------------------------------------------------------------
@@ -35,17 +34,6 @@ module Logging =
                 "   CenToOrig "  + formatVector3(displayable.CenterOrigin) + "\n" +
                 "   Scale     "  + formatVector3(displayable.Scale) + "\n" +
                 "   Rotation  "  + formatQuaternion(Quaternion.RotationMatrix(displayable.Rotation)) + "\n"
-                )
-
-    let logBody(body:RigidBody, logger, message, selected) =
-        if body.UserObject.ToString() = selected then
-            let wt = body.WorldTransform
-            let p = wt.Origin
-            logger (
-                message + "\n" +
-                "   RigidBody "  +  "\n" +
-                "   Name      "  + body.UserObject.ToString() + "\n" +
-                "   Position  "  + p.ToString()  + "\n" 
                 )
 
     let logTransform (transform: Matrix, logger, objectName, selected) =
