@@ -13,7 +13,7 @@
     <Description>Grafics Framework mit DirectX</Description>
     <Copyright>Copyright © 2018 Martin Luga. All rights reserved</Copyright>
     <RepositoryUrl></RepositoryUrl>
-    <Version>2.1.6</Version>
+    <Version>2.1.9</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <PackageOutputPath>C:\Users\Lugi2\source\F#\Nuget</PackageOutputPath>

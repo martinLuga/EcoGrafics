@@ -112,9 +112,9 @@
     <Content Include="textures\WireFence.dds" />
     <Content Include="textures\WoodCrate01.dds" />
     <Content Include="textures\WoodCrate02.dds" />
-    <None Include="resource\log4net.config">
+    <EmbeddedResource Include="resource\log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EcoGraficsPKG" Version="2.1.6" />
@@ -125,6 +125,9 @@
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

@@ -1,4 +1,4 @@
-﻿namespace ecografics
+﻿namespace BaseSystem
 //
 //  Architecture.fs
 //
@@ -15,6 +15,7 @@ open GPUModel.MyGPU
 open GraficBase.GraficController
 open GraficBase.GraficWindow
 open GraficBase.ShaderPackage
+open ecografics
 open Initializations
 open log4net
 open NUnit.Framework
@@ -22,10 +23,12 @@ open SharpDX
 open System
 open System.IO
 open DX12GameProgramming
-open ExampleShaders
+ 
+open Base.StringSupport
+
 open ShaderRenderingCookbook.Pipeline
 
-module Architecture =
+module Framework =
 
     configureLoggingInMap "EcoGrafics" "UnitTests" "resource" "log4net.config"
     let getLogger(name:string) = LogManager.GetLogger(name)
@@ -41,7 +44,7 @@ module Architecture =
             Directory.SetCurrentDirectory(dir);
 
     [<TestFixture>]
-    type GPUTests() = 
+    type GPU() = 
 
         [<DefaultValue>] val mutable logger: ILog
         [<DefaultValue>] val mutable myWindow:MyWindow
@@ -49,30 +52,30 @@ module Architecture =
 
         [<OneTimeSetUp>]
         member this.setUp() =
-            configureLog4net "Tests" "resource" "log4net.config"
+            configureLog4net "UnitTests" "resource" "log4net.config"
             this.logger <- LogManager.GetLogger("ArchitectureTests")
 
             WindowLayout.Setup("TEST")
 
-            MyController.CreateInstance(this.myWindow, ShaderPackageCB())   |> ignore           
-            MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
+            //MyController.CreateInstance(this.myWindow, ShaderPackageCB())   |> ignore           
+            //MyController.Instance.initLight (new Vector3( 0.0f,  -5.0f,  10.0f), Color.White)     // In Richtung hinten nach unten
 
-            // Camera  
-            MyController.Instance.ConfigureCamera(Vector3( 0.0f, 5.0f, -10.0f), Vector3.Zero)       
+            //// Camera  
+            //MyController.Instance.ConfigureCamera(Vector3( 0.0f, 5.0f, -10.0f), Vector3.Zero)       
             
         [<OneTimeTearDownAttribute>]
         member this.tearDown() =
             this.logger.Info("ArchitectureTests cleaned up ")
 
-
+            
+        [<Test>]
         member this.RunApp() =
-            let displayables = getGraphicObjects() 
-            MyController.Instance.InstallObjects(displayables)
-            MyController.Instance.Run()  
+            //let displayables = getGraphicObjects() 
+            //MyController.Instance.InstallObjects(displayables)
             this.logger.Info("ArchitectureTests ended ")
 
     [<TestFixture>]
-    type Framework() = 
+    type Grafic() = 
 
         [<DefaultValue>] val mutable logger : ILog
 
@@ -91,3 +94,12 @@ module Architecture =
             let elements = seq {for I in 1 .. 50 do createVertex Vector3.Zero Vector3.UnitZ  Color4.Black (new Vector2(0.0f, 0.0f))}
             let every2 = everyNth 10 elements 
             Assert.IsNotEmpty(every2)
+
+    [<TestFixture>]
+    type StringSupport() = 
+        [<Test>]
+        member this.FirstToUpper() = 
+            let input = "qwErTz"
+            let result = Base.StringSupport.firstToUpper(input) 
+            printfn "Input %s" input
+            printfn "Result %s" result

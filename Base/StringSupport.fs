@@ -51,6 +51,12 @@ module StringSupport =
     let getElementCount(currentLine:string) =
         getElements(currentLine).Length 
 
+    let  firstToUpper(currentLine:string) = 
+         let mutable result = currentLine.ToLower()  
+         let first = currentLine.Substring(0,1).ToUpper()
+         let rest = (currentLine.Substring(1,currentLine.Length-1)).ToLower()
+         first + rest
+
     let  onlyDigits(currentLine:string) = 
          new String(currentLine.Where(Char.IsDigit).ToArray())
 
